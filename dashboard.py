@@ -1,40 +1,166 @@
-from pathlib import Path
-import pandas as pd
 import streamlit as st
-import plotly.express as px
+import pandas as pd
+from pathlib import Path
 
-st.set_page_config(page_title="IA Paris Sportifs Ultime", layout="wide")
-st.title("IA Paris Sportifs Ultime - Football + Tennis")
+st.set_page_config(
+    page_title="IA Paris Sportifs Ultime",
+    layout="wide",
+    page_icon="⚽"
+)
+
+# =========================
+# STYLE CSS PREMIUM
+# =========================
+
+st.markdown("""
+<style>
+
+body {
+    background-color: #0E1117;
+}
+
+.main {
+    background-color: #0E1117;
+}
+
+.stDataFrame {
+    border-radius: 12px;
+}
+
+.valuebet {
+    background-color: #0f5132;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.nobet {
+    background-color: #5c1a1a;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.metric-box {
+    background: #161b22;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# LOAD DATA
+# =========================
 
 pred_path = Path("data/predictions/predictions_today.csv")
-value_path = Path("data/predictions/value_bets_today.csv")
 
 if not pred_path.exists():
-    st.warning("Aucune prédiction trouvée. Lance d'abord run_full_pipeline.bat")
+    st.error("Aucune prédiction trouvée.")
     st.stop()
 
 df = pd.read_csv(pred_path)
-values = pd.read_csv(value_path) if value_path.exists() else pd.DataFrame()
 
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Matchs / marchés analysés", len(df))
-c2.metric("Value bets", len(values))
-c3.metric("Meilleure value", f"{df['value'].max():.2%}" if not df.empty else "0%")
-c4.metric("Mise max conseillée", f"{df['suggested_stake'].max():.2f} €" if not df.empty else "0 €")
+# =========================
+# SIDEBAR
+# =========================
 
-st.subheader("Paris à considérer selon le modèle")
-if values.empty:
-    st.info("Aucun value bet selon les filtres actuels. Ne force pas un pari.")
+st.sidebar.title("⚙️ Filtres")
+
+sports = st.sidebar.multiselect(
+    "Championnats",
+    options=df["sport"].unique(),
+    default=df["sport"].unique()
+)
+
+confidence = st.sidebar.multiselect(
+    "Confiance",
+    options=df["confidence"].unique(),
+    default=df["confidence"].unique()
+)
+
+only_value = st.sidebar.checkbox("Afficher uniquement les VALUE BETS")
+
+# =========================
+# FILTERS
+# =========================
+
+filtered = df[
+    (df["sport"].isin(sports)) &
+    (df["confidence"].isin(confidence))
+]
+
+if only_value:
+    filtered = filtered[filtered["decision"] == "VALUE BET"]
+
+# =========================
+# HEADER
+# =========================
+
+st.title("⚽ IA Paris Sportifs Ultime")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("📊 Matchs analysés", len(filtered))
+
+value_bets = filtered[filtered["decision"] == "VALUE BET"]
+
+col2.metric("🔥 VALUE BETS", len(value_bets))
+
+if len(filtered) > 0:
+    best_value = round(filtered["value"].max() * 100, 2)
 else:
-    st.dataframe(values.sort_values("value", ascending=False), use_container_width=True)
+    best_value = 0
 
-st.subheader("Toutes les prédictions")
-st.dataframe(df.sort_values("value", ascending=False), use_container_width=True)
+col3.metric("💎 Meilleure value", f"{best_value}%")
 
-st.subheader("Graphiques")
-if not df.empty:
-    fig = px.bar(df.sort_values("value", ascending=False).head(20), x="market", y="value", color="decision",
-                 hover_data=["home_team","away_team","bookmaker_odds","ai_probability"])
-    st.plotly_chart(fig, use_container_width=True)
+if len(filtered) > 0:
+    max_stake = round(filtered["suggested_stake"].max(), 2)
+else:
+    max_stake = 0
 
-st.caption("Aucun pari n'est sûr. Le dashboard sort des value bets statistiques, à valider avant de miser.")
+col4.metric("💰 Mise max", f"{max_stake}€")
+
+# =========================
+# VALUE BETS
+# =========================
+
+st.subheader("🔥 Paris recommandés")
+
+if len(value_bets) == 0:
+    st.warning("Aucun VALUE BET actuellement.")
+else:
+    for _, row in value_bets.iterrows():
+
+        st.markdown(f"""
+        <div class="valuebet">
+
+        <h4>{row['home_team']} vs {row['away_team']}</h4>
+
+        <b>Pari :</b> {row['market']}<br>
+
+        <b>Probabilité IA :</b> {round(row['ai_probability']*100,1)}%<br>
+
+        <b>Cote :</b> {row['bookmaker_odds']}<br>
+
+        <b>Value :</b> {round(row['value']*100,1)}%<br>
+
+        <b>Confiance :</b> {row['confidence']}<br>
+
+        <b>Score exact probable :</b> {row['top_scores']}
+
+        </div>
+        """, unsafe_allow_html=True)
+
+# =========================
+# ALL PREDICTIONS
+# =========================
+
+st.subheader("📋 Toutes les prédictions")
+
+st.dataframe(
+    filtered.sort_values("value", ascending=False),
+    use_container_width=True
+)
