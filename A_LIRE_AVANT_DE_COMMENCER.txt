@@ -1,0 +1,21 @@
+PACK IA PARIS SPORTIFS ULTIME - FOOTBALL + TENNIS
+
+IMPORTANT :
+Ce système ne garantit jamais un gain. Il détecte des "value bets" selon des probabilités, des cotes et ta bankroll.
+Utilise-le comme outil d'analyse, pas comme promesse de résultat.
+
+ORDRE SIMPLE :
+1) Installer Python
+2) Dézipper ce dossier sur ton Bureau
+3) Double-cliquer sur install_windows.bat
+4) Copier .env.example et le renommer .env
+5) Ajouter tes clés API dans .env
+6) Double-cliquer sur update_data.bat
+7) Double-cliquer sur run_full_pipeline.bat
+8) Double-cliquer sur run_dashboard.bat
+9) Ouvrir systeme_prediction_ultime.xlsx
+
+SANS CLÉS API :
+Le système fonctionne déjà en mode démonstration avec exemples + historique public.
+AVEC CLÉS API :
+Il récupère les matchs/cotes automatiquement et sort les value bets du jour.
