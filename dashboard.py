@@ -11,35 +11,19 @@ st.set_page_config(
 st.markdown("""
 <style>
 body, .main { background-color: #0E1117; }
-.card {
-    background: #161b22;
+.card, .value-card {
     padding: 18px;
     border-radius: 16px;
     margin-bottom: 14px;
     border: 1px solid #30363d;
 }
+.card { background: #161b22; }
 .value-card {
     background: linear-gradient(135deg, #0f5132, #10291f);
-    padding: 18px;
-    border-radius: 16px;
-    margin-bottom: 14px;
     border: 1px solid #2ea043;
 }
-.warning-card {
-    background: #2d1b00;
-    padding: 18px;
-    border-radius: 16px;
-    margin-bottom: 14px;
-    border: 1px solid #f0ad4e;
-}
-.small {
-    color: #8b949e;
-    font-size: 14px;
-}
-.big {
-    font-size: 22px;
-    font-weight: 700;
-}
+.small { color: #8b949e; font-size: 14px; }
+.big { font-size: 22px; font-weight: 700; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -79,10 +63,9 @@ if only_value:
 value_bets = filtered[filtered["decision"] == "VALUE BET"].copy()
 
 st.title("⚽ IA Paris Sportifs Ultime")
-st.caption("Dashboard IA : Value Bets, Score Exact, Over/Under, BTTS, ROI et tracking.")
+st.caption("Value Bets • Score Exact • Over/Under • BTTS • ROI • Tracking")
 
 col1, col2, col3, col4 = st.columns(4)
-
 col1.metric("📊 Lignes analysées", len(filtered))
 col2.metric("🔥 Value Bets", len(value_bets))
 col3.metric("💎 Meilleure value", f"{round(filtered['value'].max()*100,2) if len(filtered) else 0}%")
@@ -119,62 +102,29 @@ with tabs[0]:
 
 with tabs[1]:
     st.subheader("🎯 Scores exacts probables")
-
-    score_cols = [
+    cols = [
         "date", "sport", "home_team", "away_team",
         "score_exact_1", "score_exact_1_proba",
         "score_exact_2", "score_exact_2_proba",
         "score_exact_3", "score_exact_3_proba"
     ]
-
-    available_cols = [c for c in score_cols if c in filtered.columns]
-
-    score_df = filtered[available_cols].drop_duplicates(
-        subset=["home_team", "away_team"]
-    )
-
-    st.dataframe(
-        score_df.sort_values("score_exact_1_proba", ascending=False),
-        use_container_width=True
-    )
+    available = [c for c in cols if c in filtered.columns]
+    score_df = filtered[available].drop_duplicates(subset=["home_team", "away_team"])
+    st.dataframe(score_df.sort_values("score_exact_1_proba", ascending=False), use_container_width=True)
 
 with tabs[2]:
     st.subheader("⚽ Over / Under")
-
-    goal_cols = [
-        "date", "sport", "home_team", "away_team",
-        "over_15", "over_25", "under_25"
-    ]
-
-    available_cols = [c for c in goal_cols if c in filtered.columns]
-
-    goals_df = filtered[available_cols].drop_duplicates(
-        subset=["home_team", "away_team"]
-    )
-
-    st.dataframe(
-        goals_df.sort_values("over_25", ascending=False),
-        use_container_width=True
-    )
+    cols = ["date", "sport", "home_team", "away_team", "over_15", "over_25", "under_25"]
+    available = [c for c in cols if c in filtered.columns]
+    goals_df = filtered[available].drop_duplicates(subset=["home_team", "away_team"])
+    st.dataframe(goals_df.sort_values("over_25", ascending=False), use_container_width=True)
 
 with tabs[3]:
-    st.subheader("✅ BTTS — Les deux équipes marquent")
-
-    btts_cols = [
-        "date", "sport", "home_team", "away_team",
-        "btts_yes", "btts_no"
-    ]
-
-    available_cols = [c for c in btts_cols if c in filtered.columns]
-
-    btts_df = filtered[available_cols].drop_duplicates(
-        subset=["home_team", "away_team"]
-    )
-
-    st.dataframe(
-        btts_df.sort_values("btts_yes", ascending=False),
-        use_container_width=True
-    )
+    st.subheader("✅ BTTS")
+    cols = ["date", "sport", "home_team", "away_team", "btts_yes", "btts_no"]
+    available = [c for c in cols if c in filtered.columns]
+    btts_df = filtered[available].drop_duplicates(subset=["home_team", "away_team"])
+    st.dataframe(btts_df.sort_values("btts_yes", ascending=False), use_container_width=True)
 
 with tabs[4]:
     st.subheader("📊 ROI / Tracking")
@@ -187,6 +137,9 @@ with tabs[4]:
         if tracking.empty:
             st.warning("Tracking vide.")
         else:
+            tracking["profit"] = pd.to_numeric(tracking["profit"], errors="coerce").fillna(0)
+            tracking["stake"] = pd.to_numeric(tracking["stake"], errors="coerce").fillna(0)
+
             settled = tracking[tracking["result"].isin(["WIN", "LOSS"])]
 
             total_staked = settled["stake"].sum() if len(settled) else 0
@@ -195,7 +148,6 @@ with tabs[4]:
             hit_rate = (settled["result"] == "WIN").mean() if len(settled) else 0
 
             c1, c2, c3, c4 = st.columns(4)
-
             c1.metric("Paris trackés", len(tracking))
             c2.metric("Paris terminés", len(settled))
             c3.metric("Profit", round(profit, 2))
@@ -203,30 +155,16 @@ with tabs[4]:
 
             st.metric("Hit Rate", f"{round(hit_rate*100, 2)}%")
 
-            st.dataframe(
-                tracking.sort_values("date", ascending=False),
-                use_container_width=True
-            )
+            tracking["cumulative_profit"] = tracking["profit"].cumsum()
+
+            st.subheader("📈 Evolution bankroll / profit cumulé")
+            st.line_chart(tracking["cumulative_profit"])
+
+            st.subheader("📊 Profit par pari")
+            st.bar_chart(tracking["profit"])
+
+            st.dataframe(tracking.sort_values("date", ascending=False), use_container_width=True)
 
 with tabs[5]:
     st.subheader("📋 Toutes les prédictions")
-
-    st.dataframe(
-                    tracking["cumulative_profit"] = (
-                tracking["profit"]
-                .fillna(0)
-                .cumsum()
-            )
-
-            st.line_chart(
-                tracking.set_index(
-                    tracking.index
-                )["cumulative_profit"]
-            )
-
-            st.bar_chart(
-                tracking["profit"].fillna(0)
-            )
-        filtered.sort_values("value", ascending=False),
-        use_container_width=True
-    )
+    st.dataframe(filtered.sort_values("value", ascending=False), use_container_width=True)
