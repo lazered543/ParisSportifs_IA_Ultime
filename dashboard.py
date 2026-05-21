@@ -1,5 +1,26 @@
 import streamlit as st
 PASSWORD = "29052007"
+st.sidebar.checkbox("📱 Mode téléphone rapide", key="mobile_mode")
+if st.session_state.get("mobile_mode"):
+    st.subheader("📱 Mode téléphone rapide")
+
+    mobile_cols = [
+        "date", "home_team", "away_team", "market",
+        "ai_probability", "bookmaker_odds", "value",
+        "confidence", "ia_badge", "suggested_stake",
+        "score_exact_1", "score_exact_1_proba"
+    ]
+
+    mobile_cols = [c for c in mobile_cols if c in filtered.columns]
+
+    st.dataframe(
+        filtered[mobile_cols]
+        .sort_values("value", ascending=False)
+        .head(30),
+        use_container_width=True
+    )
+
+    st.stop()
 
 st.set_page_config(
     page_title="IA Paris Sportifs Ultime",
