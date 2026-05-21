@@ -99,17 +99,13 @@ Connexion sécurisée à la plateforme IA
 </div>
 """, unsafe_allow_html=True)
 
-password = st.text_input(
-    "Mot de passe",
-    type="password"
-)
 
 if password != APP_PASSWORD:
 
     st.warning("Mot de passe incorrect.")
 
     st.stop()
-    
+
 st.sidebar.checkbox("📱 Mode téléphone rapide", key="mobile_mode")
 if st.session_state.get("mobile_mode"):
     st.subheader("📱 Mode téléphone rapide")
