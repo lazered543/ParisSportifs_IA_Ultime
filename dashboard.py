@@ -99,13 +99,16 @@ Connexion sécurisée à la plateforme IA
 </div>
 """, unsafe_allow_html=True)
 
+password = st.text_input(
+    "Mot de passe",
+    type="password"
+)
 
-if password != APP_PASSWORD:"29052007"
+if password != APP_PASSWORD:
 
     st.warning("Mot de passe incorrect.")
 
     st.stop()
-
 st.sidebar.checkbox("📱 Mode téléphone rapide", key="mobile_mode")
 if st.session_state.get("mobile_mode"):
     st.subheader("📱 Mode téléphone rapide")
@@ -134,14 +137,6 @@ st.set_page_config(
     page_icon="⚽"
 )
 
-password = st.text_input(
-    "Mot de passe",
-    type="password"
-)
-
-if password != PASSWORD:
-    st.warning("Accès privé.")
-    st.stop()
 import pandas as pd
 from pathlib import Path
 
