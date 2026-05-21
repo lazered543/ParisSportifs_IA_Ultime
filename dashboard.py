@@ -35,6 +35,7 @@ if not pred_path.exists():
     st.stop()
 
 df = pd.read_csv(pred_path)
+low_memory=False
 
 st.sidebar.title("⚙️ Filtres")
 
@@ -133,6 +134,7 @@ with tabs[4]:
         st.warning("Aucun fichier tracking_results.csv trouvé.")
     else:
         tracking = pd.read_csv(track_path)
+        low_memory=False
 
         if tracking.empty:
             st.warning("Tracking vide.")
@@ -269,10 +271,10 @@ with tabs[4]:
 with tabs[5]:
     st.subheader("📋 Toutes les prédictions")
 
-    st.dataframe(
-        filtered.sort_values(
-            "value",
-            ascending=False
-        ),
-        use_container_width=True
-    )
+st.dataframe(
+    filtered.sort_values(
+        "value",
+        ascending=False
+    ).head(100),
+    use_container_width=True
+)
