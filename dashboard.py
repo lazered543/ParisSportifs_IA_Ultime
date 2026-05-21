@@ -1,5 +1,115 @@
 import streamlit as st
-PASSWORD = "29052007"
+# ====================================
+# PAGE LOGIN PREMIUM
+# ====================================
+
+APP_PASSWORD = "29052007"
+
+st.markdown("""
+<div style="
+text-align:center;
+padding-top:60px;
+padding-bottom:30px;
+">
+
+<h1 style="
+font-size:55px;
+font-weight:900;
+color:white;
+text-shadow:
+0 0 10px rgba(0,255,255,0.8),
+0 0 25px rgba(120,80,255,0.8);
+animation: pulse 2s infinite alternate;
+">
+🌌 IA PARIS SPORTIFS
+</h1>
+
+<p style="
+font-size:20px;
+color:#cfd8ff;
+margin-top:-10px;
+">
+Plateforme IA privée • Analyse prédictive • Value Betting
+</p>
+
+</div>
+
+<style>
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+        opacity:0.8;
+    }
+    to {
+        transform: scale(1.03);
+        opacity:1;
+    }
+}
+
+.login-card {
+    max-width:450px;
+    margin:auto;
+    margin-top:40px;
+    padding:35px;
+
+    background:
+    rgba(10,15,40,0.72);
+
+    border:
+    1px solid rgba(120,180,255,0.25);
+
+    border-radius:24px;
+
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+    0 0 35px rgba(0,255,255,0.15),
+    inset 0 0 30px rgba(255,255,255,0.03);
+
+    text-align:center;
+}
+
+.login-title {
+    color:white;
+    font-size:28px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.login-sub {
+    color:#cfd8ff;
+    margin-bottom:30px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="login-card">
+
+<div class="login-title">
+🔒 Accès Privé
+</div>
+
+<div class="login-sub">
+Connexion sécurisée à la plateforme IA
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
+password = st.text_input(
+    "Mot de passe",
+    type="password"
+)
+
+if password != APP_PASSWORD:
+
+    st.warning("Mot de passe incorrect.")
+
+    st.stop()
+    
 st.sidebar.checkbox("📱 Mode téléphone rapide", key="mobile_mode")
 if st.session_state.get("mobile_mode"):
     st.subheader("📱 Mode téléphone rapide")
