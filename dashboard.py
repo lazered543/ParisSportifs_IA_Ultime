@@ -100,7 +100,7 @@ Connexion sécurisée à la plateforme IA
 """, unsafe_allow_html=True)
 
 
-if password != APP_PASSWORD:
+if password != APP_PASSWORD:"29052007"
 
     st.warning("Mot de passe incorrect.")
 
