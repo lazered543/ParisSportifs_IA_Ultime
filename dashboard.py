@@ -26,20 +26,161 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-body, .main { background-color: #0E1117; }
+
+.stApp {
+    background:
+        radial-gradient(circle at 20% 20%, rgba(120, 80, 255, 0.35), transparent 30%),
+        radial-gradient(circle at 80% 30%, rgba(0, 255, 200, 0.18), transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(255, 0, 180, 0.18), transparent 25%),
+        linear-gradient(135deg, #050510 0%, #0b1026 45%, #02030a 100%);
+    color: white;
+    overflow: hidden;
+}
+
+.stApp::before {
+    content: "";
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background-image:
+        radial-gradient(white 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px);
+    background-size: 80px 80px, 130px 130px;
+    animation: starsMove 80s linear infinite;
+    opacity: 0.18;
+    z-index: -1;
+}
+
+.stApp::after {
+    content: "";
+    position: fixed;
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+    background:
+        radial-gradient(circle, rgba(80, 180, 255, 0.12), transparent 40%);
+    animation: galaxyPulse 8s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+@keyframes starsMove {
+    from {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    to {
+        transform: translate(-120px, -120px) rotate(360deg);
+    }
+}
+
+@keyframes galaxyPulse {
+    from {
+        transform: scale(1);
+        opacity: 0.35;
+    }
+    to {
+        transform: scale(1.08);
+        opacity: 0.75;
+    }
+}
+
+section[data-testid="stSidebar"] {
+    background: rgba(5, 8, 25, 0.85);
+    backdrop-filter: blur(14px);
+    border-right: 1px solid rgba(120, 150, 255, 0.25);
+}
+
+h1, h2, h3 {
+    color: #ffffff;
+    text-shadow:
+        0 0 8px rgba(120, 180, 255, 0.8),
+        0 0 18px rgba(120, 80, 255, 0.5);
+}
+
+[data-testid="stMetric"] {
+    background: rgba(12, 18, 45, 0.72);
+    border: 1px solid rgba(120, 180, 255, 0.25);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow:
+        0 0 18px rgba(60, 120, 255, 0.15),
+        inset 0 0 20px rgba(255,255,255,0.03);
+    backdrop-filter: blur(12px);
+}
+
 .card, .value-card {
     padding: 18px;
-    border-radius: 16px;
-    margin-bottom: 14px;
-    border: 1px solid #30363d;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(120, 180, 255, 0.25);
+    backdrop-filter: blur(14px);
+    box-shadow:
+        0 0 24px rgba(80, 120, 255, 0.18),
+        inset 0 0 20px rgba(255,255,255,0.03);
 }
-.card { background: #161b22; }
+
+.card {
+    background: rgba(10, 15, 40, 0.72);
+}
+
 .value-card {
-    background: linear-gradient(135deg, #0f5132, #10291f);
-    border: 1px solid #2ea043;
+    background:
+        linear-gradient(135deg, rgba(0, 255, 170, 0.25), rgba(80, 80, 255, 0.12));
+    border: 1px solid rgba(0, 255, 170, 0.45);
+    animation: cardGlow 3s ease-in-out infinite alternate;
 }
-.small { color: #8b949e; font-size: 14px; }
-.big { font-size: 22px; font-weight: 700; }
+
+@keyframes cardGlow {
+    from {
+        box-shadow: 0 0 18px rgba(0, 255, 170, 0.18);
+    }
+    to {
+        box-shadow: 0 0 34px rgba(0, 255, 170, 0.45);
+    }
+}
+
+.small {
+    color: #b8c7ff;
+    font-size: 14px;
+}
+
+.big {
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 0 10px rgba(0, 255, 220, 0.75);
+}
+
+div[data-testid="stDataFrame"] {
+    background: rgba(10, 15, 40, 0.72);
+    border-radius: 18px;
+    border: 1px solid rgba(120, 180, 255, 0.25);
+    box-shadow: 0 0 18px rgba(60, 120, 255, 0.15);
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    gap: 10px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: rgba(15, 20, 55, 0.78);
+    border-radius: 14px;
+    color: #dce6ff;
+    border: 1px solid rgba(120, 180, 255, 0.22);
+}
+
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, rgba(0,255,200,0.35), rgba(100,100,255,0.3));
+    color: white;
+    box-shadow: 0 0 18px rgba(0,255,200,0.25);
+}
+
+button {
+    border-radius: 14px !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
