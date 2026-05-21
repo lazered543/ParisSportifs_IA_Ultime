@@ -12,3 +12,4 @@ fastapi
 uvicorn
 joblib
 scipy
+streamlit-aggrid
