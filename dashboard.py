@@ -23,16 +23,7 @@ st.set_page_config(
     layout="wide",
     page_icon="⚽"
 )
-APP_PASSWORD = st.secrets.get("APP_PASSWORD", "test123")
 
-password = st.text_input(
-    "🔒 Mot de passe",
-    type="password"
-)
-
-if password != APP_PASSWORD:
-    st.warning("Accès privé.")
-    st.stop()
 st.markdown("""
 <style>
 body, .main { background-color: #0E1117; }
