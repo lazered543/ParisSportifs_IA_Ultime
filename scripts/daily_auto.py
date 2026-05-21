@@ -3,7 +3,6 @@ import time
 
 
 def run_command(cmd):
-
     print(f"\nLancement : {cmd}\n")
 
     result = subprocess.run(
@@ -13,52 +12,33 @@ def run_command(cmd):
 
     if result.returncode != 0:
         print(f"Erreur sur : {cmd}")
+        return False
 
-    else:
-        print(f"Terminé : {cmd}")
+    print(f"Terminé : {cmd}")
+    return True
 
 
 print("\n==============================")
 print("SYSTEME IA PARIS SPORTIFS")
 print("==============================\n")
 
-# 1. Mise à jour des données
-run_command(
-    "python scripts/update_data.py"
-)
-
+run_command("python scripts/update_data.py")
 time.sleep(2)
 
-# 2. Génération IA
-run_command(
-    "python scripts/run_pipeline.py"
-)
-
+run_command("python scripts/run_pipeline.py")
 time.sleep(2)
 
-# 3. Sauvegarde tracking
-run_command(
-    "python scripts/save_bets_to_tracking.py"
-)
+run_command("python scripts/save_bets_to_tracking.py")
+time.sleep(2)
 
+run_command("python scripts/send_telegram_alerts.py")
 time.sleep(2)
 
 print("\n==============================")
 print("SYSTEME TERMINE")
 print("==============================\n")
 
-print(
-    "Tu peux maintenant ouvrir :\n"
-)
-
-print(
-    "- Dashboard Streamlit"
-)
-
-print(
-    "- tracking_results.csv"
-)
-
-print(
-    "- value_bets_today.csv"
-)
+print("- Dashboard Streamlit prêt")
+print("- tracking_results.csv mis à jour")
+print("- value_bets_today.csv mis à jour")
+print("- Alertes Telegram envoyées si VALUE BETS disponibles")
