@@ -69,6 +69,8 @@ confidence = st.sidebar.multiselect(
 
 only_value = st.sidebar.checkbox("Afficher uniquement VALUE BETS")
 
+mobile_mode = st.sidebar.checkbox("📱 Mode téléphone rapide")
+
 filtered = df[
     (df["sport"].isin(sports)) &
     (df["confidence"].isin(confidence))
@@ -87,6 +89,50 @@ col1.metric("📊 Lignes analysées", len(filtered))
 col2.metric("🔥 Value Bets", len(value_bets))
 col3.metric("💎 Meilleure value", f"{round(filtered['value'].max()*100,2) if len(filtered) else 0}%")
 col4.metric("💰 Mise max", f"{round(filtered['suggested_stake'].max(),2) if len(filtered) else 0}€")
+
+if mobile_mode:
+    st.subheader("📱 Mode téléphone rapide")
+
+    st.info(f"Dernière actualisation : {df['last_update'].iloc[0]}" if "last_update" in df.columns else "Dernière actualisation inconnue")
+
+    st.subheader("🔥 Value Bets")
+
+    mobile_cols = [
+        "date", "sport", "home_team", "away_team", "market",
+        "ai_probability", "bookmaker_odds", "value",
+        "confidence", "ia_badge", "suggested_stake",
+        "score_exact_1", "score_exact_1_proba",
+        "draw_hunter", "scorer_prediction"
+    ]
+
+    mobile_cols = [c for c in mobile_cols if c in filtered.columns]
+
+    st.dataframe(
+        filtered[filtered["decision"] == "VALUE BET"][mobile_cols]
+        .sort_values("value", ascending=False)
+        .head(50),
+        use_container_width=True
+    )
+
+    st.subheader("🎯 Scores exacts")
+
+    score_cols = [
+        "home_team", "away_team",
+        "score_exact_1", "score_exact_1_proba",
+        "score_exact_2", "score_exact_2_proba",
+        "score_exact_3", "score_exact_3_proba"
+    ]
+
+    score_cols = [c for c in score_cols if c in filtered.columns]
+
+    st.dataframe(
+        filtered[score_cols]
+        .drop_duplicates(subset=["home_team", "away_team"])
+        .head(50),
+        use_container_width=True
+    )
+
+    st.stop()
 
 tabs = st.tabs([
     "🔥 Value Bets",
