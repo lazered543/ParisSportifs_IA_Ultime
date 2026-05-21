@@ -1,33 +1,33 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
-soccer_epl,2026-05-24T15:00:00Z,Crystal Palace,Arsenal,4.4,4.2,1.91,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Manchester City,Aston Villa,1.49,5.5,7.0,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Nottingham Forest,Bournemouth,3.4,4.0,2.17,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Liverpool,Brentford,1.86,4.4,4.25,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Brighton and Hove Albion,Manchester United,2.03,4.3,3.65,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Crystal Palace,Arsenal,4.75,4.25,1.86,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Manchester City,Aston Villa,1.38,6.4,9.2,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Nottingham Forest,Bournemouth,3.5,4.0,2.14,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Liverpool,Brentford,1.85,4.4,4.2,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Brighton and Hove Albion,Manchester United,2.02,4.3,3.7,the-odds-api
 soccer_epl,2026-05-24T15:00:00Z,Burnley,Wolverhampton Wanderers,2.56,3.75,2.88,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Sunderland,Chelsea,3.8,3.8,2.08,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Tottenham Hotspur,Everton,2.0,3.95,4.1,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Fulham,Newcastle United,3.05,3.9,2.36,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,West Ham United,Leeds United,1.9,4.3,4.2,the-odds-api
-soccer_france_ligue_one,2026-05-26T18:45:00Z,Saint Etienne,Nice,2.45,3.45,3.14,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Alavés,Rayo Vallecano,2.54,3.53,3.25,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Madrid,Athletic Bilbao,1.52,5.0,7.0,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Sunderland,Chelsea,3.77,3.85,2.1,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Tottenham Hotspur,Everton,1.98,3.92,4.2,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Fulham,Newcastle United,3.05,3.9,2.38,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,West Ham United,Leeds United,1.95,4.3,4.1,the-odds-api
+soccer_france_ligue_one,2026-05-26T18:45:00Z,Saint Etienne,Nice,2.45,3.35,3.15,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Alavés,Rayo Vallecano,2.6,3.5,3.11,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Madrid,Athletic Bilbao,1.52,5.1,6.75,the-odds-api
 soccer_spain_la_liga,2026-05-23T19:00:00Z,Valencia,Barcelona,3.9,4.4,1.93,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Getafe,CA Osasuna,2.6,2.88,3.9,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Celta Vigo,Sevilla,1.91,3.95,5.0,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Getafe,CA Osasuna,2.55,2.88,3.8,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Celta Vigo,Sevilla,1.91,3.9,4.9,the-odds-api
 soccer_spain_la_liga,2026-05-23T19:00:00Z,Girona,Elche CF,1.88,4.1,4.6,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Espanyol,Real Sociedad,2.48,3.6,3.2,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Betis,Levante,2.32,3.45,3.58,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Mallorca,Oviedo,1.53,4.7,7.6,the-odds-api
-soccer_spain_la_liga,2026-05-24T19:00:00Z,Villarreal,Atlético Madrid,2.62,4.0,2.8,the-odds-api
-soccer_germany_bundesliga,2026-05-21T18:30:00Z,VfL Wolfsburg,SC Paderborn,1.75,4.1,4.75,the-odds-api
-soccer_italy_serie_a,2026-05-22T18:45:00Z,Fiorentina,Atalanta BC,2.95,3.75,2.56,the-odds-api
-soccer_italy_serie_a,2026-05-23T16:00:00Z,Bologna,Inter Milan,3.35,3.95,2.29,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Espanyol,Real Sociedad,2.58,3.6,3.08,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Betis,Levante,2.32,3.45,3.6,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Mallorca,Oviedo,1.54,4.6,7.6,the-odds-api
+soccer_spain_la_liga,2026-05-24T19:00:00Z,Villarreal,Atlético Madrid,2.61,4.0,2.8,the-odds-api
+soccer_germany_bundesliga,2026-05-21T18:30:00Z,VfL Wolfsburg,SC Paderborn,1.76,4.05,4.9,the-odds-api
+soccer_italy_serie_a,2026-05-22T18:45:00Z,Fiorentina,Atalanta BC,2.8,3.72,2.64,the-odds-api
+soccer_italy_serie_a,2026-05-23T16:00:00Z,Bologna,Inter Milan,3.13,3.85,2.36,the-odds-api
 soccer_italy_serie_a,2026-05-23T18:45:00Z,Lazio,Pisa,1.61,4.5,6.75,the-odds-api
-soccer_italy_serie_a,2026-05-24T13:00:00Z,Parma,Sassuolo,2.88,3.46,2.72,the-odds-api
-soccer_italy_serie_a,2026-05-24T16:00:00Z,Napoli,Udinese,1.53,4.5,7.6,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,AC Milan,Cagliari,1.35,5.83,12.5,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Hellas Verona,AS Roma,12.5,5.6,1.36,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Cremonese,Como,5.6,4.35,1.67,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Lecce,Genoa,1.81,3.83,5.6,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Torino,Juventus,8.6,4.96,1.47,the-odds-api
+soccer_italy_serie_a,2026-05-24T13:00:00Z,Parma,Sassuolo,2.8,3.5,2.72,the-odds-api
+soccer_italy_serie_a,2026-05-24T16:00:00Z,Napoli,Udinese,1.53,4.5,8.0,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,AC Milan,Cagliari,1.35,5.8,12.5,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Hellas Verona,AS Roma,11.0,5.7,1.35,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Cremonese,Como,5.7,4.45,1.66,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Lecce,Genoa,1.83,3.75,5.5,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Torino,Juventus,9.0,4.96,1.45,the-odds-api
