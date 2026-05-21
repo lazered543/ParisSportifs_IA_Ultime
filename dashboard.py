@@ -127,7 +127,7 @@ with tabs[3]:
     st.dataframe(btts_df.sort_values("btts_yes", ascending=False), use_container_width=True)
 
 with tabs[4]:
-    st.subheader("📊 ROI / Tracking")
+    st.subheader("📊 ROI / Tracking Pro")
 
     if not track_path.exists():
         st.warning("Aucun fichier tracking_results.csv trouvé.")
@@ -137,34 +137,142 @@ with tabs[4]:
         if tracking.empty:
             st.warning("Tracking vide.")
         else:
-            tracking["profit"] = pd.to_numeric(tracking["profit"], errors="coerce").fillna(0)
-            tracking["stake"] = pd.to_numeric(tracking["stake"], errors="coerce").fillna(0)
+            tracking["profit"] = pd.to_numeric(
+                tracking["profit"],
+                errors="coerce"
+            ).fillna(0)
 
-            settled = tracking[tracking["result"].isin(["WIN", "LOSS"])]
+            tracking["stake"] = pd.to_numeric(
+                tracking["stake"],
+                errors="coerce"
+            ).fillna(0)
+
+            tracking["bookmaker_odds"] = pd.to_numeric(
+                tracking["bookmaker_odds"],
+                errors="coerce"
+            ).fillna(0)
+
+            settled = tracking[
+                tracking["result"].isin(["WIN", "LOSS"])
+            ].copy()
 
             total_staked = settled["stake"].sum() if len(settled) else 0
             profit = settled["profit"].sum() if len(settled) else 0
             roi = profit / total_staked if total_staked > 0 else 0
             hit_rate = (settled["result"] == "WIN").mean() if len(settled) else 0
 
+            pending = tracking[tracking["result"] == "PENDING"]
+
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("Paris trackés", len(tracking))
             c2.metric("Paris terminés", len(settled))
-            c3.metric("Profit", round(profit, 2))
-            c4.metric("ROI", f"{round(roi*100, 2)}%")
+            c3.metric("Paris en attente", len(pending))
+            c4.metric("Profit total", round(profit, 2))
 
-            st.metric("Hit Rate", f"{round(hit_rate*100, 2)}%")
+            c5, c6, c7, c8 = st.columns(4)
+            c5.metric("ROI global", f"{round(roi * 100, 2)}%")
+            c6.metric("Hit Rate", f"{round(hit_rate * 100, 2)}%")
+            c7.metric("Misé total", round(total_staked, 2))
+            c8.metric("Cote moyenne", round(settled["bookmaker_odds"].mean(), 2) if len(settled) else 0)
 
-            tracking["cumulative_profit"] = tracking["profit"].cumsum()
+            if not settled.empty:
+                settled["cumulative_profit"] = settled["profit"].cumsum()
 
-            st.subheader("📈 Evolution bankroll / profit cumulé")
-            st.line_chart(tracking["cumulative_profit"])
+                st.subheader("📈 Evolution bankroll / profit cumulé")
+                st.line_chart(settled["cumulative_profit"])
 
-            st.subheader("📊 Profit par pari")
-            st.bar_chart(tracking["profit"])
+                st.subheader("📊 Profit par pari")
+                st.bar_chart(settled["profit"])
 
-            st.dataframe(tracking.sort_values("date", ascending=False), use_container_width=True)
+                st.subheader("🏆 ROI par championnat")
+
+                if "sport" in settled.columns:
+                    roi_sport = settled.groupby("sport").agg(
+                        paris=("result", "count"),
+                        mises=("stake", "sum"),
+                        profit=("profit", "sum"),
+                        winrate=("result", lambda x: (x == "WIN").mean())
+                    ).reset_index()
+
+                    roi_sport["roi_%"] = (
+                        roi_sport["profit"] / roi_sport["mises"] * 100
+                    ).round(2)
+
+                    roi_sport["winrate_%"] = (
+                        roi_sport["winrate"] * 100
+                    ).round(2)
+
+                    roi_sport = roi_sport.sort_values(
+                        "roi_%",
+                        ascending=False
+                    )
+
+                    st.dataframe(
+                        roi_sport,
+                        use_container_width=True
+                    )
+
+                st.subheader("🎯 ROI par type de pari")
+
+                if "market" in settled.columns:
+                    roi_market = settled.groupby("market").agg(
+                        paris=("result", "count"),
+                        mises=("stake", "sum"),
+                        profit=("profit", "sum"),
+                        winrate=("result", lambda x: (x == "WIN").mean())
+                    ).reset_index()
+
+                    roi_market["roi_%"] = (
+                        roi_market["profit"] / roi_market["mises"] * 100
+                    ).round(2)
+
+                    roi_market["winrate_%"] = (
+                        roi_market["winrate"] * 100
+                    ).round(2)
+
+                    roi_market = roi_market.sort_values(
+                        "roi_%",
+                        ascending=False
+                    )
+
+                    st.dataframe(
+                        roi_market,
+                        use_container_width=True
+                    )
+
+                    best_market = roi_market.iloc[0]
+                    worst_market = roi_market.iloc[-1]
+
+                    col_best, col_worst = st.columns(2)
+
+                    col_best.success(
+                        f"✅ Meilleur marché : {best_market['market']} | ROI {best_market['roi_%']}%"
+                    )
+
+                    col_worst.error(
+                        f"⚠️ Pire marché : {worst_market['market']} | ROI {worst_market['roi_%']}%"
+                    )
+
+            else:
+                st.info("Aucun pari terminé pour calculer le ROI.")
+
+            st.subheader("📋 Historique complet du tracking")
+
+            st.dataframe(
+                tracking.sort_values(
+                    "date",
+                    ascending=False
+                ),
+                use_container_width=True
+            )
 
 with tabs[5]:
     st.subheader("📋 Toutes les prédictions")
-    st.dataframe(filtered.sort_values("value", ascending=False), use_container_width=True)
+
+    st.dataframe(
+        filtered.sort_values(
+            "value",
+            ascending=False
+        ),
+        use_container_width=True
+    )
