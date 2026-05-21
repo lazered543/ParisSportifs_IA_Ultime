@@ -212,6 +212,21 @@ with tabs[5]:
     st.subheader("📋 Toutes les prédictions")
 
     st.dataframe(
+                    tracking["cumulative_profit"] = (
+                tracking["profit"]
+                .fillna(0)
+                .cumsum()
+            )
+
+            st.line_chart(
+                tracking.set_index(
+                    tracking.index
+                )["cumulative_profit"]
+            )
+
+            st.bar_chart(
+                tracking["profit"].fillna(0)
+            )
         filtered.sort_values("value", ascending=False),
         use_container_width=True
     )
