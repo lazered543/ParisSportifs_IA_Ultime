@@ -1,4 +1,20 @@
 import streamlit as st
+PASSWORD = "29052007"
+
+st.set_page_config(
+    page_title="IA Paris Sportifs Ultime",
+    layout="wide",
+    page_icon="⚽"
+)
+
+password = st.text_input(
+    "Mot de passe",
+    type="password"
+)
+
+if password != PASSWORD:
+    st.warning("Accès privé.")
+    st.stop()
 import pandas as pd
 from pathlib import Path
 
