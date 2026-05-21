@@ -1,6 +1,7 @@
 import os
 import requests
 import pandas as pd
+
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -27,16 +28,18 @@ if df.empty:
 
 df = df.sort_values("value", ascending=False).head(10)
 
+
 def send_message(text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+
     response = requests.post(
         url,
         data={
             "chat_id": CHAT_ID,
             "text": text,
-            "parse_mode": "HTML"
+            "parse_mode": "HTML",
         },
-        timeout=20
+        timeout=20,
     )
 
     if response.status_code == 200:
@@ -59,9 +62,9 @@ intro = f"""
 
 send_message(intro)
 
-for i, row in df.iterrows():
-    value_pct = round(row["value"] * 100, 2)
-    prob_pct = round(row["ai_probability"] * 100, 2)
+for _, row in df.iterrows():
+    value_pct = round(float(row["value"]) * 100, 2)
+    prob_pct = round(float(row["ai_probability"]) * 100, 2)
 
     badge = row.get("ia_badge", "⚪ NO VALUE")
     score = row.get("score_exact_1", "N/A")
@@ -69,7 +72,11 @@ for i, row in df.iterrows():
     draw = row.get("draw_hunter", "N/A")
     scorer = row.get("scorer_prediction", "N/A")
 
-    if value_pct >= 25:
+    monster_bet = value_pct >= 25 and prob_pct >= 70
+
+    if monster_bet:
+        title = "💣 MONSTER BET"
+    elif value_pct >= 25:
         title = "🚨 ULTRA VALUE BET"
     elif value_pct >= 10:
         title = "🔥 STRONG VALUE BET"
@@ -113,7 +120,7 @@ for i, row in df.iterrows():
 🤝 <b>Draw Hunter :</b>
 {draw}
 
-⚽ <b>Buteur probable :</b>
+🎯 <b>ANYTIME GOALSCORER IA :</b>
 {scorer}
 
 ━━━━━━━━━━━━━━━━━━━━

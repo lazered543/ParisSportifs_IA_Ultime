@@ -25,6 +25,9 @@ print("==============================\n")
 run_command("python scripts/update_data.py")
 time.sleep(2)
 
+run_command("python scripts/update_player_scorers.py")
+time.sleep(2)
+
 run_command("python scripts/run_pipeline.py")
 time.sleep(2)
 
