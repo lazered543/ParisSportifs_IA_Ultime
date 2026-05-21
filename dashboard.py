@@ -30,7 +30,7 @@ password = st.text_input(
     type="password"
 )
 
-if password != APP_PASSWORD: "29052007"
+if password != APP_PASSWORD:
     st.warning("Accès privé.")
     st.stop()
 st.markdown("""
