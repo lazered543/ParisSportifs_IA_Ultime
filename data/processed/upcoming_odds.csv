@@ -1,130 +1,129 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
-soccer_epl,2026-05-24T15:00:00Z,Crystal Palace,Arsenal,4.5,4.1,1.84,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Manchester City,Aston Villa,1.33,6.6,10.0,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Crystal Palace,Arsenal,4.5,4.1,1.85,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Manchester City,Aston Villa,1.31,6.8,10.5,the-odds-api
 soccer_epl,2026-05-24T15:00:00Z,Nottingham Forest,Bournemouth,3.6,3.9,2.12,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Liverpool,Brentford,1.87,4.4,4.0,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Brighton and Hove Albion,Manchester United,1.92,4.4,3.85,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Burnley,Wolverhampton Wanderers,2.42,3.75,3.05,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Sunderland,Chelsea,3.7,3.9,2.08,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Tottenham Hotspur,Everton,1.95,3.85,4.2,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,Fulham,Newcastle United,2.98,3.85,2.44,the-odds-api
-soccer_epl,2026-05-24T15:00:00Z,West Ham United,Leeds United,1.86,4.2,4.2,the-odds-api
-soccer_france_ligue_one,2026-05-26T18:45:00Z,Saint Etienne,Nice,2.45,3.6,2.7,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Alavés,Rayo Vallecano,2.62,3.45,2.98,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Madrid,Athletic Bilbao,1.5,5.3,6.8,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Valencia,Barcelona,3.85,4.3,1.94,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Getafe,CA Osasuna,2.64,2.9,3.6,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Celta Vigo,Sevilla,1.81,3.85,5.2,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Girona,Elche CF,1.86,4.1,4.6,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Espanyol,Real Sociedad,2.44,3.65,3.1,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Betis,Levante,2.38,3.5,3.4,the-odds-api
-soccer_spain_la_liga,2026-05-23T19:00:00Z,Mallorca,Oviedo,1.5,4.7,8.0,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Liverpool,Brentford,1.87,4.4,4.1,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Brighton and Hove Albion,Manchester United,1.9,4.3,4.0,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Burnley,Wolverhampton Wanderers,2.44,3.75,3.05,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Sunderland,Chelsea,3.65,3.9,2.1,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Tottenham Hotspur,Everton,1.97,3.8,4.2,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,Fulham,Newcastle United,2.98,3.9,2.42,the-odds-api
+soccer_epl,2026-05-24T15:00:00Z,West Ham United,Leeds United,1.84,4.2,4.33,the-odds-api
+soccer_france_ligue_one,2026-05-26T18:45:00Z,Saint Etienne,Nice,2.45,3.6,2.8,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Alavés,Rayo Vallecano,2.62,3.5,2.98,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Madrid,Athletic Bilbao,1.52,5.1,6.6,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Valencia,Barcelona,3.7,4.4,1.96,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Getafe,CA Osasuna,2.86,2.86,3.3,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Celta Vigo,Sevilla,1.81,3.85,5.3,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Girona,Elche CF,1.83,4.0,4.8,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Espanyol,Real Sociedad,2.32,3.8,3.25,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Real Betis,Levante,2.3,3.5,3.45,the-odds-api
+soccer_spain_la_liga,2026-05-23T19:00:00Z,Mallorca,Oviedo,1.48,4.6,8.6,the-odds-api
 soccer_spain_la_liga,2026-05-24T19:00:00Z,Villarreal,Atlético Madrid,2.52,4.0,2.82,the-odds-api
 soccer_germany_bundesliga,2026-05-25T18:30:00Z,SC Paderborn,VfL Wolfsburg,3.6,3.6,2.05,the-odds-api
-soccer_italy_serie_a,2026-05-22T18:45:00Z,Fiorentina,Atalanta BC,3.0,3.65,2.52,the-odds-api
-soccer_italy_serie_a,2026-05-23T16:00:00Z,Bologna,Inter Milan,3.15,3.9,2.3,the-odds-api
-soccer_italy_serie_a,2026-05-23T18:45:00Z,Lazio,Pisa,1.6,4.4,6.6,the-odds-api
-soccer_italy_serie_a,2026-05-24T13:00:00Z,Parma,Sassuolo,2.84,3.4,2.72,the-odds-api
-soccer_italy_serie_a,2026-05-24T16:00:00Z,Napoli,Udinese,1.52,4.4,7.8,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,AC Milan,Cagliari,1.32,6.0,13.0,the-odds-api
+soccer_italy_serie_a,2026-05-23T16:00:00Z,Bologna,Inter Milan,3.15,3.9,2.32,the-odds-api
+soccer_italy_serie_a,2026-05-23T18:45:00Z,Lazio,Pisa,1.64,4.3,6.1,the-odds-api
+soccer_italy_serie_a,2026-05-24T13:00:00Z,Parma,Sassuolo,2.84,3.5,2.72,the-odds-api
+soccer_italy_serie_a,2026-05-24T16:00:00Z,Napoli,Udinese,1.53,4.5,7.8,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,AC Milan,Cagliari,1.33,5.8,12.0,the-odds-api
 soccer_italy_serie_a,2026-05-24T18:45:00Z,Hellas Verona,AS Roma,11.0,5.8,1.34,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Cremonese,Como,6.0,4.4,1.63,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Lecce,Genoa,1.84,3.7,5.1,the-odds-api
-soccer_italy_serie_a,2026-05-24T18:45:00Z,Torino,Juventus,7.8,4.7,1.51,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Ugo Humbert,Adrian Mannarino,1.16,,6.4,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Alejandro Davidovich Fokina,Damir Dzumhur,1.17,,6.0,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Aleksandar Kovacevic,Rafael Jodar,10.0,,1.09,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Alexander Shevchenko,Alex Michelsen,2.48,,1.66,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Benjamin Bonzi,Alexander Zverev,19.0,,1.04,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Ignacio Buse,Andrey Rublev,3.0,,1.46,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Stan Wawrinka,Arthur Fils,7.4,,1.14,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Karen Khachanov,Arthur Gea,1.27,,4.3,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Miomir Kecmanovic,Fabian Marozsan,1.68,,2.36,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,James Duckworth,Gabriel Diallo,2.56,,1.6,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Giovanni Mpetshi Perricard,Novak Djokovic,7.8,,1.13,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Hamad Medjedovic,Yannick Hanfmann,1.56,,2.74,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Titouan Droguet,Jakub Mensik,3.0,,1.46,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Mariano Navone,Jenson Brooksby,1.2,,5.3,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Pablo Carreno Busta,Jiri Lehecka,4.2,,1.3,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Quentin Halys,Mattia Bellucci,1.94,,2.04,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Taylor Fritz,Nishesh Basavareddy,1.34,,3.8,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Tomas Martin Etcheverry,Nuno Borges,1.47,,3.05,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Rinky Hijikata,Tommy Paul,16.5,,1.05,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Thanasi Kokkinakis,Terence Atmane,3.6,,1.37,the-odds-api
-tennis_atp_french_open,2026-05-24T09:00:00Z,Tomas Machac,Zizou Bergs,1.61,,2.52,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Adam Walton,Daniil Medvedev,16.0,,1.04,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Cremonese,Como,6.0,4.4,1.64,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Lecce,Genoa,1.83,3.75,5.2,the-odds-api
+soccer_italy_serie_a,2026-05-24T18:45:00Z,Torino,Juventus,7.8,4.7,1.5,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Alejandro Davidovich Fokina,Damir Dzumhur,1.18,,6.0,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Aleksandar Kovacevic,Rafael Jodar,11.0,,1.09,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Ignacio Buse,Andrey Rublev,3.05,,1.46,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Stan Wawrinka,Arthur Fils,7.2,,1.14,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Karen Khachanov,Arthur Gea,1.27,,4.5,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Miomir Kecmanovic,Fabian Marozsan,1.68,,2.38,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,James Duckworth,Gabriel Diallo,2.56,,1.61,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Mariano Navone,Jenson Brooksby,1.2,,5.5,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Pablo Carreno Busta,Jiri Lehecka,4.2,,1.29,the-odds-api
+tennis_atp_french_open,2026-05-24T09:00:00Z,Rinky Hijikata,Tommy Paul,15.0,,1.05,the-odds-api
+tennis_atp_french_open,2026-05-24T10:40:00Z,Tomas Machac,Zizou Bergs,1.65,,2.48,the-odds-api
+tennis_atp_french_open,2026-05-24T11:00:00Z,Tomas Martin Etcheverry,Nuno Borges,1.45,,3.05,the-odds-api
+tennis_atp_french_open,2026-05-24T12:00:00Z,Benjamin Bonzi,Alexander Zverev,19.0,,1.04,the-odds-api
+tennis_atp_french_open,2026-05-24T13:00:00Z,Titouan Droguet,Jakub Mensik,3.05,,1.44,the-odds-api
+tennis_atp_french_open,2026-05-24T13:00:00Z,Quentin Halys,Mattia Bellucci,1.91,,2.0,the-odds-api
+tennis_atp_french_open,2026-05-24T13:00:00Z,Taylor Fritz,Nishesh Basavareddy,1.31,,3.85,the-odds-api
+tennis_atp_french_open,2026-05-24T15:30:00Z,Hamad Medjedovic,Yannick Hanfmann,1.55,,2.7,the-odds-api
+tennis_atp_french_open,2026-05-24T16:30:00Z,Giovanni Mpetshi Perricard,Novak Djokovic,7.6,,1.12,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Adam Walton,Daniil Medvedev,12.0,,1.04,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Cameron Norrie,Adolfo Daniel Vallejo,1.95,,1.85,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Alejandro Tabilo,Kamil Majchrzak,1.23,,4.5,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Raphael Collignon,Aleksandar Vukic,1.08,,9.0,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Alexander Bublik,Jan-Lennard Struff,1.29,,3.85,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Alexandre Muller,Stefanos Tsitsipas,5.2,,1.17,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Alexei Popyrin,Zachary Svajda,1.12,,7.8,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Ugo Humbert,Adrian Mannarino,1.14,,5.75,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Alejandro Tabilo,Kamil Majchrzak,1.23,,4.2,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Raphael Collignon,Aleksandar Vukic,1.07,,10.5,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Alexander Bublik,Jan-Lennard Struff,1.29,,3.8,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Alexander Shevchenko,Alex Michelsen,2.35,,1.62,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Alexandre Muller,Stefanos Tsitsipas,5.25,,1.17,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Alexei Popyrin,Zachary Svajda,1.13,,7.4,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Daniel Merida Aguilar,Ben Shelton,3.75,,1.29,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Francisco Cerundolo,Botic van de Zandschulp,1.17,,5.5,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Roberto Bautista Agut,Brandon Nakashima,3.75,,1.29,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Jannik Sinner,Clement Tabur,1.01,,84.75,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Roberto Bautista Agut,Brandon Nakashima,3.85,,1.29,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Jannik Sinner,Clement Tabur,1.01,,34.0,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Vit Kopriva,Corentin Moutet,2.4,,1.62,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Cristian Garin,Learner Tien,2.6,,1.57,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Felix Auger-Aliassime,Daniel Altmaier,1.3,,3.6,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Eliot Spizzirri,Frances Tiafoe,8.5,,1.08,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Ethan Quinn,Francisco Comesana,2.1,,1.74,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Hugo Gaston,Gael Monfils,1.91,,1.93,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Felix Auger-Aliassime,Daniel Altmaier,1.3,,4.0,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Eliot Spizzirri,Frances Tiafoe,12.0,,1.08,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Ethan Quinn,Francisco Comesana,2.11,,1.74,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Hugo Gaston,Gael Monfils,1.87,,1.95,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Jaume Munar,Hubert Hurkacz,2.1,,1.79,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Jacob Fearnley,Juan Manuel Cerundolo,4.1,,1.25,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Luca Van Assche,Patrick Kypson,1.78,,2.1,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Luca Van Assche,Patrick Kypson,1.8,,2.1,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Sebastian Ofner,Luciano Darderi,3.35,,1.35,the-odds-api
-tennis_atp_french_open,2026-05-25T09:00:00Z,Wu Yibing,Marcos Giron,1.91,,1.91,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Wu Yibing,Marcos Giron,1.95,,1.88,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Marin Cilic,Moise Kouame,1.33,,3.55,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Marton Fucsovics,Matteo Berrettini,2.75,,1.48,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Tallon Griekspoor,Matteo Arnaldi,2.1,,1.75,the-odds-api
 tennis_atp_french_open,2026-05-25T09:00:00Z,Sebastian Baez,Roman Andres Burruchaga,1.74,,2.13,the-odds-api
-tennis_atp_hamburg_open,2026-05-22T15:33:00Z,Alex de Minaur,Tommy Paul,1.11,,10.5,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Akasha Urhobo,Katie Boulter,3.4,,1.39,the-odds-api
+tennis_atp_french_open,2026-05-25T09:00:00Z,Thanasi Kokkinakis,Terence Atmane,3.3,,1.35,the-odds-api
+tennis_atp_hamburg_open,2026-05-23T12:30:00Z,Ignacio Buse,Tommy Paul,2.5,,1.65,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Ajla Tomljanovic,Caty McNally,3.7,,1.35,the-odds-api
 tennis_wta_french_open,2026-05-24T09:00:00Z,Iva Jović,Alexandra Eala,1.42,,3.3,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Donna Vekic,Alice Tubello,1.33,,4.0,the-odds-api
 tennis_wta_french_open,2026-05-24T09:00:00Z,Tiantsoa Sarah Rajaonah,Amanda Anisimova,17.0,,1.03,the-odds-api
 tennis_wta_french_open,2026-05-24T09:00:00Z,Maya Joint,Anastasia Potapova,8.0,,1.12,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Anhelina Kalinina,Diane Parry,1.35,,3.7,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Ann Li,Shuai Zhang,1.39,,3.5,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Anna Kalinskaya,Lois Boisson,1.63,,2.55,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Anhelina Kalinina,Diane Parry,1.34,,3.85,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Ann Li,Shuai Zhang,1.37,,3.55,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Anna Kalinskaya,Lois Boisson,1.64,,2.52,the-odds-api
 tennis_wta_french_open,2026-05-24T09:00:00Z,Aryna Sabalenka,Jessica Bouzas Maneiro,1.06,,15.0,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Coco Gauff,Taylor Townsend,1.14,,7.6,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Daria Kasatkina,Zeynep Sonmez,1.45,,3.05,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Diana Shnaider,Renata Zarazua,1.15,,6.4,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Coco Gauff,Taylor Townsend,1.13,,7.6,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Diana Shnaider,Renata Zarazua,1.15,,6.8,the-odds-api
 tennis_wta_french_open,2026-05-24T09:00:00Z,Maria Camila Osorio Serrano,Ekaterina Alexandrova,1.71,,2.25,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Tatjana Maria,Elise Mertens,13.5,,1.07,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Emma Navarro,Janice Tjen,1.34,,3.5,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Hanne Vandewinkel,Madison Keys,8.8,,1.1,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Kimberly Birrell,Jessica Pegula,25.0,,1.04,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Simona Waltert,Katerina Siniakova,2.9,,1.52,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Laura Siegemund,Naomi Osaka,3.95,,1.31,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Linda Noskova,Maria Sakkari,1.42,,3.35,the-odds-api
-tennis_wta_french_open,2026-05-24T09:00:00Z,Victoria Mboko,Nikola Bartunkova,1.34,,3.9,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Tatjana Maria,Elise Mertens,13.0,,1.06,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Emma Navarro,Janice Tjen,1.35,,3.5,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Hanne Vandewinkel,Madison Keys,8.6,,1.1,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Kimberly Birrell,Jessica Pegula,21.0,,1.03,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Simona Waltert,Katerina Siniakova,2.96,,1.47,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Linda Noskova,Maria Sakkari,1.42,,3.25,the-odds-api
+tennis_wta_french_open,2026-05-24T09:00:00Z,Victoria Mboko,Nikola Bartunkova,1.33,,3.75,the-odds-api
 tennis_wta_french_open,2026-05-24T09:00:00Z,Talia Gibson,Yulia Putintseva,3.3,,1.39,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Ajla Tomljanovic,Caty McNally,3.35,,1.33,the-odds-api
+tennis_wta_french_open,2026-05-24T11:00:00Z,Anna Blinkova,Yuliia Starodubtseva,3.6,,1.34,the-odds-api
+tennis_wta_french_open,2026-05-24T11:00:00Z,Francesca Jones,Beatriz Haddad Maia,1.67,,2.32,the-odds-api
+tennis_wta_french_open,2026-05-24T11:00:00Z,Katie Volynets,Clara Burel,1.22,,4.6,the-odds-api
+tennis_wta_french_open,2026-05-24T11:00:00Z,Tereza Valentova,Magda Linette,1.25,,4.0,the-odds-api
+tennis_wta_french_open,2026-05-24T11:30:00Z,Hailey Baptiste,Barbora Krejcikova,1.77,,2.18,the-odds-api
+tennis_wta_french_open,2026-05-24T13:00:00Z,Magdalena Frech,Elena Gabriela Ruse,2.33,,1.65,the-odds-api
+tennis_wta_french_open,2026-05-24T13:00:00Z,Emma Raducanu,Solana Sierra,2.38,,1.65,the-odds-api
+tennis_wta_french_open,2026-05-24T13:00:00Z,Sofia Kenin,Peyton Stearns,2.7,,1.5,the-odds-api
+tennis_wta_french_open,2026-05-24T13:00:00Z,Sara Sorribes Tormo,Tamara Korpatsch,2.15,,1.79,the-odds-api
+tennis_wta_french_open,2026-05-24T14:30:00Z,Mirra Andreeva,Fiona Ferro,1.04,,15.0,the-odds-api
+tennis_wta_french_open,2026-05-24T16:00:00Z,Clara Tauson,Daria Snigur,1.56,,2.6,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Akasha Urhobo,Katie Boulter,3.2,,1.36,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Donna Vekic,Alice Tubello,1.33,,3.65,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Alycia Parks,Leylah Fernandez,4.2,,1.26,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Anastasia Zakharova,Karolina Muchova,7.2,,1.13,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Anna Blinkova,Yuliia Starodubtseva,3.4,,1.34,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Anastasia Zakharova,Karolina Muchova,7.4,,1.13,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Elina Svitolina,Anna Bondár,1.14,,5.8,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Hailey Baptiste,Barbora Krejcikova,1.82,,2.1,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Francesca Jones,Beatriz Haddad Maia,1.67,,2.23,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Katie Volynets,Clara Burel,1.2,,4.8,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Clara Tauson,Daria Snigur,1.53,,2.6,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Daria Kasatkina,Zeynep Sonmez,1.4,,2.95,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Jasmine Paolini,Dayana Yastremska,1.67,,2.25,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Magdalena Frech,Elena Gabriela Ruse,2.33,,1.61,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Veronika Erjavec,Elena Rybakina,21.0,,1.02,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Jelena Ostapenko,Ella Seidel,1.23,,4.2,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Emerson Jones,Iga Swiatek,75.19,,1.01,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Emma Raducanu,Solana Sierra,2.3,,1.61,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Emerson Jones,Iga Swiatek,42.02,,1.01,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Petra Marcinko,Eva Lys,1.8,,2.05,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Mirra Andreeva,Fiona Ferro,1.04,,14.99,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Kamilla Rakhimova,Jaqueline Cristian,3.6,,1.3,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Liudmila Samsonova,Jil Teichmann,1.3,,3.75,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Ksenia Efremova,Sorana Cirstea,13.0,,1.04,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Lilli Tagger,Xinyu Wang,1.63,,2.3,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Tereza Valentova,Magda Linette,1.25,,4.0,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Marta Kostyuk,Oksana Selekhmeteva,1.08,,10.0,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Ksenia Efremova,Sorana Cirstea,18.0,,1.04,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Laura Siegemund,Naomi Osaka,3.75,,1.3,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Lilli Tagger,Xinyu Wang,1.66,,2.42,the-odds-api
+tennis_wta_french_open,2026-05-25T09:00:00Z,Marta Kostyuk,Oksana Selekhmeteva,1.08,,12.0,the-odds-api
 tennis_wta_french_open,2026-05-25T09:00:00Z,Panna Udvardy,Viktorija Golubic,1.81,,2.0,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Sofia Kenin,Peyton Stearns,2.7,,1.5,the-odds-api
-tennis_wta_french_open,2026-05-25T09:00:00Z,Sara Sorribes Tormo,Tamara Korpatsch,2.15,,1.73,the-odds-api
-tennis_wta_strasbourg,2026-05-22T14:35:00Z,Victoria Mboko,Jaqueline Cristian,1.6,,3.4,the-odds-api
+tennis_wta_strasbourg,2026-05-23T12:00:00Z,Victoria Mboko,Emma Navarro,1.6,,2.6,the-odds-api

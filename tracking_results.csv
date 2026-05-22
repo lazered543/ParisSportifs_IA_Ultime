@@ -1,14 +1,16 @@
 date,sport,home_team,away_team,market,ai_probability,bookmaker_odds,value,stake,result,profit
+2026-05-22T14:35:00Z,tennis_wta_strasbourg,Victoria Mboko,Jaqueline Cristian,Player 1 Win,0.6672,1.6,0.0676,2.82,PENDING,0
 2026-05-24T15:00:00Z,soccer_epl,Liverpool,Brentford,Home Win,0.72,1.87,0.3464,3.0,PENDING,0
 2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.45,0.764,3.0,PENDING,0
-2026-05-23T19:00:00Z,soccer_spain_la_liga,Real Madrid,Athletic Bilbao,Home Win,0.72,1.5,0.08,3.0,PENDING,0
-2026-05-23T19:00:00Z,soccer_spain_la_liga,Mallorca,Oviedo,Home Win,0.72,1.5,0.08,3.0,PENDING,0
+2026-05-23T19:00:00Z,soccer_spain_la_liga,Real Madrid,Athletic Bilbao,Home Win,0.72,1.52,0.0944,3.0,PENDING,0
+2026-05-23T19:00:00Z,soccer_spain_la_liga,Mallorca,Oviedo,Home Win,0.72,1.48,0.0656,3.0,PENDING,0
 2026-05-24T19:00:00Z,soccer_spain_la_liga,Villarreal,Atlético Madrid,Home Win,0.72,2.52,0.8144,3.0,PENDING,0
-2026-05-23T18:45:00Z,soccer_italy_serie_a,Lazio,Pisa,Home Win,0.72,1.6,0.152,3.0,PENDING,0
-2026-05-24T16:00:00Z,soccer_italy_serie_a,Napoli,Udinese,Home Win,0.72,1.52,0.0944,3.0,PENDING,0
+2026-05-23T18:45:00Z,soccer_italy_serie_a,Lazio,Pisa,Home Win,0.72,1.64,0.1808,3.0,PENDING,0
+2026-05-24T16:00:00Z,soccer_italy_serie_a,Napoli,Udinese,Home Win,0.72,1.53,0.1016,3.0,PENDING,0
 2026-05-25T09:00:00Z,tennis_atp_french_open,Cameron Norrie,Adolfo Daniel Vallejo,Player 1 Win,0.5405,1.95,0.0539,1.42,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Hugo Gaston,Gael Monfils,Player 2 Win,0.5473,1.93,0.0563,1.51,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Luca Van Assche,Patrick Kypson,Player 1 Win,0.5915,1.78,0.0528,1.69,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Hugo Gaston,Gael Monfils,Player 2 Win,0.5437,1.95,0.0603,1.59,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Luca Van Assche,Patrick Kypson,Player 1 Win,0.5902,1.8,0.0624,1.95,PENDING,0
 2026-05-25T09:00:00Z,tennis_atp_french_open,Tallon Griekspoor,Matteo Arnaldi,Player 1 Win,0.557,2.1,0.1697,3.0,PENDING,0
+2026-05-23T12:30:00Z,tennis_atp_hamburg_open,Ignacio Buse,Tommy Paul,Player 2 Win,0.6567,1.65,0.0836,3.0,PENDING,0
 2026-05-25T09:00:00Z,tennis_wta_french_open,Panna Udvardy,Viktorija Golubic,Player 1 Win,0.579,1.81,0.048,1.48,PENDING,0
-2026-05-22T14:35:00Z,tennis_wta_strasbourg,Victoria Mboko,Jaqueline Cristian,Player 1 Win,0.6672,1.6,0.0676,2.82,PENDING,0
+2026-05-23T12:00:00Z,tennis_wta_strasbourg,Victoria Mboko,Emma Navarro,Player 1 Win,0.6862,1.6,0.0978,3.0,PENDING,0
