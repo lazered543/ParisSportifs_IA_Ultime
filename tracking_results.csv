@@ -1,8 +1,8 @@
 date,sport,home_team,away_team,market,ai_probability,bookmaker_odds,value,stake,result,profit
-2026-05-24T15:00:00Z,soccer_epl,Liverpool,Brentford,Home Win,0.72,1.91,0.3752,3.0,PENDING,0
-2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.45,0.764,3.0,PENDING,0
-2026-05-23T19:00:00Z,soccer_spain_la_liga,Real Madrid,Athletic Bilbao,Home Win,0.72,1.52,0.0944,3.0,PENDING,0
-2026-05-23T19:00:00Z,soccer_spain_la_liga,Mallorca,Oviedo,Home Win,0.72,1.54,0.1088,3.0,PENDING,0
-2026-05-24T19:00:00Z,soccer_spain_la_liga,Villarreal,Atlético Madrid,Home Win,0.72,2.61,0.8792,3.0,PENDING,0
+2026-05-24T15:00:00Z,soccer_epl,Liverpool,Brentford,Home Win,0.72,1.88,0.3536,3.0,PENDING,0
+2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.48,0.7856,3.0,PENDING,0
+2026-05-23T19:00:00Z,soccer_spain_la_liga,Real Madrid,Athletic Bilbao,Home Win,0.72,1.51,0.0872,3.0,PENDING,0
+2026-05-23T19:00:00Z,soccer_spain_la_liga,Mallorca,Oviedo,Home Win,0.72,1.53,0.1016,3.0,PENDING,0
+2026-05-24T19:00:00Z,soccer_spain_la_liga,Villarreal,Atlético Madrid,Home Win,0.72,2.6,0.872,3.0,PENDING,0
 2026-05-23T18:45:00Z,soccer_italy_serie_a,Lazio,Pisa,Home Win,0.72,1.61,0.1592,3.0,PENDING,0
 2026-05-24T16:00:00Z,soccer_italy_serie_a,Napoli,Udinese,Home Win,0.72,1.53,0.1016,3.0,PENDING,0
