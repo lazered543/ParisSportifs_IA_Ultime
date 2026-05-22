@@ -466,8 +466,9 @@ if mobile_mode:
 
     st.stop()
 
-
 tabs = st.tabs([
+    "⚽ Football",
+    "🎾 Tennis",
     "🔥 Value Bets",
     "🎯 Score Exact",
     "⚽ Over/Under",
@@ -478,6 +479,48 @@ tabs = st.tabs([
 
 
 with tabs[0]:
+    st.subheader("⚽ Football")
+
+    football_df = filtered[
+        filtered["sport"].astype(str).str.contains(
+            "soccer",
+            case=False,
+            na=False
+        )
+    ]
+
+    if football_df.empty:
+        st.warning("Aucun match football trouvé.")
+    else:
+        premium_table(
+            football_df.sort_values("value", ascending=False).head(300),
+            height=700,
+            key="football_grid_unique"
+        )
+
+
+with tabs[1]:
+    st.subheader("🎾 Tennis")
+
+    tennis_df = filtered[
+        filtered["sport"].astype(str).str.contains(
+            "tennis",
+            case=False,
+            na=False
+        )
+    ]
+
+    if tennis_df.empty:
+        st.warning("Aucun match tennis trouvé.")
+    else:
+        premium_table(
+            tennis_df.sort_values("value", ascending=False).head(300),
+            height=700,
+            key="tennis_grid_unique"
+        )
+
+
+with tabs[2]:
     st.subheader("🔥 Paris recommandés")
 
     if value_bets.empty:
@@ -489,9 +532,9 @@ with tabs[0]:
                 <div class="big">{row['home_team']} vs {row['away_team']}</div>
                 <div class="small">{row['sport']} — {row['date']}</div><br>
                 <b>Pari :</b> {row['market']}<br>
-                <b>Probabilité IA :</b> {round(float(row['ai_probability'])*100,1)}%<br>
+                <b>Probabilité IA :</b> {round(float(row['ai_probability']) * 100, 1)}%<br>
                 <b>Cote :</b> {row['bookmaker_odds']}<br>
-                <b>Value :</b> {round(float(row['value'])*100,1)}%<br>
+                <b>Value :</b> {round(float(row['value']) * 100, 1)}%<br>
                 <b>Badge :</b> {row.get('ia_badge', '')}<br>
                 <b>Confiance :</b> {row['confidence']}<br>
                 <b>Stake conseillé :</b> {row['suggested_stake']}€<br>
@@ -505,11 +548,11 @@ with tabs[0]:
         premium_table(
             value_bets.sort_values("value", ascending=False).head(100),
             height=620,
-            key="value_bets_grid"
+            key="value_bets_grid_unique"
         )
 
 
-with tabs[1]:
+with tabs[3]:
     st.subheader("🎯 Scores exacts probables")
 
     cols = [
@@ -522,16 +565,25 @@ with tabs[1]:
 
     available = [c for c in cols if c in filtered.columns]
 
-    score_df = (
-        filtered[available]
-        .drop_duplicates(subset=["home_team", "away_team"])
-        .sort_values("score_exact_1_proba", ascending=False)
-    )
+    if not available:
+        st.warning("Aucune colonne de score exact trouvée.")
+    else:
+        score_df = (
+            filtered[available]
+            .drop_duplicates(subset=["home_team", "away_team"])
+        )
 
-    premium_table(score_df.head(150), height=650, key="score_grid")
+        if "score_exact_1_proba" in score_df.columns:
+            score_df = score_df.sort_values("score_exact_1_proba", ascending=False)
+
+        premium_table(
+            score_df.head(150),
+            height=650,
+            key="score_grid_unique"
+        )
 
 
-with tabs[2]:
+with tabs[4]:
     st.subheader("⚽ Over / Under")
 
     cols = [
@@ -541,16 +593,25 @@ with tabs[2]:
 
     available = [c for c in cols if c in filtered.columns]
 
-    goals_df = (
-        filtered[available]
-        .drop_duplicates(subset=["home_team", "away_team"])
-        .sort_values("over_25", ascending=False)
-    )
+    if not available:
+        st.warning("Aucune donnée Over/Under trouvée.")
+    else:
+        goals_df = (
+            filtered[available]
+            .drop_duplicates(subset=["home_team", "away_team"])
+        )
 
-    premium_table(goals_df.head(150), height=650, key="goals_grid")
+        if "over_25" in goals_df.columns:
+            goals_df = goals_df.sort_values("over_25", ascending=False)
+
+        premium_table(
+            goals_df.head(150),
+            height=650,
+            key="overunder_grid_unique"
+        )
 
 
-with tabs[3]:
+with tabs[5]:
     st.subheader("✅ BTTS")
 
     cols = [
@@ -560,16 +621,25 @@ with tabs[3]:
 
     available = [c for c in cols if c in filtered.columns]
 
-    btts_df = (
-        filtered[available]
-        .drop_duplicates(subset=["home_team", "away_team"])
-        .sort_values("btts_yes", ascending=False)
-    )
+    if not available:
+        st.warning("Aucune donnée BTTS trouvée.")
+    else:
+        btts_df = (
+            filtered[available]
+            .drop_duplicates(subset=["home_team", "away_team"])
+        )
 
-    premium_table(btts_df.head(150), height=650, key="btts_grid")
+        if "btts_yes" in btts_df.columns:
+            btts_df = btts_df.sort_values("btts_yes", ascending=False)
+
+        premium_table(
+            btts_df.head(150),
+            height=650,
+            key="btts_grid_unique"
+        )
 
 
-with tabs[4]:
+with tabs[6]:
     st.subheader("📊 ROI / Tracking Pro")
 
     tracking = load_tracking()
@@ -580,12 +650,28 @@ with tabs[4]:
         if "result" not in tracking.columns:
             tracking["result"] = "PENDING"
 
-        tracking["profit"] = pd.to_numeric(tracking.get("profit", 0), errors="coerce").fillna(0)
-        tracking["stake"] = pd.to_numeric(tracking.get("stake", 0), errors="coerce").fillna(0)
-        tracking["bookmaker_odds"] = pd.to_numeric(tracking.get("bookmaker_odds", 0), errors="coerce").fillna(0)
+        tracking["profit"] = pd.to_numeric(
+            tracking.get("profit", 0),
+            errors="coerce"
+        ).fillna(0)
 
-        settled = tracking[tracking["result"].isin(["WIN", "LOSS"])].copy()
-        pending = tracking[tracking["result"] == "PENDING"]
+        tracking["stake"] = pd.to_numeric(
+            tracking.get("stake", 0),
+            errors="coerce"
+        ).fillna(0)
+
+        tracking["bookmaker_odds"] = pd.to_numeric(
+            tracking.get("bookmaker_odds", 0),
+            errors="coerce"
+        ).fillna(0)
+
+        settled = tracking[
+            tracking["result"].isin(["WIN", "LOSS"])
+        ].copy()
+
+        pending = tracking[
+            tracking["result"] == "PENDING"
+        ]
 
         total_staked = settled["stake"].sum() if len(settled) else 0
         profit = settled["profit"].sum() if len(settled) else 0
@@ -602,7 +688,10 @@ with tabs[4]:
         c5.metric("ROI global", f"{round(roi * 100, 2)}%")
         c6.metric("Hit Rate", f"{round(hit_rate * 100, 2)}%")
         c7.metric("Misé total", round(total_staked, 2))
-        c8.metric("Cote moyenne", round(settled["bookmaker_odds"].mean(), 2) if len(settled) else 0)
+        c8.metric(
+            "Cote moyenne",
+            round(settled["bookmaker_odds"].mean(), 2) if len(settled) else 0
+        )
 
         if not settled.empty:
             settled["cumulative_profit"] = settled["profit"].cumsum()
@@ -618,15 +707,15 @@ with tabs[4]:
         premium_table(
             tracking.sort_values("date", ascending=False).head(300),
             height=650,
-            key="tracking_grid"
+            key="tracking_grid_unique"
         )
 
 
-with tabs[5]:
+with tabs[7]:
     st.subheader("📋 Toutes les prédictions")
 
     premium_table(
         filtered.sort_values("value", ascending=False).head(300),
         height=750,
-        key="all_predictions_grid"
+        key="all_predictions_grid_unique"
     )
