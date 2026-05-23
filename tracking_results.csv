@@ -1,23 +1,23 @@
 date,sport,home_team,away_team,market,ai_probability,bookmaker_odds,value,stake,result,profit
 2026-05-22T14:35:00Z,tennis_wta_strasbourg,Victoria Mboko,Jaqueline Cristian,Player 1 Win,0.6672,1.6,0.0676,2.82,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Cameron Norrie,Adolfo Daniel Vallejo,Player 1 Win,0.5413,2.02,0.0934,2.29,PENDING,0
 2026-05-23T12:30:00Z,tennis_atp_hamburg_open,Ignacio Buse,Tommy Paul,Player 2 Win,0.6552,1.66,0.0877,3.0,PENDING,0
 2026-05-23T12:00:00Z,tennis_wta_strasbourg,Victoria Mboko,Emma Navarro,Player 1 Win,0.6943,1.56,0.0831,3.0,PENDING,0
-2026-05-24T15:00:00Z,soccer_epl,Liverpool,Brentford,Home Win,0.72,1.89,0.3608,3.0,PENDING,0
-2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.38,0.7136,3.0,PENDING,0
 2026-05-23T19:00:00Z,soccer_spain_la_liga,Real Madrid,Athletic Bilbao,Home Win,0.72,1.56,0.1232,3.0,PENDING,0
 2026-05-23T19:00:00Z,soccer_spain_la_liga,Mallorca,Oviedo,Home Win,0.72,1.49,0.0728,3.0,PENDING,0
-2026-05-24T19:00:00Z,soccer_spain_la_liga,Villarreal,Atlético Madrid,Home Win,0.72,2.56,0.8432,3.0,PENDING,0
 2026-05-23T18:45:00Z,soccer_italy_serie_a,Lazio,Pisa,Home Win,0.72,1.79,0.2888,3.0,PENDING,0
+2026-05-24T15:00:00Z,soccer_epl,Liverpool,Brentford,Home Win,0.72,1.89,0.3608,3.0,PENDING,0
+2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.38,0.7136,3.0,PENDING,0
+2026-05-24T19:00:00Z,soccer_spain_la_liga,Villarreal,Atlético Madrid,Home Win,0.72,2.6,0.872,3.0,PENDING,0
 2026-05-24T16:00:00Z,soccer_italy_serie_a,Napoli,Udinese,Home Win,0.72,1.53,0.1016,3.0,PENDING,0
-2026-05-24T09:00:00Z,tennis_atp_french_open,Pablo Llamas Ruiz,Thiago Agustin Tirante,Player 2 Win,0.5681,1.83,0.0396,1.19,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Cristian Garin,Learner Tien,Player 2 Win,0.6445,1.64,0.057,2.23,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Hugo Gaston,Gael Monfils,Player 2 Win,0.5502,1.97,0.0838,2.16,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Luca Van Assche,Patrick Kypson,Player 1 Win,0.5893,1.85,0.0901,2.65,PENDING,0
-2026-05-25T09:00:00Z,tennis_atp_french_open,Tallon Griekspoor,Matteo Arnaldi,Player 1 Win,0.5544,2.2,0.2196,3.0,PENDING,0
-2026-05-24T15:00:00Z,tennis_wta_french_open,Sara Bejlek,Sloane Stephens,Player 1 Win,0.6679,1.59,0.062,2.63,PENDING,0
-2026-05-25T09:00:00Z,tennis_wta_french_open,Claire Liu,Moyuka Uchijima,Player 1 Win,0.5849,1.81,0.0587,1.81,PENDING,0
+2026-05-24T09:00:00Z,tennis_atp_french_open,Pablo Llamas Ruiz,Thiago Agustin Tirante,Player 2 Win,0.5697,1.82,0.0368,1.12,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Cameron Norrie,Adolfo Daniel Vallejo,Player 1 Win,0.5402,2.04,0.102,2.45,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Cristian Garin,Learner Tien,Player 2 Win,0.648,1.6,0.0368,1.53,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Hugo Gaston,Gael Monfils,Player 2 Win,0.5524,1.95,0.0772,2.03,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Luca Van Assche,Patrick Kypson,Player 1 Win,0.5903,1.85,0.0921,2.71,PENDING,0
+2026-05-25T09:00:00Z,tennis_atp_french_open,Tallon Griekspoor,Matteo Arnaldi,Player 1 Win,0.555,2.2,0.2209,3.0,PENDING,0
+2026-05-24T15:00:00Z,tennis_wta_french_open,Sara Bejlek,Sloane Stephens,Player 1 Win,0.6664,1.6,0.0663,2.76,PENDING,0
+2026-05-25T09:00:00Z,tennis_wta_french_open,Claire Liu,Moyuka Uchijima,Player 1 Win,0.5837,1.83,0.0682,2.05,PENDING,0
 2026-05-25T09:00:00Z,tennis_wta_french_open,Dalma Galfi,Mayar Sherif,Player 1 Win,0.6058,1.73,0.048,1.64,PENDING,0
 2026-05-25T09:00:00Z,tennis_wta_french_open,Jasmine Paolini,Dayana Yastremska,Player 1 Win,0.6117,1.69,0.0337,1.22,PENDING,0
-2026-05-25T09:00:00Z,tennis_wta_french_open,Kaitlin Quevedo,Leolia Jeanjean,Player 1 Win,0.5836,2.04,0.1904,3.0,PENDING,0
+2026-05-25T09:00:00Z,tennis_wta_french_open,Kaitlin Quevedo,Leolia Jeanjean,Player 1 Win,0.5847,2.02,0.181,3.0,PENDING,0
 2026-05-25T09:00:00Z,tennis_wta_french_open,Panna Udvardy,Viktorija Golubic,Player 1 Win,0.5907,1.81,0.0692,2.13,PENDING,0
