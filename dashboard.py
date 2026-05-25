@@ -802,16 +802,17 @@ def kpi_cards(items):
 
 
 def section_header(title, subtitle="", right=""):
-    st.markdown(f"""
-    <div class="section-head">
-        <div>
-            <div class="section-eyebrow">Analyse</div>
-            <h2 class="section-title">{escape(str(title))}</h2>
-            <p class="section-subtitle">{escape(str(subtitle))}</p>
-        </div>
-        <div class="status-value">{escape(str(right))}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    html = (
+        '<div class="section-head">'
+        '<div>'
+        '<div class="section-eyebrow">Analyse</div>'
+        f'<h2 class="section-title">{escape(str(title))}</h2>'
+        f'<p class="section-subtitle">{escape(str(subtitle))}</p>'
+        '</div>'
+        f'<div class="status-value">{escape(str(right))}</div>'
+        '</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def match_cards(dataframe, limit=6):
@@ -830,25 +831,25 @@ def match_cards(dataframe, limit=6):
         badge = safe_text(row.get("ia_badge", ""))
         score = safe_text(row.get("score_exact_1", "N/A"))
 
-        cards.append(f"""
-        <div class="{card_class}">
-            <div class="match-top">
-                <span>{sport}</span>
-                <span>{date}</span>
-            </div>
-            <div class="match-teams">{teams}</div>
-            <div class="match-market">{market}</div>
-            <div class="pill-row">
-                <span class="pill good">IA {fmt_percent(row.get("ai_probability"))}</span>
-                <span class="pill warn">Value {fmt_percent(row.get("value"))}</span>
-                <span class="pill">Cote {fmt_number(row.get("bookmaker_odds"), "", 2)}</span>
-                <span class="pill">Mise {fmt_number(row.get("suggested_stake"), " EUR", 2)}</span>
-                <span class="pill">{confidence}</span>
-                <span class="pill">{badge}</span>
-                <span class="pill">Score {score}</span>
-            </div>
-        </div>
-        """)
+        cards.append(
+            f'<div class="{card_class}">'
+            '<div class="match-top">'
+            f'<span>{sport}</span>'
+            f'<span>{date}</span>'
+            '</div>'
+            f'<div class="match-teams">{teams}</div>'
+            f'<div class="match-market">{market}</div>'
+            '<div class="pill-row">'
+            f'<span class="pill good">IA {fmt_percent(row.get("ai_probability"))}</span>'
+            f'<span class="pill warn">Value {fmt_percent(row.get("value"))}</span>'
+            f'<span class="pill">Cote {fmt_number(row.get("bookmaker_odds"), "", 2)}</span>'
+            f'<span class="pill">Mise {fmt_number(row.get("suggested_stake"), " EUR", 2)}</span>'
+            f'<span class="pill">{confidence}</span>'
+            f'<span class="pill">{badge}</span>'
+            f'<span class="pill">Score {score}</span>'
+            '</div>'
+            '</div>'
+        )
     cards.append("</div>")
     st.markdown("".join(cards), unsafe_allow_html=True)
 
@@ -1246,32 +1247,25 @@ best_value = f"{round(filtered['value'].max() * 100, 2) if len(filtered) else 0}
 max_stake = f"{round(filtered['suggested_stake'].max(), 2) if len(filtered) else 0} EUR"
 avg_probability = f"{round(filtered['ai_probability'].mean() * 100, 1) if len(filtered) else 0}%"
 
-st.markdown(f"""
-<div class="app-hero">
-    <div class="hero-main">
-        <div class="eyebrow">Dashboard IA</div>
-        <div class="hero-title">Paris sportifs, decisions et value bets</div>
-        <p class="hero-copy">
-            Vue operationnelle pour lire rapidement les matchs, comparer les probabilites IA,
-            isoler les value bets et suivre le ROI sans perdre les options existantes.
-        </p>
-    </div>
-    <div class="hero-side">
-        <div class="status-row">
-            <span class="status-label">Derniere MAJ</span>
-            <span class="status-value">{safe_text(last_update)}</span>
-        </div>
-        <div class="status-row">
-            <span class="status-label">Sports actifs</span>
-            <span class="status-value">{len(sports)}</span>
-        </div>
-        <div class="status-row">
-            <span class="status-label">Marches actifs</span>
-            <span class="status-value">{len(markets)}</span>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+hero_html = (
+    '<div class="app-hero">'
+    '<div class="hero-main">'
+    '<div class="eyebrow">Dashboard IA</div>'
+    '<div class="hero-title">Paris sportifs, decisions et value bets</div>'
+    '<p class="hero-copy">Vue operationnelle pour lire rapidement les matchs, comparer les probabilites IA, '
+    'isoler les value bets et suivre le ROI sans perdre les options existantes.</p>'
+    '</div>'
+    '<div class="hero-side">'
+    '<div class="status-row"><span class="status-label">Derniere MAJ</span>'
+    f'<span class="status-value">{safe_text(last_update)}</span></div>'
+    '<div class="status-row"><span class="status-label">Sports actifs</span>'
+    f'<span class="status-value">{len(sports)}</span></div>'
+    '<div class="status-row"><span class="status-label">Marches actifs</span>'
+    f'<span class="status-value">{len(markets)}</span></div>'
+    '</div>'
+    '</div>'
+)
+st.markdown(hero_html, unsafe_allow_html=True)
 
 kpi_cards([
     ("Lignes analysees", len(filtered), "Apres filtres actifs"),
