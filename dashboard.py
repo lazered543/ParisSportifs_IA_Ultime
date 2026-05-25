@@ -638,9 +638,8 @@ with tabs[5]:
             key="btts_grid_unique"
         )
 
-
 with tabs[6]:
-    st.subheader("📊 ROI / Tracking Pro")
+    st.subheader("📊 Résultats IA / ROI / Rentabilité")
 
     tracking = load_tracking()
 
@@ -650,13 +649,8 @@ with tabs[6]:
         if "result" not in tracking.columns:
             tracking["result"] = "PENDING"
 
-        tracking["profit"] = pd.to_numeric(
-            tracking.get("profit", 0),
-            errors="coerce"
-        ).fillna(0)
-
         tracking["stake"] = pd.to_numeric(
-            tracking.get("stake", 0),
+            tracking.get("suggested_stake", tracking.get("stake", 0)),
             errors="coerce"
         ).fillna(0)
 
@@ -665,51 +659,94 @@ with tabs[6]:
             errors="coerce"
         ).fillna(0)
 
-        settled = tracking[
-            tracking["result"].isin(["WIN", "LOSS"])
-        ].copy()
+        def calc_profit(row):
+            if row["result"] == "WIN":
+                return row["stake"] * (row["bookmaker_odds"] - 1)
+            if row["result"] == "LOSS":
+                return -row["stake"]
+            return 0
 
-        pending = tracking[
-            tracking["result"] == "PENDING"
-        ]
+        tracking["profit"] = tracking.apply(calc_profit, axis=1)
 
-        total_staked = settled["stake"].sum() if len(settled) else 0
-        profit = settled["profit"].sum() if len(settled) else 0
-        roi = profit / total_staked if total_staked > 0 else 0
-        hit_rate = (settled["result"] == "WIN").mean() if len(settled) else 0
+        finished = tracking[tracking["result"].isin(["WIN", "LOSS"])].copy()
+        wins = tracking[tracking["result"] == "WIN"].copy()
+        losses = tracking[tracking["result"] == "LOSS"].copy()
+        pending = tracking[tracking["result"] == "PENDING"].copy()
+
+        total_bets = len(tracking)
+        finished_bets = len(finished)
+        total_wins = len(wins)
+        total_losses = len(losses)
+
+        total_staked = finished["stake"].sum() if finished_bets else 0
+        total_profit = finished["profit"].sum() if finished_bets else 0
+        roi = total_profit / total_staked if total_staked > 0 else 0
+        win_rate = total_wins / finished_bets if finished_bets > 0 else 0
 
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Paris trackés", len(tracking))
-        c2.metric("Paris terminés", len(settled))
-        c3.metric("Paris en attente", len(pending))
-        c4.metric("Profit total", round(profit, 2))
+        c1.metric("📌 Paris suivis", total_bets)
+        c2.metric("✅ Gagnés", total_wins)
+        c3.metric("❌ Perdus", total_losses)
+        c4.metric("⏳ En attente", len(pending))
 
         c5, c6, c7, c8 = st.columns(4)
-        c5.metric("ROI global", f"{round(roi * 100, 2)}%")
-        c6.metric("Hit Rate", f"{round(hit_rate * 100, 2)}%")
-        c7.metric("Misé total", round(total_staked, 2))
-        c8.metric(
-            "Cote moyenne",
-            round(settled["bookmaker_odds"].mean(), 2) if len(settled) else 0
-        )
+        c5.metric("💰 Misé total", f"{round(total_staked, 2)}€")
+        c6.metric("📈 Profit / Perte", f"{round(total_profit, 2)}€")
+        c7.metric("📊 ROI", f"{round(roi * 100, 2)}%")
+        c8.metric("🎯 Win Rate", f"{round(win_rate * 100, 2)}%")
 
-        if not settled.empty:
-            settled["cumulative_profit"] = settled["profit"].cumsum()
+        if total_profit > 0:
+            st.success(f"🔥 L’IA est en gain de +{round(total_profit, 2)}€")
+        elif total_profit < 0:
+            st.error(f"📉 L’IA est en perte de {round(total_profit, 2)}€")
+        else:
+            st.info("⚖️ L’IA est à l’équilibre pour le moment.")
 
-            st.subheader("📈 Evolution bankroll / profit cumulé")
-            st.line_chart(settled["cumulative_profit"])
+        if not finished.empty:
+            finished["cumulative_profit"] = finished["profit"].cumsum()
 
-            st.subheader("📊 Profit par pari")
-            st.bar_chart(settled["profit"])
+            st.subheader("📈 Courbe de rentabilité")
+            st.line_chart(finished["cumulative_profit"])
 
-        st.subheader("📋 Historique complet du tracking")
+            st.subheader("💸 Gain / perte par pari")
+            st.bar_chart(finished["profit"])
 
+        st.subheader("✅ Paris gagnés")
+        if wins.empty:
+            st.info("Aucun pari gagné pour le moment.")
+        else:
+            premium_table(
+                wins.sort_values("profit", ascending=False).head(100),
+                height=450,
+                key="wins_grid_unique"
+            )
+
+        st.subheader("❌ Paris perdus")
+        if losses.empty:
+            st.info("Aucun pari perdu pour le moment.")
+        else:
+            premium_table(
+                losses.sort_values("profit", ascending=True).head(100),
+                height=450,
+                key="losses_grid_unique"
+            )
+
+        st.subheader("⏳ Paris en attente")
+        if pending.empty:
+            st.info("Aucun pari en attente.")
+        else:
+            premium_table(
+                pending.sort_values("date", ascending=False).head(100),
+                height=450,
+                key="pending_grid_unique"
+            )
+
+        st.subheader("📋 Historique complet IA")
         premium_table(
             tracking.sort_values("date", ascending=False).head(300),
             height=650,
-            key="tracking_grid_unique"
+            key="tracking_full_grid_unique"
         )
-
 
 with tabs[7]:
     st.subheader("📋 Toutes les prédictions")
