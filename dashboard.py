@@ -572,6 +572,141 @@ h1, h2, h3 {
         grid-template-columns: 1fr;
     }
 }
+
+/* Final dark theme */
+:root {
+    --bg: #080d12;
+    --surface: #101820;
+    --surface-2: #141f2a;
+    --surface-3: #1b2936;
+    --line: rgba(226, 232, 240, 0.12);
+    --line-strong: rgba(226, 232, 240, 0.20);
+    --text: #f8fafc;
+    --muted: #9fb0c3;
+    --green: #22c55e;
+    --blue: #38bdf8;
+    --cyan: #2dd4bf;
+    --amber: #f59e0b;
+    --red: #fb7185;
+}
+
+.stApp {
+    background:
+        linear-gradient(180deg, rgba(56,189,248,0.10), rgba(8,13,18,0) 340px),
+        #080d12 !important;
+    color: var(--text) !important;
+}
+
+.block-container {
+    max-width: 1500px;
+}
+
+section[data-testid="stSidebar"] {
+    background: #0b1118 !important;
+    border-right: 1px solid rgba(226,232,240,0.12) !important;
+}
+
+section[data-testid="stSidebar"] .stTextInput input,
+section[data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] {
+    background: #121b25 !important;
+    border-color: rgba(226,232,240,0.16) !important;
+    color: #f8fafc !important;
+}
+
+section[data-testid="stSidebar"] [data-baseweb="tag"] {
+    background: #1e3a8a !important;
+    border: 1px solid rgba(147,197,253,0.30) !important;
+    color: #dbeafe !important;
+}
+
+h1, h2, h3,
+.hero-title,
+.section-title,
+.match-teams,
+.match-market,
+.status-value {
+    color: #f8fafc !important;
+}
+
+.hero-main,
+.hero-side,
+.kpi-card,
+.section-head,
+.match-card {
+    background: #101820 !important;
+    border: 1px solid rgba(226,232,240,0.12) !important;
+    box-shadow: 0 16px 35px rgba(0,0,0,0.26) !important;
+}
+
+.hero-main {
+    background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(34,197,94,0.06)), #101820 !important;
+}
+
+.hero-copy,
+.section-subtitle,
+.kpi-note,
+.status-label,
+.match-top {
+    color: #9fb0c3 !important;
+}
+
+.kpi-label {
+    color: #7dd3fc !important;
+}
+
+.kpi-value {
+    color: #ffffff !important;
+}
+
+.section-head {
+    background: #0f1720 !important;
+}
+
+.section-eyebrow {
+    color: #2dd4bf !important;
+}
+
+.match-card {
+    border-left: 5px solid #38bdf8 !important;
+}
+
+.match-card.value-bet {
+    border-left-color: #22c55e !important;
+    background: linear-gradient(135deg, rgba(34,197,94,0.09), rgba(16,24,32,1) 46%) !important;
+}
+
+.pill {
+    background: #172333 !important;
+    border-color: rgba(226,232,240,0.13) !important;
+    color: #dbe7f3 !important;
+}
+
+.pill.good {
+    background: rgba(34,197,94,0.16) !important;
+    color: #bbf7d0 !important;
+    border-color: rgba(34,197,94,0.28) !important;
+}
+
+.pill.warn {
+    background: rgba(245,158,11,0.16) !important;
+    color: #fde68a !important;
+    border-color: rgba(245,158,11,0.28) !important;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    background: #101820 !important;
+    border: 1px solid rgba(226,232,240,0.12) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    color: #cbd5e1 !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #1b2936 !important;
+    color: #ffffff !important;
+    border-color: rgba(56,189,248,0.34) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -655,13 +790,13 @@ def safe_text(value, default="N/A"):
 def kpi_cards(items):
     html = ['<div class="kpi-grid">']
     for label, value, note in items:
-        html.append(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{escape(str(label))}</div>
-            <span class="kpi-value">{escape(str(value))}</span>
-            <div class="kpi-note">{escape(str(note))}</div>
-        </div>
-        """)
+        html.append(
+            '<div class="kpi-card">'
+            f'<div class="kpi-label">{escape(str(label))}</div>'
+            f'<span class="kpi-value">{escape(str(value))}</span>'
+            f'<div class="kpi-note">{escape(str(note))}</div>'
+            '</div>'
+        )
     html.append("</div>")
     st.markdown("".join(html), unsafe_allow_html=True)
 
@@ -941,16 +1076,16 @@ def premium_table(dataframe, height=650, key="table", columns=None):
 
         custom_css = {
             ".ag-root-wrapper": {
-                "background-color": "#ffffff !important",
-                "border": "1px solid #d9e2ea !important",
+                "background-color": "#101820 !important",
+                "border": "1px solid rgba(226,232,240,0.14) !important",
                 "border-radius": "8px !important",
-                "box-shadow": "0 12px 28px rgba(15,23,42,0.08) !important",
+                "box-shadow": "0 16px 35px rgba(0,0,0,0.26) !important",
                 "overflow": "hidden !important",
             },
             ".ag-header": {
-                "background": "#f8fafc !important",
-                "color": "#0f172a !important",
-                "border-bottom": "1px solid #d9e2ea !important",
+                "background": "#172333 !important",
+                "color": "#f8fafc !important",
+                "border-bottom": "1px solid rgba(226,232,240,0.14) !important",
                 "font-weight": "800 !important",
             },
             ".ag-header-cell-label": {
@@ -962,40 +1097,40 @@ def premium_table(dataframe, height=650, key="table", columns=None):
                 "letter-spacing": "0 !important",
             },
             ".ag-row": {
-                "background-color": "#ffffff !important",
-                "color": "#111827 !important",
-                "border-bottom": "1px solid #edf2f7 !important",
+                "background-color": "#101820 !important",
+                "color": "#e5edf6 !important",
+                "border-bottom": "1px solid rgba(226,232,240,0.08) !important",
             },
             ".ag-row-odd": {
-                "background-color": "#fbfdff !important",
+                "background-color": "#121d28 !important",
             },
             ".ag-row-hover": {
-                "background-color": "#eff6ff !important",
+                "background-color": "rgba(56,189,248,0.12) !important",
             },
             ".ag-cell": {
-                "border-right": "1px solid #edf2f7 !important",
+                "border-right": "1px solid rgba(226,232,240,0.07) !important",
                 "font-size": "13px !important",
                 "line-height": "1.25 !important",
                 "padding-left": "12px !important",
                 "padding-right": "12px !important",
             },
             ".ag-floating-filter-input": {
-                "background-color": "#ffffff !important",
-                "color": "#111827 !important",
-                "border": "1px solid #d9e2ea !important",
+                "background-color": "#0b1118 !important",
+                "color": "#f8fafc !important",
+                "border": "1px solid rgba(226,232,240,0.16) !important",
                 "border-radius": "6px !important",
             },
             ".ag-pinned-left-header, .ag-pinned-left-cols-container": {
                 "box-shadow": "6px 0 14px rgba(0,0,0,0.18) !important",
             },
             ".ag-paging-panel": {
-                "background": "#f8fafc !important",
-                "color": "#475569 !important",
-                "border-top": "1px solid #d9e2ea !important",
+                "background": "#101820 !important",
+                "color": "#cbd5e1 !important",
+                "border-top": "1px solid rgba(226,232,240,0.12) !important",
             },
             ".ag-menu": {
-                "background": "#ffffff !important",
-                "color": "#111827 !important",
+                "background": "#101820 !important",
+                "color": "#f8fafc !important",
             },
         }
 
