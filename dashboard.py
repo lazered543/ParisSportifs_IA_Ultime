@@ -216,6 +216,7 @@ def prepare_base_data(data):
     data["suggested_stake"] = num_col(data, "suggested_stake")
     data["bookmaker_odds"] = num_col(data, "bookmaker_odds")
     data["implied_probability"] = num_col(data, "implied_probability")
+    data["safety_score"] = num_col(data, "safety_score")
 
     return data
 
@@ -229,6 +230,8 @@ def clean_table(data):
         "away_team",
         "market",
         "selection",
+        "safety_level",
+        "safety_score",
         "bet_mode",
         "mode_category",
         "result",
@@ -263,11 +266,36 @@ def clean_table(data):
             out[col] = pd.to_numeric(out[col], errors="coerce")
             out[col] = out[col].apply(lambda x: "" if pd.isna(x) else f"{x * 100:.2f}%")
 
-    for col in ["bookmaker_odds", "suggested_stake", "stake", "stake_percent", "kelly_fraction", "bankroll", "profit", "tennis_engine_score", "score_exact_1_proba"]:
+    for col in ["bookmaker_odds", "suggested_stake", "stake", "stake_percent", "kelly_fraction", "bankroll", "profit", "tennis_engine_score", "score_exact_1_proba", "safety_score"]:
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce").round(2)
 
     return out
+
+
+def sort_recommendations(data):
+    if data.empty:
+        return data
+
+    sort_cols = []
+    ascending = []
+
+    if "safety_score" in data.columns:
+        sort_cols.append("safety_score")
+        ascending.append(False)
+
+    if "value" in data.columns:
+        sort_cols.append("value")
+        ascending.append(False)
+
+    if "ai_probability" in data.columns:
+        sort_cols.append("ai_probability")
+        ascending.append(False)
+
+    if not sort_cols:
+        return data
+
+    return data.sort_values(sort_cols, ascending=ascending)
 
 
 def show_table(data, height=520):
@@ -457,7 +485,7 @@ tabs = st.tabs([
 with tabs[0]:
     st.subheader("Vue globale")
 
-    render_cards(value_bets.sort_values("value", ascending=False), limit=6)
+    render_cards(sort_recommendations(value_bets), limit=6)
 
     c1, c2 = st.columns(2)
 
@@ -478,14 +506,14 @@ with tabs[0]:
         )
 
     st.subheader("Toutes les meilleures lignes")
-    show_table(filtered.sort_values("value", ascending=False).head(80), height=520)
+    show_table(sort_recommendations(filtered).head(80), height=520)
 
 
 with tabs[1]:
     st.subheader("Football")
 
     render_cards(
-        football_df[football_df["decision"] == "VALUE BET"].sort_values("value", ascending=False),
+        sort_recommendations(football_df[football_df["decision"] == "VALUE BET"]),
         limit=6
     )
 
@@ -508,14 +536,14 @@ with tabs[1]:
                 "Football - Over 2.5"
             )
 
-    show_table(football_df.sort_values("value", ascending=False), height=620)
+    show_table(sort_recommendations(football_df), height=620)
 
 
 with tabs[2]:
     st.subheader("Tennis")
 
     render_cards(
-        tennis_df[tennis_df["decision"] == "VALUE BET"].sort_values("value", ascending=False),
+        sort_recommendations(tennis_df[tennis_df["decision"] == "VALUE BET"]),
         limit=6
     )
 
@@ -538,14 +566,14 @@ with tabs[2]:
                 "Tennis - Score IA"
             )
 
-    show_table(tennis_df.sort_values("value", ascending=False), height=620)
+    show_table(sort_recommendations(tennis_df), height=620)
 
 
 with tabs[3]:
     st.subheader("Value Bets")
 
-    render_cards(value_bets.sort_values("value", ascending=False), limit=9)
-    show_table(value_bets.sort_values("value", ascending=False), height=650)
+    render_cards(sort_recommendations(value_bets), limit=9)
+    show_table(sort_recommendations(value_bets), height=650)
 
 with tabs[4]:
     st.subheader("Résultats IA / ROI")
@@ -889,4 +917,4 @@ with tabs[5]:
 
 with tabs[6]:
     st.subheader("Toutes les prédictions")
-    show_table(filtered.sort_values("value", ascending=False), height=720)
+    show_table(sort_recommendations(filtered), height=720)

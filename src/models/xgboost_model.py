@@ -1,11 +1,21 @@
 import pandas as pd
-import joblib
 from pathlib import Path
 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+try:
+    import joblib
+except Exception:
+    joblib = None
 
-from xgboost import XGBClassifier
+try:
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+    from xgboost import XGBClassifier
+    ML_DEPS_OK = True
+except Exception:
+    train_test_split = None
+    accuracy_score = None
+    XGBClassifier = None
+    ML_DEPS_OK = False
 
 MODEL_PATH = "models/xgboost_model.pkl"
 
@@ -35,6 +45,9 @@ def prepare_features(df):
 
 
 def train_xgboost_model():
+    if not ML_DEPS_OK or joblib is None:
+        print("Dependances ML manquantes : entrainement XGBoost ignore.")
+        return
 
     hist_path = Path(
         "data/processed/football_history_all.csv"
@@ -101,6 +114,8 @@ def train_xgboost_model():
 
 
 def load_xgboost_model():
+    if joblib is None:
+        return None
 
     if Path(MODEL_PATH).exists():
 

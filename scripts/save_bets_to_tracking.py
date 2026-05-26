@@ -34,6 +34,8 @@ cols = [
     "ai_probability",
     "bookmaker_odds",
     "value",
+    "safety_score",
+    "safety_level",
     "suggested_stake",
     "bet_mode",
     "stake_percent",

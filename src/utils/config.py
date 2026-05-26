@@ -1,9 +1,15 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 
 ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(ROOT / ".env")
+
+if load_dotenv is not None:
+    load_dotenv(ROOT / ".env")
 
 API_FOOTBALL_KEY = os.getenv("API_FOOTBALL_KEY", "")
 ODDS_API_KEY = os.getenv("ODDS_API_KEY", "")

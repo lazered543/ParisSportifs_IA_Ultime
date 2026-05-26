@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from src.connectors.football_data_downloader import download_football_history
 from src.connectors.tennis_downloader import download_tennis_history
 from src.connectors.the_odds_api import fetch_upcoming_odds

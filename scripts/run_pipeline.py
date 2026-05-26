@@ -1,7 +1,10 @@
 from pathlib import Path
 from datetime import datetime
 import math
+import sys
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.features.football_features import build_team_strength, estimate_xg
 from src.models.poisson import football_poisson_probs
@@ -101,6 +104,25 @@ def american_to_probability_from_decimal(odds):
         return 0
 
     return 1 / odds
+
+
+def normalized_market_probabilities(odds_home, odds_draw, odds_away):
+    implied = {
+        "Home Win": american_to_probability_from_decimal(odds_home),
+        "Draw": american_to_probability_from_decimal(odds_draw),
+        "Away Win": american_to_probability_from_decimal(odds_away),
+    }
+
+    total = sum(v for v in implied.values() if v > 0)
+
+    if total <= 0:
+        return {}
+
+    return {
+        market: prob / total
+        for market, prob in implied.items()
+        if prob > 0
+    }
 
 # ============================================================
 # BET MODES
@@ -263,6 +285,78 @@ def safe_value(prob, odds):
     return min(value, 1.5)
 
 
+def safety_score(prob, odds, value, confidence, mode, reliable):
+    odds = safe_float(odds, 0)
+    prob = safe_float(prob, 0)
+    value = safe_float(value, 0)
+
+    confidence_bonus = {
+        "Elite": 18,
+        "Fort": 13,
+        "Moyen": 7,
+        "Faible": 0,
+        "A Ã©viter": -12,
+        "A éviter": -12,
+    }.get(str(confidence), 0)
+
+    mode_bonus = {
+        "MEGA VALUE": 12,
+        "ULTRA SAFE": 14,
+        "SAFE": 10,
+        "VALUE": 6,
+        "AGGRESSIVE": -4,
+        "NO BET": -16,
+    }.get(str(mode), 0)
+
+    if 1.25 <= odds <= 2.20:
+        odds_bonus = 10
+    elif 2.20 < odds <= 3.20:
+        odds_bonus = 5
+    elif 1.01 <= odds < 1.25:
+        odds_bonus = -2
+    elif odds > 3.20:
+        odds_bonus = -8
+    else:
+        odds_bonus = -20
+
+    score = (
+        prob * 62
+        + clamp(value, -0.25, 0.35) * 70
+        + confidence_bonus
+        + mode_bonus
+        + odds_bonus
+        + (6 if reliable else 0)
+    )
+
+    return round(clamp(score, 0, 100), 2)
+
+
+def safety_level(score, mode, decision, prob=None, value=None):
+    mode = str(mode).upper()
+    prob = safe_float(prob, 0)
+    value = safe_float(value, 0)
+
+    if decision != "VALUE BET":
+        if prob >= 0.68 and value < 0:
+            return "5 - PROBABLE SANS VALUE"
+
+        if score >= 28 or prob >= 0.55:
+            return "6 - OBSERVATION"
+
+        return "7 - A EVITER"
+
+    if mode in ["MEGA VALUE", "ULTRA SAFE"]:
+        return "1 - TRES SUR"
+
+    if mode == "SAFE":
+        return "2 - SUR"
+
+    if mode == "VALUE":
+        return "3 - VALUE"
+
+    return "4 - RISQUE"
+
+
 # ============================================================
 # FOOTBALL ENGINE
 # ============================================================
@@ -371,6 +465,28 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
 
     home = m.get("home_team")
     away = m.get("away_team")
+    sport = str(m.get("sport", "")).lower()
+
+    home_known = not strengths[
+        strengths["team"] == home
+    ].empty
+
+    away_known = not strengths[
+        strengths["team"] == away
+    ].empty
+
+    market_probs = normalized_market_probabilities(
+        m.get("odds_home"),
+        m.get("odds_draw"),
+        m.get("odds_away")
+    )
+
+    market_led = (
+        "world_cup" in sport
+        or "international" in sport
+        or not home_known
+        or not away_known
+    )
 
     elo = get_match_elo(
         home,
@@ -464,6 +580,16 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
                 0
             )
 
+        market_prob = market_probs.get(market)
+
+        if market_prob is not None:
+            market_weight = 0.65 if market_led else 0.35
+            prob = (
+                prob * (1 - market_weight)
+                + market_prob * market_weight
+            )
+            prob = clamp(prob, 0.03, 0.97)
+
         value = safe_value(
             prob,
             odds
@@ -485,6 +611,23 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             "VALUE BET"
             if mode != "NO BET"
             else "NO BET"
+        )
+
+        reliable = reliable_filter(
+            decision,
+            confidence,
+            odds,
+            value,
+            prob
+        )
+
+        safe_score = safety_score(
+            prob,
+            odds,
+            value,
+            confidence,
+            mode,
+            reliable
         )
 
         stake, stake_percent, kelly_fraction = bankroll_management(
@@ -510,7 +653,9 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             "value": round(value, 4),
             "confidence": confidence,
             "ia_badge": ia_badge(value, confidence, odds),
-            "reliable_only": reliable_filter(decision, confidence, odds, value, prob),
+            "reliable_only": reliable,
+            "safety_score": safe_score,
+            "safety_level": safety_level(safe_score, mode, decision, prob, value),
             "decision": decision,
             "bankroll": bankroll,
             "stake_percent": stake_percent,
@@ -980,6 +1125,15 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             prob
         )
 
+        safe_score = safety_score(
+            prob,
+            odds,
+            value,
+            confidence,
+            mode,
+            reliable
+        )
+
         tennis_engine_score = round(
             (
                 prob * 60
@@ -1007,6 +1161,8 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             "confidence": confidence,
             "ia_badge": badge,
             "reliable_only": reliable,
+            "safety_score": safe_score,
+            "safety_level": safety_level(safe_score, mode, decision, prob, value),
             "decision": decision,
             "bankroll": bankroll,
             "stake_percent": stake_percent,
@@ -1140,11 +1296,16 @@ def main():
         errors="coerce"
     ).fillna(0)
 
-    out_filtered = out[
-        out["bet_mode"] != "NO BET"
+    out_display = out[
+        out["bookmaker_odds_num"] > 1
     ].copy()
 
-    out_filtered = out_filtered.drop(
+    out_display = out_display.sort_values(
+        ["safety_score", "value", "ai_probability_num"],
+        ascending=[False, False, False]
+    )
+
+    out_display = out_display.drop(
         columns=[
             "bookmaker_odds_num",
             "ai_probability_num"
@@ -1156,13 +1317,13 @@ def main():
         exist_ok=True
     )
 
-    out_filtered.to_csv(
+    out_display.to_csv(
         "data/predictions/predictions_today.csv",
         index=False
     )
 
-    out_filtered[
-        out_filtered["decision"] == "VALUE BET"
+    out_display[
+        out_display["decision"] == "VALUE BET"
     ].to_csv(
         "data/predictions/value_bets_today.csv",
         index=False
@@ -1170,15 +1331,22 @@ def main():
 
     print(
         "Prédictions générées :",
-        len(out_filtered)
+        len(out_display)
     )
 
     print(
-        out_filtered
-        .sort_values("value", ascending=False)
+        "Value bets retenus :",
+        int((out_display["decision"] == "VALUE BET").sum())
+    )
+
+    preview = (
+        out_display
+        .sort_values(["safety_score", "value"], ascending=[False, False])
         .head(30)
         .to_string(index=False)
     )
+
+    print(preview.encode("ascii", errors="replace").decode("ascii"))
 
 
 if __name__ == "__main__":
