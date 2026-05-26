@@ -1,7 +1,6 @@
 import os
 import re
 import unicodedata
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -13,15 +12,18 @@ load_dotenv()
 ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 
 TRACK_PATH = Path("tracking_results.csv")
+MANUAL_RESULTS_PATH = Path("manual_results.csv")
+LEARNING_PATH = Path("data/learning/ai_learning_profile.csv")
+LEARNING_SUMMARY_PATH = Path("data/learning/ai_learning_summary.csv")
 BASE_URL = "https://api.the-odds-api.com/v4"
-
-# Après ce délai, un pari toujours introuvable passe en VOID
-# pour éviter les PENDING bloqués éternellement.
-AUTO_VOID_HOURS = 18
 
 
 def safe_str(x):
     text = str(x).lower().strip()
+
+    if text in ["nan", "none"]:
+        return ""
+
     text = unicodedata.normalize("NFD", text)
     text = text.encode("ascii", "ignore").decode("utf-8")
     text = re.sub(r"[^a-z0-9 ]", "", text)
@@ -43,11 +45,86 @@ def safe_str(x):
     return " ".join(text.split())
 
 
+def names_match(a, b):
+    a = safe_str(a)
+    b = safe_str(b)
+
+    if not a or not b:
+        return False
+
+    return a == b or a in b or b in a
+
+
 def get_score_number(score):
     try:
         return float(score)
     except Exception:
         return None
+
+
+def ensure_manual_results_template():
+    if MANUAL_RESULTS_PATH.exists():
+        return
+
+    template = pd.DataFrame(
+        columns=[
+            "date",
+            "sport",
+            "home_team",
+            "away_team",
+            "winner",
+            "score_home",
+            "score_away",
+            "source",
+            "notes",
+        ]
+    )
+
+    template.to_csv(MANUAL_RESULTS_PATH, index=False)
+
+
+def load_manual_results():
+    ensure_manual_results_template()
+
+    try:
+        df = pd.read_csv(MANUAL_RESULTS_PATH, low_memory=False)
+    except Exception:
+        return pd.DataFrame()
+
+    if df.empty:
+        return df
+
+    for col in ["home_team", "away_team", "winner"]:
+        if col not in df.columns:
+            df[col] = ""
+
+    return df
+
+
+def find_manual_result(row, manual_df):
+    if manual_df.empty:
+        return None
+
+    home = row.get("home_team", "")
+    away = row.get("away_team", "")
+
+    for _, manual in manual_df.iterrows():
+        m_home = manual.get("home_team", "")
+        m_away = manual.get("away_team", "")
+
+        same_match = names_match(home, m_home) and names_match(away, m_away)
+        reversed_match = names_match(home, m_away) and names_match(away, m_home)
+
+        if same_match or reversed_match:
+            winner = manual.get("winner", "")
+
+            if pd.notna(winner) and str(winner).strip():
+                score_home = manual.get("score_home", None)
+                score_away = manual.get("score_away", None)
+
+                return str(winner), score_home, score_away
+
+    return None
 
 
 def fetch_scores(sport):
@@ -66,16 +143,6 @@ def fetch_scores(sport):
     except Exception as e:
         print(f"Erreur scores {sport} :", e)
         return []
-
-
-def names_match(a, b):
-    a = safe_str(a)
-    b = safe_str(b)
-
-    if not a or not b:
-        return False
-
-    return a == b or a in b or b in a
 
 
 def find_matching_score(row, scores):
@@ -231,20 +298,114 @@ def calc_profit(row):
     return 0.0
 
 
-def should_auto_void(row, hours=AUTO_VOID_HOURS):
-    try:
-        match_date = pd.to_datetime(row.get("date"), utc=True, errors="coerce")
+def mode_group(mode):
+    mode = str(mode).upper().strip()
 
-        if pd.isna(match_date):
-            return False, None
+    if "MEGA" in mode or "MONSTER" in mode:
+        return "MEGA VALUE"
 
-        now = datetime.now(timezone.utc)
-        age_hours = (now - match_date.to_pydatetime()).total_seconds() / 3600
+    if "ULTRA SAFE" in mode or mode == "SAFE":
+        return "SAFE"
 
-        return age_hours > hours, age_hours
+    if "VALUE" in mode:
+        return "MEDIUM"
 
-    except Exception:
-        return False, None
+    if "AGGRESSIVE" in mode or "RISKY" in mode:
+        return "RISKY"
+
+    return "OTHER"
+
+
+def build_learning_profile(tracking):
+    LEARNING_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    finished = tracking[tracking["result"].isin(["WIN", "LOSS"])].copy()
+
+    if finished.empty:
+        pd.DataFrame().to_csv(LEARNING_PATH, index=False)
+        pd.DataFrame([{
+            "status": "NO_FINISHED_BETS",
+            "message": "Pas encore assez de résultats pour apprendre.",
+        }]).to_csv(LEARNING_SUMMARY_PATH, index=False)
+        return
+
+    if "bet_mode" not in finished.columns:
+        finished["bet_mode"] = "UNKNOWN"
+
+    if "category" not in finished.columns:
+        finished["category"] = "unknown"
+
+    finished["mode_group"] = finished["bet_mode"].apply(mode_group)
+    finished["stake"] = pd.to_numeric(finished.get("stake", 0), errors="coerce").fillna(0)
+    finished["profit"] = pd.to_numeric(finished.get("profit", 0), errors="coerce").fillna(0)
+    finished["bookmaker_odds"] = pd.to_numeric(finished.get("bookmaker_odds", 0), errors="coerce").fillna(0)
+
+    groups = []
+
+    dimensions = [
+        ("mode_group", "Mode de pari"),
+        ("category", "Sport"),
+        ("sport", "Compétition"),
+        ("market", "Marché"),
+    ]
+
+    for col, label in dimensions:
+        if col not in finished.columns:
+            continue
+
+        grouped = (
+            finished
+            .groupby(col)
+            .agg(
+                bets=("result", "count"),
+                wins=("result", lambda x: (x == "WIN").sum()),
+                losses=("result", lambda x: (x == "LOSS").sum()),
+                stake=("stake", "sum"),
+                profit=("profit", "sum"),
+                avg_odds=("bookmaker_odds", "mean"),
+            )
+            .reset_index()
+            .rename(columns={col: "segment"})
+        )
+
+        grouped["dimension"] = label
+        grouped["winrate"] = grouped["wins"] / grouped["bets"]
+        grouped["roi"] = grouped.apply(
+            lambda r: r["profit"] / r["stake"] if r["stake"] > 0 else 0,
+            axis=1,
+        )
+
+        def recommendation(r):
+            if r["bets"] < 3:
+                return "WAIT_MORE_DATA"
+            if r["roi"] > 0.15 and r["winrate"] >= 0.65:
+                return "BOOST"
+            if r["roi"] < -0.10 or r["winrate"] < 0.45:
+                return "REDUCE"
+            return "KEEP"
+
+        grouped["ai_recommendation"] = grouped.apply(recommendation, axis=1)
+        groups.append(grouped)
+
+    profile = pd.concat(groups, ignore_index=True) if groups else pd.DataFrame()
+    profile.to_csv(LEARNING_PATH, index=False)
+
+    total_bets = len(finished)
+    total_profit = finished["profit"].sum()
+    total_stake = finished["stake"].sum()
+    global_roi = total_profit / total_stake if total_stake > 0 else 0
+    global_winrate = (finished["result"] == "WIN").mean()
+
+    summary = pd.DataFrame([{
+        "finished_bets": total_bets,
+        "profit": round(total_profit, 2),
+        "stake": round(total_stake, 2),
+        "roi": round(global_roi, 4),
+        "winrate": round(global_winrate, 4),
+        "best_action": "BOOST les segments rentables, REDUCE les segments négatifs.",
+    }])
+
+    summary.to_csv(LEARNING_SUMMARY_PATH, index=False)
 
 
 def main():
@@ -276,9 +437,16 @@ def main():
         errors="coerce",
     ).fillna(0.0).astype(float)
 
-    for col in ["final_winner", "final_score_home", "final_score_away", "status_detail"]:
+    for col in [
+        "final_winner",
+        "final_score_home",
+        "final_score_away",
+        "status_detail",
+    ]:
         if col not in tracking.columns:
             tracking[col] = ""
+
+    manual_df = load_manual_results()
 
     pending = tracking[
         ~tracking["result"].isin(["WIN", "LOSS", "VOID"])
@@ -286,6 +454,7 @@ def main():
 
     if pending.empty:
         print("Aucun pari en attente.")
+        build_learning_profile(tracking)
         return
 
     sports = pending["sport"].dropna().unique()
@@ -294,7 +463,7 @@ def main():
 
     for sport in sports:
         if "tennis" in str(sport).lower():
-            print("Tennis détecté : résolution via historique tennis :", sport)
+            print("Tennis détecté : manuel + historique tennis :", sport)
             scores_by_sport[sport] = []
             continue
 
@@ -302,50 +471,38 @@ def main():
         scores_by_sport[sport] = fetch_scores(sport)
 
     updated = 0
-    voided = 0
+    manual_updated = 0
     not_found = 0
 
     for idx, row in tracking.iterrows():
         if row.get("result") in ["WIN", "LOSS", "VOID"]:
             continue
 
-        sport = row.get("sport", "")
-        scores = scores_by_sport.get(sport, [])
+        manual_result = find_manual_result(row, manual_df)
 
-        event = find_matching_score(row, scores)
-        winner, score_home, score_away = get_winner_from_event(event)
+        if manual_result is not None:
+            winner, score_home, score_away = manual_result
+            tracking.at[idx, "status_detail"] = "RESOLVED_FROM_MANUAL_RESULTS"
+            manual_updated += 1
 
-        if winner is None and "tennis" in str(sport).lower():
-            winner, _ = try_resolve_tennis_from_history(row)
+        else:
+            sport = row.get("sport", "")
+            scores = scores_by_sport.get(sport, [])
 
-            if winner is not None:
-                score_home = None
-                score_away = None
-                tracking.at[idx, "status_detail"] = "RESOLVED_FROM_TENNIS_HISTORY"
+            event = find_matching_score(row, scores)
+            winner, score_home, score_away = get_winner_from_event(event)
+
+            if winner is None and "tennis" in str(sport).lower():
+                winner, _ = try_resolve_tennis_from_history(row)
+
+                if winner is not None:
+                    score_home = None
+                    score_away = None
+                    tracking.at[idx, "status_detail"] = "RESOLVED_FROM_TENNIS_HISTORY"
 
         if winner is None:
-            auto_void, age_hours = should_auto_void(row)
-
-            if auto_void:
-                tracking.at[idx, "result"] = "VOID"
-                tracking.at[idx, "profit"] = 0.0
-                tracking.at[idx, "status_detail"] = "AUTO_VOID_OLD_PENDING"
-                voided += 1
-
-                print(
-                    "AUTO VOID :",
-                    row.get("home_team"),
-                    "vs",
-                    row.get("away_team"),
-                    f"({round(age_hours, 1)}h)"
-                    if age_hours is not None
-                    else "",
-                )
-
-            else:
-                tracking.at[idx, "status_detail"] = "RESULT_NOT_FOUND"
-                not_found += 1
-
+            tracking.at[idx, "status_detail"] = "RESULT_NOT_FOUND_VERIFY_MANUALLY"
+            not_found += 1
             continue
 
         result = evaluate_bet(row, winner)
@@ -373,10 +530,12 @@ def main():
             )
 
     tracking.to_csv(TRACK_PATH, index=False)
+    build_learning_profile(tracking)
 
     print("Résultats mis à jour :", updated)
-    print("Paris passés en VOID :", voided)
-    print("Résultats introuvables récents :", not_found)
+    print("Résultats manuels utilisés :", manual_updated)
+    print("Résultats à vérifier manuellement :", not_found)
+    print("Auto-learning mis à jour :", LEARNING_PATH)
 
 
 if __name__ == "__main__":
