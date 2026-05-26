@@ -577,21 +577,35 @@ with tabs[4]:
             tracking["bet_mode"] = "NON CLASSÉ"
 
         def mode_group(mode):
-            mode = str(mode).upper().strip()
+    mode = str(mode).upper().strip()
 
-            if "MEGA" in mode or "MONSTER" in mode:
-                return "💎 MEGA VALUE"
+    if (
+        "ULTRA SAFE" in mode
+        or mode == "SAFE"
+    ):
+        return "🟢 SAFE"
 
-            if "ULTRA SAFE" in mode or mode == "SAFE":
-                return "🟢 SAFE"
+    elif (
+        "VALUE" in mode
+        and "MEGA" not in mode
+    ):
+        return "🟡 MEDIUM"
 
-            if mode == "VALUE":
-                return "🟡 MEDIUM"
+    elif (
+        "AGGRESSIVE" in mode
+        or "RISKY" in mode
+    ):
+        return "🔴 RISKY"
 
-            if mode == "AGGRESSIVE":
-                return "🔴 RISKY"
+    elif (
+        "MEGA" in mode
+        or "MONSTER" in mode
+    ):
+        return "💎 MEGA VALUE"
 
-            return "⚪ AUTRE"
+    return "⚪ AUTRE"
+
+    
 
         tracking["mode_category"] = tracking["bet_mode"].apply(mode_group)
 
