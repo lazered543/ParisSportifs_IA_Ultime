@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#10131f" />
+  <title>IA Paris Sportifs</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <section id="login" class="screen center">
+    <div class="login-card">
+      <div class="logo">PS</div>
+      <h1>IA Paris Sportifs</h1>
+      <p>Application mobile privée</p>
+      <input id="passwordInput" type="password" placeholder="Mot de passe" />
+      <button id="loginBtn">Entrer</button>
+      <small id="loginError"></small>
+    </div>
+  </section>
+
+  <section id="dashboard" class="screen hidden">
+    <header class="topbar">
+      <div><h1>IA Paris Sportifs</h1><p id="lastUpdate">Chargement...</p></div>
+      <button id="refreshBtn">↻</button>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="kpi"><span>Value Bets</span><strong id="kpiValueBets">0</strong></div>
+      <div class="kpi"><span>Profit</span><strong id="kpiProfit">0€</strong></div>
+      <div class="kpi"><span>ROI</span><strong id="kpiRoi">0%</strong></div>
+      <div class="kpi"><span>Win Rate</span><strong id="kpiWinrate">0%</strong></div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="valuebets">🔥 Bets</button>
+      <button class="tab" data-tab="roi">📊 ROI</button>
+      <button class="tab" data-tab="wins">✅ Gagnés</button>
+      <button class="tab" data-tab="losses">❌ Perdus</button>
+      <button class="tab" data-tab="pending">⏳ Attente</button>
+    </nav>
+
+    <main>
+      <section id="tab-valuebets" class="tab-panel active"><h2>🔥 Meilleurs Value Bets</h2><div id="valueBetsList" class="list"></div></section>
+      <section id="tab-roi" class="tab-panel"><h2>📊 Rentabilité</h2><div class="roi-box"><div><span>Misé total</span><strong id="roiStake">0€</strong></div><div><span>Argent gagné</span><strong id="roiWon">0€</strong></div><div><span>Argent perdu</span><strong id="roiLost">0€</strong></div><div><span>Bénéfice net</span><strong id="roiNet">0€</strong></div></div><canvas id="profitChart" height="180"></canvas></section>
+      <section id="tab-wins" class="tab-panel"><h2>✅ Paris gagnés</h2><div id="winsList" class="list"></div></section>
+      <section id="tab-losses" class="tab-panel"><h2>❌ Paris perdus</h2><div id="lossesList" class="list"></div></section>
+      <section id="tab-pending" class="tab-panel"><h2>⏳ Paris en attente</h2><div id="pendingList" class="list"></div></section>
+    </main>
+  </section>
+  <script src="app.js"></script>
+</body>
+</html>
