@@ -3,6 +3,12 @@ import pandas as pd
 from pathlib import Path
 import streamlit.components.v1 as components
 
+try:
+    import plotly.express as px
+    PLOTLY_OK = True
+except Exception:
+    PLOTLY_OK = False
+
 st.set_page_config(
     page_title="IA Paris Sportifs Ultime",
     layout="wide",
