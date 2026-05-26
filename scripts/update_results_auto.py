@@ -1,6 +1,7 @@
 import os
 import re
 import unicodedata
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -62,6 +63,73 @@ def get_score_number(score):
         return None
 
 
+def parse_datetime(value):
+    if value is None or pd.isna(value):
+        return None
+
+    try:
+        text = str(value).strip()
+
+        if re.fullmatch(r"\d{8}", text):
+            parsed = pd.to_datetime(text, format="%Y%m%d", errors="coerce", utc=True)
+        elif re.match(r"\d{4}-\d{2}-\d{2}", text):
+            parsed = pd.to_datetime(text, errors="coerce", utc=True)
+        else:
+            parsed = pd.to_datetime(value, errors="coerce", utc=True, dayfirst=True)
+    except Exception:
+        return None
+
+    if pd.isna(parsed):
+        return None
+
+    return parsed.to_pydatetime()
+
+
+def event_datetime(event):
+    if not event:
+        return None
+
+    for key in ["commence_time", "date", "start_time"]:
+        parsed = parse_datetime(event.get(key))
+
+        if parsed is not None:
+            return parsed
+
+    return None
+
+
+def dates_are_close(row_date, other_date, max_days=2):
+    row_dt = parse_datetime(row_date)
+    other_dt = parse_datetime(other_date)
+
+    if row_dt is None or other_dt is None:
+        return True
+
+    return abs(row_dt - other_dt) <= timedelta(days=max_days)
+
+
+def pending_status(row, event=None):
+    start = parse_datetime(row.get("date"))
+    now = datetime.now(timezone.utc)
+
+    if event is not None:
+        return "MATCH_FOUND_NOT_COMPLETED_YET"
+
+    if start is None:
+        return "RESULT_NOT_FOUND_VERIFY_MANUALLY"
+
+    if start > now:
+        return "MATCH_NOT_STARTED_YET"
+
+    sport = str(row.get("sport", "")).lower()
+    grace = timedelta(hours=8 if "tennis" in sport else 3)
+
+    if now - start <= grace:
+        return "MATCH_IN_PROGRESS_OR_RESULT_NOT_AVAILABLE_YET"
+
+    return "RESULT_NOT_FOUND_VERIFY_MANUALLY"
+
+
 def ensure_manual_results_template():
     if MANUAL_RESULTS_PATH.exists():
         return
@@ -116,11 +184,17 @@ def find_manual_result(row, manual_df):
         reversed_match = names_match(home, m_away) and names_match(away, m_home)
 
         if same_match or reversed_match:
+            if not dates_are_close(row.get("date", ""), manual.get("date", "")):
+                continue
+
             winner = manual.get("winner", "")
 
             if pd.notna(winner) and str(winner).strip():
                 score_home = manual.get("score_home", None)
                 score_away = manual.get("score_away", None)
+
+                if reversed_match:
+                    score_home, score_away = score_away, score_home
 
                 return str(winner), score_home, score_away
 
@@ -128,6 +202,9 @@ def find_manual_result(row, manual_df):
 
 
 def fetch_scores(sport):
+    if not ODDS_API_KEY:
+        return []
+
     url = f"{BASE_URL}/sports/{sport}/scores"
 
     params = {
@@ -148,6 +225,8 @@ def fetch_scores(sport):
 def find_matching_score(row, scores):
     home = row.get("home_team", "")
     away = row.get("away_team", "")
+    row_dt = parse_datetime(row.get("date", ""))
+    candidates = []
 
     for event in scores:
         event_home = event.get("home_team", "")
@@ -157,12 +236,34 @@ def find_matching_score(row, scores):
         reversed_match = names_match(home, event_away) and names_match(away, event_home)
 
         if same_match or reversed_match:
-            return event
+            event_dt = event_datetime(event)
+
+            if row_dt is not None and event_dt is not None:
+                delta = abs(row_dt - event_dt)
+
+                if delta > timedelta(days=2):
+                    continue
+            else:
+                delta = timedelta(days=99)
+
+            candidates.append((delta, event))
+
+    if candidates:
+        candidates.sort(key=lambda item: item[0])
+        return candidates[0][1]
 
     return None
 
 
-def get_winner_from_event(event):
+def get_score_for_name(scores, name):
+    for score in scores:
+        if names_match(name, score.get("name", "")):
+            return get_score_number(score.get("score"))
+
+    return None
+
+
+def get_winner_from_event(row, event):
     if not event:
         return None, None, None
 
@@ -174,22 +275,40 @@ def get_winner_from_event(event):
     if not scores or len(scores) < 2:
         return None, None, None
 
-    name_1 = scores[0].get("name")
-    name_2 = scores[1].get("name")
+    parsed_scores = []
 
-    score_1 = get_score_number(scores[0].get("score"))
-    score_2 = get_score_number(scores[1].get("score"))
+    for score in scores:
+        score_value = get_score_number(score.get("score"))
 
-    if score_1 is None or score_2 is None:
+        if score_value is not None:
+            parsed_scores.append((score.get("name"), score_value))
+
+    if len(parsed_scores) < 2:
         return None, None, None
 
-    if score_1 > score_2:
-        return name_1, score_1, score_2
+    parsed_scores = sorted(parsed_scores, key=lambda item: item[1], reverse=True)
+    top_name, top_score = parsed_scores[0]
+    second_name, second_score = parsed_scores[1]
 
-    if score_2 > score_1:
-        return name_2, score_1, score_2
+    home_score = get_score_for_name(scores, row.get("home_team", ""))
+    away_score = get_score_for_name(scores, row.get("away_team", ""))
 
-    return "DRAW", score_1, score_2
+    if home_score is None or away_score is None:
+        event_home = event.get("home_team", "")
+        event_away = event.get("away_team", "")
+
+        if names_match(row.get("home_team", ""), event_home):
+            home_score = get_score_number(scores[0].get("score"))
+            away_score = get_score_number(scores[1].get("score"))
+
+        elif names_match(row.get("home_team", ""), event_away):
+            home_score = get_score_number(scores[1].get("score"))
+            away_score = get_score_number(scores[0].get("score"))
+
+    if top_score > second_score:
+        return top_name, home_score, away_score
+
+    return "DRAW", home_score, away_score
 
 
 def try_resolve_tennis_from_history(row):
@@ -223,10 +342,28 @@ def try_resolve_tennis_from_history(row):
         "match_winner",
     ]
 
+    date_cols = [
+        "date",
+        "Date",
+        "match_date",
+        "tourney_date",
+    ]
+
     for _, h in history.tail(10000).iterrows():
         line = " ".join([safe_str(v) for v in h.values])
 
         if home in line and away in line:
+            row_date = row.get("date", "")
+            history_date = ""
+
+            for date_col in date_cols:
+                if date_col in history.columns:
+                    history_date = h.get(date_col, "")
+                    break
+
+            if history_date and not dates_are_close(row_date, history_date, max_days=3):
+                continue
+
             for col in winner_cols:
                 if col in history.columns:
                     winner = h.get(col)
@@ -410,8 +547,7 @@ def build_learning_profile(tracking):
 
 def main():
     if not ODDS_API_KEY:
-        print("ODDS_API_KEY manquante.")
-        return
+        print("ODDS_API_KEY manquante : resultats manuels/historique uniquement.")
 
     if not TRACK_PATH.exists():
         print("tracking_results.csv introuvable.")
@@ -425,6 +561,15 @@ def main():
 
     if "result" not in tracking.columns:
         tracking["result"] = "PENDING"
+
+    tracking["result"] = (
+        tracking["result"]
+        .fillna("PENDING")
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .replace({"": "PENDING", "NAN": "PENDING", "NONE": "PENDING"})
+    )
 
     if "stake" not in tracking.columns:
         tracking["stake"] = pd.to_numeric(
@@ -446,6 +591,18 @@ def main():
         if col not in tracking.columns:
             tracking[col] = ""
 
+    if "category" not in tracking.columns:
+        tracking["category"] = ""
+
+    category_blank = tracking["category"].fillna("").astype(str).str.strip() == ""
+    tracking.loc[category_blank, "category"] = (
+        tracking.loc[category_blank, "sport"]
+        .fillna("")
+        .astype(str)
+        .str.lower()
+        .apply(lambda sport: "tennis" if "tennis" in sport else "football" if "soccer" in sport or "football" in sport else "autre")
+    )
+
     manual_df = load_manual_results()
 
     pending = tracking[
@@ -462,12 +619,7 @@ def main():
     scores_by_sport = {}
 
     for sport in sports:
-        if "tennis" in str(sport).lower():
-            print("Tennis détecté : manuel + historique tennis :", sport)
-            scores_by_sport[sport] = []
-            continue
-
-        print("Récupération scores :", sport)
+        print("Recuperation scores :", sport)
         scores_by_sport[sport] = fetch_scores(sport)
 
     updated = 0
@@ -478,11 +630,17 @@ def main():
         if row.get("result") in ["WIN", "LOSS", "VOID"]:
             continue
 
+        winner = None
+        score_home = None
+        score_away = None
+        event = None
+        status_detail = ""
+
         manual_result = find_manual_result(row, manual_df)
 
         if manual_result is not None:
             winner, score_home, score_away = manual_result
-            tracking.at[idx, "status_detail"] = "RESOLVED_FROM_MANUAL_RESULTS"
+            status_detail = "RESOLVED_FROM_MANUAL_RESULTS"
             manual_updated += 1
 
         else:
@@ -490,7 +648,10 @@ def main():
             scores = scores_by_sport.get(sport, [])
 
             event = find_matching_score(row, scores)
-            winner, score_home, score_away = get_winner_from_event(event)
+            winner, score_home, score_away = get_winner_from_event(row, event)
+
+            if winner is not None:
+                status_detail = "RESOLVED_FROM_ODDS_API"
 
             if winner is None and "tennis" in str(sport).lower():
                 winner, _ = try_resolve_tennis_from_history(row)
@@ -498,10 +659,10 @@ def main():
                 if winner is not None:
                     score_home = None
                     score_away = None
-                    tracking.at[idx, "status_detail"] = "RESOLVED_FROM_TENNIS_HISTORY"
+                    status_detail = "RESOLVED_FROM_TENNIS_HISTORY"
 
         if winner is None:
-            tracking.at[idx, "status_detail"] = "RESULT_NOT_FOUND_VERIFY_MANUALLY"
+            tracking.at[idx, "status_detail"] = pending_status(row, event)
             not_found += 1
             continue
 
@@ -513,9 +674,7 @@ def main():
             tracking.at[idx, "final_score_home"] = score_home
             tracking.at[idx, "final_score_away"] = score_away
             tracking.at[idx, "profit"] = calc_profit(tracking.loc[idx])
-
-            if not tracking.at[idx, "status_detail"]:
-                tracking.at[idx, "status_detail"] = "RESOLVED_FROM_ODDS_API"
+            tracking.at[idx, "status_detail"] = status_detail or "RESOLVED"
 
             updated += 1
 

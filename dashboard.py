@@ -558,6 +558,15 @@ with tabs[4]:
         if "result" not in tracking.columns:
             tracking["result"] = "PENDING"
 
+        tracking["result"] = (
+            tracking["result"]
+            .fillna("PENDING")
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .replace({"": "PENDING", "NAN": "PENDING", "NONE": "PENDING"})
+        )
+
         tracking["stake"] = pd.to_numeric(
             tracking.get("suggested_stake", tracking.get("stake", 0)),
             errors="coerce"
@@ -575,6 +584,9 @@ with tabs[4]:
 
         if "category" not in tracking.columns:
             tracking["category"] = tracking["sport"].apply(sport_category)
+        else:
+            category_blank = tracking["category"].fillna("").astype(str).str.strip() == ""
+            tracking.loc[category_blank, "category"] = tracking.loc[category_blank, "sport"].apply(sport_category)
 
         if "bet_mode" not in tracking.columns:
             tracking["bet_mode"] = "NON CLASSÉ"

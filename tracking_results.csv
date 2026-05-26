@@ -1,7 +1,7 @@
-date,sport,home_team,away_team,market,ai_probability,bookmaker_odds,value,stake,bet_mode,stake_percent,kelly_fraction,bankroll,result,profit,final_winner,final_score_home,final_score_away,status_detail
-2026-05-26T13:00:00Z,tennis_atp_french_open,Cristian Garin,Learner Tien,Player 2 Win,0.6709,1.62,0.0869,1.8,VALUE,0.018,0.12,100.0,PENDING,0.0,,,,RESULT_NOT_FOUND_VERIFY_MANUALLY
-2026-05-27T09:00:00Z,tennis_atp_french_open,Hubert Hurkacz,Frances Tiafoe,Player 2 Win,0.5334,2.2,0.1735,0.96,AGGRESSIVE,0.0096,0.12,100.0,PENDING,0.0,,,,RESULT_NOT_FOUND_VERIFY_MANUALLY
-2026-05-26T13:00:00Z,tennis_wta_french_open,Dalma Galfi,Mayar Sherif,Player 1 Win,0.6006,1.87,0.123,1.8,VALUE,0.018,0.12,100.0,PENDING,0.0,,,,RESULT_NOT_FOUND_VERIFY_MANUALLY
-2026-05-26T12:20:00Z,tennis_atp_french_open,Cameron Norrie,Adolfo Daniel Vallejo,Player 2 Win,0.5251,2.3,0.2078,0.96,AGGRESSIVE,0.0096,0.12,100.0,PENDING,0.0,,,,RESULT_NOT_FOUND_VERIFY_MANUALLY
-2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.38,0.7136,1.8,VALUE,0.018,0.12,100.0,PENDING,0.0,,,,RESULT_NOT_FOUND_VERIFY_MANUALLY
-2026-05-28T09:00:00Z,tennis_atp_french_open,Hubert Hurkacz,Frances Tiafoe,Player 2 Win,0.5289,2.36,0.2483,0.96,AGGRESSIVE,0.0096,0.12,100.0,PENDING,0.0,,,,RESULT_NOT_FOUND_VERIFY_MANUALLY
+date,sport,home_team,away_team,market,ai_probability,bookmaker_odds,value,stake,bet_mode,stake_percent,kelly_fraction,bankroll,result,profit,final_winner,final_score_home,final_score_away,status_detail,selection,category
+2026-05-26T13:00:00Z,tennis_atp_french_open,Cristian Garin,Learner Tien,Player 2 Win,0.6709,1.62,0.0869,1.8,VALUE,0.018,0.12,100.0,PENDING,0.0,,,,MATCH_IN_PROGRESS_OR_RESULT_NOT_AVAILABLE_YET,learner tien,tennis
+2026-05-27T09:00:00Z,tennis_atp_french_open,Hubert Hurkacz,Frances Tiafoe,Player 2 Win,0.5334,2.2,0.1735,0.96,AGGRESSIVE,0.0096,0.12,100.0,PENDING,0.0,,,,MATCH_NOT_STARTED_YET,frances tiafoe,tennis
+2026-05-26T13:00:00Z,tennis_wta_french_open,Dalma Galfi,Mayar Sherif,Player 1 Win,0.6006,1.87,0.123,1.8,VALUE,0.018,0.12,100.0,PENDING,0.0,,,,MATCH_IN_PROGRESS_OR_RESULT_NOT_AVAILABLE_YET,dalma galfi,tennis
+2026-05-26T12:20:00Z,tennis_atp_french_open,Cameron Norrie,Adolfo Daniel Vallejo,Player 2 Win,0.5251,2.3,0.2078,0.96,AGGRESSIVE,0.0096,0.12,100.0,PENDING,0.0,,,,MATCH_IN_PROGRESS_OR_RESULT_NOT_AVAILABLE_YET,adolfo daniel vallejo,tennis
+2026-05-26T18:45:00Z,soccer_france_ligue_one,Saint Etienne,Nice,Home Win,0.72,2.38,0.7136,1.8,VALUE,0.018,0.12,100.0,PENDING,0.0,,,,MATCH_NOT_STARTED_YET,saint etienne,football
+2026-05-28T09:00:00Z,tennis_atp_french_open,Hubert Hurkacz,Frances Tiafoe,Player 2 Win,0.5289,2.36,0.2483,0.96,AGGRESSIVE,0.0096,0.12,100.0,PENDING,0.0,,,,MATCH_NOT_STARTED_YET,frances tiafoe,tennis
