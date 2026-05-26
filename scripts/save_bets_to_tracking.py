@@ -24,6 +24,10 @@ cols = [
     "bookmaker_odds",
     "value",
     "suggested_stake",
+    "bet_mode",
+    "stake_percent",
+    "kelly_fraction",
+    "bankroll",
 ]
 
 bets = bets[cols].copy()

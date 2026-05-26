@@ -233,6 +233,9 @@ def clean_table(data):
         "mode_category",
         "result",
         "stake",
+        "stake_percent",
+        "kelly_fraction",
+        "bankroll",
         "profit",
         "final_winner",
         "status_detail",
@@ -260,7 +263,7 @@ def clean_table(data):
             out[col] = pd.to_numeric(out[col], errors="coerce")
             out[col] = out[col].apply(lambda x: "" if pd.isna(x) else f"{x * 100:.2f}%")
 
-    for col in ["bookmaker_odds", "suggested_stake", "stake", "profit", "tennis_engine_score", "score_exact_1_proba"]:
+    for col in ["bookmaker_odds", "suggested_stake", "stake", "stake_percent", "kelly_fraction", "bankroll", "profit", "tennis_engine_score", "score_exact_1_proba"]:
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce").round(2)
 
@@ -577,35 +580,21 @@ with tabs[4]:
             tracking["bet_mode"] = "NON CLASSÉ"
 
         def mode_group(mode):
-    mode = str(mode).upper().strip()
+            mode = str(mode).upper().strip()
 
-    if (
-        "ULTRA SAFE" in mode
-        or mode == "SAFE"
-    ):
-        return "🟢 SAFE"
+            if "MEGA" in mode or "MONSTER" in mode:
+                return "💎 MEGA VALUE"
 
-    elif (
-        "VALUE" in mode
-        and "MEGA" not in mode
-    ):
-        return "🟡 MEDIUM"
+            if "ULTRA SAFE" in mode or mode == "SAFE":
+                return "🟢 SAFE"
 
-    elif (
-        "AGGRESSIVE" in mode
-        or "RISKY" in mode
-    ):
-        return "🔴 RISKY"
+            if "VALUE" in mode:
+                return "🟡 MEDIUM"
 
-    elif (
-        "MEGA" in mode
-        or "MONSTER" in mode
-    ):
-        return "💎 MEGA VALUE"
+            if "AGGRESSIVE" in mode or "RISKY" in mode:
+                return "🔴 RISKY"
 
-    return "⚪ AUTRE"
-
-    
+            return "⚪ AUTRE"
 
         tracking["mode_category"] = tracking["bet_mode"].apply(mode_group)
 
