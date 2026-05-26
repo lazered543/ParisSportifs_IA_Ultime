@@ -1,10 +1,11 @@
 import os
 import re
 import unicodedata
-import requests
-import pandas as pd
-
+from datetime import datetime, timezone
 from pathlib import Path
+
+import pandas as pd
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,6 +14,10 @@ ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 
 TRACK_PATH = Path("tracking_results.csv")
 BASE_URL = "https://api.the-odds-api.com/v4"
+
+# Après ce délai, un pari toujours introuvable passe en VOID
+# pour éviter les PENDING bloqués éternellement.
+AUTO_VOID_HOURS = 18
 
 
 def safe_str(x):
@@ -23,6 +28,7 @@ def safe_str(x):
 
     replacements = {
         "paris saint germain": "psg",
+        "paris sg": "psg",
         "manchester united": "man utd",
         "manchester city": "man city",
         "internazionale": "inter",
@@ -49,7 +55,7 @@ def fetch_scores(sport):
 
     params = {
         "apiKey": ODDS_API_KEY,
-        "daysFrom": 3
+        "daysFrom": 3,
     }
 
     try:
@@ -69,11 +75,7 @@ def names_match(a, b):
     if not a or not b:
         return False
 
-    return (
-        a == b
-        or a in b
-        or b in a
-    )
+    return a == b or a in b or b in a
 
 
 def find_matching_score(row, scores):
@@ -206,12 +208,12 @@ def calc_profit(row):
 
     stake = pd.to_numeric(
         row.get("stake", row.get("suggested_stake", 0)),
-        errors="coerce"
+        errors="coerce",
     )
 
     odds = pd.to_numeric(
         row.get("bookmaker_odds", 0),
-        errors="coerce"
+        errors="coerce",
     )
 
     if pd.isna(stake):
@@ -227,6 +229,23 @@ def calc_profit(row):
         return round(-float(stake), 2)
 
     return 0.0
+
+
+def should_auto_void(row, hours=AUTO_VOID_HOURS):
+    try:
+        match_date = pd.to_datetime(row.get("date"), utc=True, errors="coerce")
+
+        if pd.isna(match_date):
+            return False, None
+
+        now = datetime.now(timezone.utc)
+        age_hours = (now - match_date.to_pydatetime()).total_seconds() / 3600
+
+        return age_hours > hours, age_hours
+
+    except Exception:
+        return False, None
+
 
 def main():
     if not ODDS_API_KEY:
@@ -249,12 +268,12 @@ def main():
     if "stake" not in tracking.columns:
         tracking["stake"] = pd.to_numeric(
             tracking.get("suggested_stake", 0),
-            errors="coerce"
+            errors="coerce",
         ).fillna(0.0).astype(float)
 
     tracking["profit"] = pd.to_numeric(
         tracking.get("profit", 0),
-        errors="coerce"
+        errors="coerce",
     ).fillna(0.0).astype(float)
 
     for col in ["final_winner", "final_score_home", "final_score_away", "status_detail"]:
@@ -262,7 +281,7 @@ def main():
             tracking[col] = ""
 
     pending = tracking[
-        ~tracking["result"].isin(["WIN", "LOSS"])
+        ~tracking["result"].isin(["WIN", "LOSS", "VOID"])
     ].copy()
 
     if pending.empty:
@@ -283,10 +302,11 @@ def main():
         scores_by_sport[sport] = fetch_scores(sport)
 
     updated = 0
+    voided = 0
     not_found = 0
 
     for idx, row in tracking.iterrows():
-        if row.get("result") in ["WIN", "LOSS"]:
+        if row.get("result") in ["WIN", "LOSS", "VOID"]:
             continue
 
         sport = row.get("sport", "")
@@ -304,8 +324,28 @@ def main():
                 tracking.at[idx, "status_detail"] = "RESOLVED_FROM_TENNIS_HISTORY"
 
         if winner is None:
-            tracking.at[idx, "status_detail"] = "RESULT_NOT_FOUND"
-            not_found += 1
+            auto_void, age_hours = should_auto_void(row)
+
+            if auto_void:
+                tracking.at[idx, "result"] = "VOID"
+                tracking.at[idx, "profit"] = 0.0
+                tracking.at[idx, "status_detail"] = "AUTO_VOID_OLD_PENDING"
+                voided += 1
+
+                print(
+                    "AUTO VOID :",
+                    row.get("home_team"),
+                    "vs",
+                    row.get("away_team"),
+                    f"({round(age_hours, 1)}h)"
+                    if age_hours is not None
+                    else "",
+                )
+
+            else:
+                tracking.at[idx, "status_detail"] = "RESULT_NOT_FOUND"
+                not_found += 1
+
             continue
 
         result = evaluate_bet(row, winner)
@@ -329,13 +369,14 @@ def main():
                 "=>",
                 result,
                 "| gagnant :",
-                winner
+                winner,
             )
 
     tracking.to_csv(TRACK_PATH, index=False)
 
     print("Résultats mis à jour :", updated)
-    print("Résultats introuvables :", not_found)
+    print("Paris passés en VOID :", voided)
+    print("Résultats introuvables récents :", not_found)
 
 
 if __name__ == "__main__":
