@@ -664,52 +664,121 @@ with tabs[4]:
         st.divider()
 
         result_tabs = st.tabs([
-            "✅ Gagnés",
-            "❌ Perdus",
-            "⏳ En attente",
-            "📋 Tous les résultats"
-        ])
+    "💰 Argent gagné",
+    "📉 Argent perdu",
+    "✅ Paris gagnés",
+    "❌ Paris perdus",
+    "⏳ En attente",
+    "📋 Tous les résultats"
+])
 
-        with result_tabs[0]:
-            st.subheader("Paris gagnés triés par profit")
+with result_tabs[0]:
+    st.subheader("💰 Argent gagné")
 
-            show_table(
-                wins.sort_values("profit", ascending=False),
-                height=520
-            )
+    total_gagne = wins["profit"].sum() if not wins.empty else 0
 
-        with result_tabs[1]:
-            st.subheader("Paris perdus triés par perte")
+    st.metric(
+        "Bénéfice total",
+        f"+{total_gagne:.2f}€"
+    )
 
-            show_table(
-                losses.sort_values("profit", ascending=True),
-                height=520
-            )
+    if not wins.empty:
+        top_gains = wins.sort_values("profit", ascending=False)
 
-        with result_tabs[2]:
-            st.subheader("Paris en attente triés par date")
+        plot_bar(
+            top_gains.head(20),
+            "home_team",
+            "profit",
+            "Top gains"
+        )
 
-            show_table(
-                pending.sort_values("date", ascending=True),
-                height=520
-            )
+        show_table(
+            top_gains,
+            height=520
+        )
+    else:
+        st.info("Aucun pari gagnant pour le moment.")
 
-        with result_tabs[3]:
-            st.subheader("Historique complet trié par résultat puis date")
 
-            order = {
-                "WIN": 0,
-                "LOSS": 1,
-                "PENDING": 2
-            }
+with result_tabs[1]:
+    st.subheader("📉 Argent perdu")
 
-            all_results = tracking.copy()
-            all_results["result_order"] = all_results["result"].map(order).fillna(3)
+    total_perdu = losses["profit"].sum() if not losses.empty else 0
 
-            show_table(
-                all_results.sort_values(["result_order", "date"], ascending=[True, False]),
-                height=650
-            )
+    st.metric(
+        "Perte totale",
+        f"{total_perdu:.2f}€"
+    )
+
+    if not losses.empty:
+        top_losses = losses.sort_values("profit", ascending=True)
+
+        plot_bar(
+            top_losses.head(20),
+            "home_team",
+            "profit",
+            "Top pertes"
+        )
+
+        show_table(
+            top_losses,
+            height=520
+        )
+    else:
+        st.info("Aucun pari perdant pour le moment.")
+
+
+with result_tabs[2]:
+    st.subheader("✅ Paris gagnés triés par profit")
+
+    show_table(
+        wins.sort_values("profit", ascending=False),
+        height=520
+    )
+
+
+with result_tabs[3]:
+    st.subheader("❌ Paris perdus triés par perte")
+
+    show_table(
+        losses.sort_values("profit", ascending=True),
+        height=520
+    )
+
+
+with result_tabs[4]:
+    st.subheader("⏳ Paris en attente")
+
+    show_table(
+        pending.sort_values("date", ascending=True),
+        height=520
+    )
+
+
+with result_tabs[5]:
+    st.subheader("📋 Historique complet")
+
+    order = {
+        "WIN": 0,
+        "LOSS": 1,
+        "PENDING": 2
+    }
+
+    all_results = tracking.copy()
+
+    all_results["result_order"] = (
+        all_results["result"]
+        .map(order)
+        .fillna(3)
+    )
+
+    show_table(
+        all_results.sort_values(
+            ["result_order", "date"],
+            ascending=[True, False]
+        ),
+        height=650
+    )
 
 with tabs[5]:
     st.subheader("Tech IA")
