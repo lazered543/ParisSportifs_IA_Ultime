@@ -34,6 +34,10 @@ time.sleep(2)
 run_command("python scripts/save_bets_to_tracking.py")
 time.sleep(2)
 
+# ✅ AJOUT IMPORTANT
+run_command("python scripts/update_results_auto.py")
+time.sleep(2)
+
 run_command("python scripts/send_telegram_alerts.py")
 time.sleep(2)
 
@@ -44,4 +48,6 @@ print("==============================\n")
 print("- Dashboard Streamlit prêt")
 print("- tracking_results.csv mis à jour")
 print("- value_bets_today.csv mis à jour")
+print("- Résultats WIN / LOSS mis à jour")
+print("- ROI recalculé automatiquement")
 print("- Alertes Telegram envoyées si VALUE BETS disponibles")
