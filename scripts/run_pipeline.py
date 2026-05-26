@@ -129,58 +129,70 @@ def normalized_market_probabilities(odds_home, odds_draw, odds_away):
 # ============================================================
 
 def bet_mode(prob, odds, value, confidence, sport):
+    """
+    Filtres plus réalistes :
+    - assez sélectif pour éviter les paris poubelle
+    - pas trop strict pour éviter 1 seul value bet sur 200 matchs
+    - accepte un peu de risque seulement quand l'edge est fort
+    """
     sport = str(sport).lower()
+    confidence = str(confidence)
 
-    # Blacklist des compétitions/matchs trop dangereux
-    risky = any(x in sport for x in [
+    risky_competition = any(x in sport for x in [
         "itf",
         "challenger",
         "friendly",
     ])
 
-    if risky or odds <= 1:
+    if risky_competition or odds <= 1:
         return "NO BET"
 
-    # MEGA VALUE : rare, gros edge + grosse confiance
+    # On refuse les cotes trop extrêmes : variance trop forte
+    if odds > 4.50:
+        return "NO BET"
+
+    # MEGA VALUE : rare mais pas impossible
     if (
-        prob >= 0.82
-        and value >= 0.10
-        and 1.35 <= odds <= 2.40
-        and confidence in ["Fort", "Elite"]
+        prob >= 0.70
+        and value >= 0.12
+        and 1.35 <= odds <= 3.20
+        and confidence in ["Moyen", "Fort", "Elite"]
     ):
         return "MEGA VALUE"
 
-    # ULTRA SAFE : objectif winrate très élevé
+    # ULTRA SAFE : très propre, petites/moyennes cotes
     if (
-        prob >= 0.78
-        and value >= 0.04
-        and 1.25 <= odds <= 1.65
+        prob >= 0.72
+        and value >= 0.035
+        and 1.22 <= odds <= 1.85
         and confidence in ["Fort", "Elite"]
     ):
         return "ULTRA SAFE"
 
-    # SAFE : paris propres et contrôlés
+    # SAFE : fiable mais pas bloquant
     if (
-        prob >= 0.70
-        and value >= 0.05
-        and 1.30 <= odds <= 2.00
+        prob >= 0.64
+        and value >= 0.035
+        and 1.25 <= odds <= 2.15
         and confidence in ["Moyen", "Fort", "Elite"]
     ):
         return "SAFE"
 
-    # VALUE : bon edge mais variance normale
+    # VALUE : catégorie principale, value raisonnable
     if (
-        prob >= 0.58
-        and value >= 0.06
-        and 1.40 <= odds <= 3.00
+        prob >= 0.55
+        and value >= 0.035
+        and 1.35 <= odds <= 3.20
+        and confidence not in ["A éviter", "A Ã©viter"]
     ):
         return "VALUE"
 
-    # AGGRESSIVE : value forte mais risque plus élevé
+    # AGGRESSIVE : un peu de risque accepté si value forte
     if (
-        prob >= 0.52
+        prob >= 0.50
         and value >= 0.10
-        and odds <= 5
+        and 1.80 <= odds <= 4.50
+        and confidence not in ["A éviter", "A Ã©viter"]
     ):
         return "AGGRESSIVE"
 
@@ -217,11 +229,11 @@ def bankroll_management(prob, odds, value, mode, bankroll):
 
     # Fractionnement selon le profil du pari
     fractions = {
-        "ULTRA SAFE": 0.35,
-        "SAFE": 0.25,
-        "VALUE": 0.15,
-        "AGGRESSIVE": 0.08,
-        "MEGA VALUE": 0.50,
+        "ULTRA SAFE": 0.32,
+        "SAFE": 0.24,
+        "VALUE": 0.14,
+        "AGGRESSIVE": 0.07,
+        "MEGA VALUE": 0.42,
     }
 
     fraction = fractions.get(mode, 0.0)
@@ -230,11 +242,11 @@ def bankroll_management(prob, odds, value, mode, bankroll):
 
     # Plafonds par mode pour éviter les grosses mises dangereuses
     max_by_mode = {
-        "ULTRA SAFE": 0.05,
-        "SAFE": 0.035,
-        "VALUE": 0.025,
-        "AGGRESSIVE": 0.0125,
-        "MEGA VALUE": 0.08,
+        "ULTRA SAFE": 0.045,
+        "SAFE": 0.03,
+        "VALUE": 0.02,
+        "AGGRESSIVE": 0.01,
+        "MEGA VALUE": 0.055,
     }
 
     max_percent = max_by_mode.get(mode, 0.0)
@@ -270,8 +282,8 @@ def reliable_filter(decision, confidence, odds, value, prob):
     return (
         decision == "VALUE BET"
         and confidence in ["Moyen", "Fort", "Elite"]
-        and 1.40 <= odds <= 2.80
-        and value >= 0.05
+        and 1.30 <= odds <= 3.20
+        and value >= 0.035
         and prob >= 0.52
     )
 
@@ -1025,9 +1037,9 @@ def tennis_reliable_filter(decision, confidence, odds, value, prob):
     return (
         decision == "VALUE BET"
         and confidence in ["Moyen", "Fort", "Elite"]
-        and 1.35 <= odds <= 2.80
-        and value >= 0.04
-        and prob >= 0.56
+        and 1.30 <= odds <= 3.20
+        and value >= 0.035
+        and prob >= 0.54
     )
 
 
@@ -1082,12 +1094,6 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             meta["history_strength"]
         )
 
-        stake = safe_stake(
-            bankroll,
-            prob,
-            odds,
-            MAX_STAKE_PCT
-        )
 
         mode = bet_mode(
             prob,
