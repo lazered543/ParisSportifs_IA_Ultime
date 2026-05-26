@@ -160,6 +160,11 @@ def main():
 
     tracking = pd.read_csv(TRACK_PATH)
 
+    tracking["profit"] = pd.to_numeric(
+    tracking.get("profit", 0),
+    errors="coerce"
+).fillna(0.0).astype(float)
+
     if tracking.empty:
         print("Tracking vide.")
         return
