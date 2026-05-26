@@ -1,17 +1,19 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-from html import escape
 
 try:
     import plotly.express as px
-    import plotly.graph_objects as go
     PLOTLY_OK = True
 except Exception:
     PLOTLY_OK = False
 
 
-st.set_page_config(page_title="IA Paris Sportifs Ultime", layout="wide", page_icon="PS")
+st.set_page_config(
+    page_title="IA Paris Sportifs Ultime",
+    layout="wide",
+    page_icon="PS"
+)
 
 APP_PASSWORD = "29052007"
 PRED_PATH = Path("data/predictions/predictions_today.csv")
@@ -19,136 +21,120 @@ TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
 
 
-# =========================
-# STYLE
-# =========================
-
 st.markdown("""
 <style>
-:root {
-    --bg: #10131f;
-    --panel: #171b2b;
-    --panel-2: #20263a;
-    --line: rgba(255,255,255,.12);
-    --text: #f7f8ff;
-    --muted: #9ea8c4;
-    --pink: #f472d0;
-    --purple: #a855f7;
-    --cyan: #22d3ee;
-    --blue: #60a5fa;
-    --green: #34d399;
-    --amber: #fbbf24;
-    --red: #fb7185;
-}
 .stApp {
     background:
         radial-gradient(circle at 0% 0%, rgba(168,85,247,.28), transparent 30%),
         radial-gradient(circle at 100% 100%, rgba(34,211,238,.18), transparent 28%),
         linear-gradient(135deg, #111827 0%, #10131f 45%, #0d1020 100%);
-    color: var(--text);
-    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    color: #f7f8ff;
 }
-.block-container { max-width: 1580px; padding-top: 28px; padding-bottom: 48px; }
-section[data-testid="stSidebar"] { background: #141827; border-right: 1px solid var(--line); }
-section[data-testid="stSidebar"] * { color: #eef2ff !important; }
-h1, h2, h3 { color: var(--text) !important; }
-.shell {
-    background: rgba(18,22,36,.88);
-    border: 1px solid var(--line);
-    border-radius: 26px;
-    padding: 26px;
-    box-shadow: 0 24px 60px rgba(0,0,0,.35);
+
+.block-container {
+    max-width: 1550px;
+    padding-top: 28px;
 }
-.hero {
-    display: grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 18px;
-    margin-bottom: 20px;
+
+section[data-testid="stSidebar"] {
+    background: #141827;
+    border-right: 1px solid rgba(255,255,255,.12);
 }
-.hero-card, .panel-card, .kpi-card, .match-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
+
+h1, h2, h3 {
+    color: #f7f8ff !important;
+}
+
+[data-testid="stMetric"] {
+    background: #171b2b;
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 18px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    padding: 18px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.25);
 }
-.hero-card {
-    padding: 24px;
-    background: linear-gradient(135deg, rgba(244,114,208,.18), rgba(34,211,238,.08)), var(--panel);
+
+.hero-box {
+    background: linear-gradient(135deg, rgba(244,114,208,.18), rgba(34,211,238,.08)), #171b2b;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 22px;
 }
-.eyebrow { color: var(--pink); font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; }
-.hero-title { font-size: 34px; line-height: 1.08; font-weight: 950; margin-bottom: 10px; }
-.hero-copy { color: var(--muted); font-size: 14px; max-width: 780px; }
-.status-card { padding: 18px; }
-.status-line { display: flex; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--line); padding: 10px 0; }
-.status-line:last-child { border-bottom: 0; }
-.status-label { color: var(--muted); font-size: 12px; }
-.status-value { font-weight: 800; text-align: right; }
-.kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
-.kpi-card { min-height: 122px; padding: 18px; overflow: hidden; position: relative; }
-.kpi-card:after {
-    content: "";
-    position: absolute;
-    width: 84px;
-    height: 84px;
-    right: -20px;
-    bottom: -28px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, rgba(244,114,208,.25), rgba(34,211,238,.18));
+
+.hero-title {
+    font-size: 38px;
+    font-weight: 950;
+    margin-bottom: 8px;
 }
-.kpi-label { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; }
-.kpi-value { display: block; color: var(--text); font-size: 32px; font-weight: 950; margin-top: 12px; }
-.kpi-note { color: var(--muted); font-size: 12px; margin-top: 6px; }
-.match-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
-.match-card { padding: 16px; min-height: 174px; border-left: 4px solid var(--blue); }
-.match-card.value {
-    border-left-color: var(--green);
-    background: linear-gradient(135deg, rgba(52,211,153,.12), rgba(23,27,43,0) 50%), var(--panel);
+
+.hero-sub {
+    color: #9ea8c4;
+    font-size: 15px;
 }
-.match-top { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; margin-bottom: 12px; }
-.match-teams { font-size: 18px; font-weight: 950; line-height: 1.22; margin-bottom: 8px; }
+
+.card {
+    background: #171b2b;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+
+.value-card {
+    background: linear-gradient(135deg, rgba(52,211,153,.13), rgba(23,27,43,1));
+    border-left: 5px solid #34d399;
+}
+
 .badge {
     display: inline-block;
-    padding: 5px 9px;
+    padding: 5px 10px;
     border-radius: 999px;
+    font-weight: 800;
     font-size: 12px;
-    font-weight: 900;
-    border: 1px solid var(--line);
 }
-.badge-green { background: rgba(52,211,153,.15); color: var(--green); }
-.badge-red { background: rgba(251,113,133,.15); color: var(--red); }
-.badge-amber { background: rgba(251,191,36,.15); color: var(--amber); }
-.badge-blue { background: rgba(96,165,250,.15); color: var(--blue); }
-.table-wrap {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 14px;
+
+.badge-green {
+    background: rgba(52,211,153,.18);
+    color: #34d399;
 }
-.stDataFrame { border-radius: 14px !important; overflow: hidden !important; }
-@media (max-width: 1000px) {
-    .hero { grid-template-columns: 1fr; }
-    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .match-grid { grid-template-columns: 1fr; }
+
+.badge-red {
+    background: rgba(251,113,133,.18);
+    color: #fb7185;
+}
+
+.badge-yellow {
+    background: rgba(251,191,36,.18);
+    color: #fbbf24;
+}
+
+.badge-blue {
+    background: rgba(96,165,250,.18);
+    color: #60a5fa;
+}
+
+.stDataFrame {
+    border-radius: 18px !important;
+    overflow: hidden !important;
+}
+
+@media (max-width: 900px) {
+    .hero-title {
+        font-size: 28px;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
 
-
-# =========================
-# LOGIN
-# =========================
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
     st.markdown("""
-    <div class="shell">
-        <div class="hero-card">
-            <div class="eyebrow">Accès privé</div>
-            <div class="hero-title">IA Paris Sportifs Ultime</div>
-            <div class="hero-copy">Plateforme privée : football, tennis, value betting, ROI, tracking, Telegram et analyse IA.</div>
-        </div>
+    <div class="hero-box">
+        <div class="hero-title">IA Paris Sportifs Ultime</div>
+        <div class="hero-sub">Plateforme privée : Football, Tennis, Value Betting, ROI, Telegram et Tracking.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -162,10 +148,6 @@ if not st.session_state.authenticated:
 
     st.stop()
 
-
-# =========================
-# LOAD
-# =========================
 
 @st.cache_data(ttl=300)
 def load_predictions():
@@ -189,17 +171,13 @@ if df.empty:
     st.stop()
 
 
-# =========================
-# HELPERS
-# =========================
-
-def to_num(data, col, default=0):
+def num_col(data, col, default=0):
     if col in data.columns:
         return pd.to_numeric(data[col], errors="coerce").fillna(default)
     return pd.Series([default] * len(data), index=data.index)
 
 
-def category_of_sport(sport):
+def sport_category(sport):
     s = str(sport).lower()
     if "tennis" in s:
         return "tennis"
@@ -208,115 +186,79 @@ def category_of_sport(sport):
     return "autre"
 
 
-def format_table(data):
-    out = data.copy()
+def prepare_base_data(data):
+    data = data.copy()
 
+    data["category"] = data["sport"].apply(sport_category)
+    data["value"] = num_col(data, "value")
+    data["ai_probability"] = num_col(data, "ai_probability")
+    data["suggested_stake"] = num_col(data, "suggested_stake")
+    data["bookmaker_odds"] = num_col(data, "bookmaker_odds")
+    data["implied_probability"] = num_col(data, "implied_probability")
+
+    return data
+
+
+def clean_table(data):
     cols = [
-        "date", "sport", "category", "home_team", "away_team", "market", "selection",
-        "ai_probability", "bookmaker_odds", "implied_probability", "value",
-        "confidence", "ia_badge", "decision", "suggested_stake",
-        "score_exact_1", "score_exact_1_proba", "draw_hunter",
-        "scorer_prediction", "tennis_engine_score", "tennis_edge"
+        "date",
+        "sport",
+        "category",
+        "home_team",
+        "away_team",
+        "market",
+        "selection",
+        "ai_probability",
+        "bookmaker_odds",
+        "implied_probability",
+        "value",
+        "confidence",
+        "ia_badge",
+        "decision",
+        "suggested_stake",
+        "score_exact_1",
+        "score_exact_1_proba",
+        "draw_hunter",
+        "scorer_prediction",
+        "tennis_engine_score",
+        "tennis_edge",
     ]
 
-    cols = [c for c in cols if c in out.columns]
-    out = out[cols]
+    cols = [c for c in cols if c in data.columns]
+    out = data[cols].copy()
 
     for col in ["ai_probability", "implied_probability", "value", "tennis_edge"]:
         if col in out.columns:
-            out[col] = pd.to_numeric(out[col], errors="coerce").apply(
-                lambda x: "" if pd.isna(x) else f"{x*100:.2f}%"
-            )
+            out[col] = pd.to_numeric(out[col], errors="coerce")
+            out[col] = out[col].apply(lambda x: "" if pd.isna(x) else f"{x * 100:.2f}%")
 
-    for col in ["bookmaker_odds", "suggested_stake", "tennis_engine_score"]:
+    for col in ["bookmaker_odds", "suggested_stake", "tennis_engine_score", "score_exact_1_proba"]:
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce").round(2)
 
     return out
 
 
-def render_table(data, height=480):
-    st.markdown('<div class="table-wrap">', unsafe_allow_html=True)
+def show_table(data, height=520):
+    if data.empty:
+        st.info("Aucune donnée à afficher.")
+        return
+
     st.dataframe(
-        format_table(data),
+        clean_table(data),
         use_container_width=True,
         hide_index=True,
         height=height
     )
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-def kpi(label, value, note=""):
-    return f"""
-    <div class="kpi-card">
-        <div class="kpi-label">{escape(str(label))}</div>
-        <span class="kpi-value">{escape(str(value))}</span>
-        <div class="kpi-note">{escape(str(note))}</div>
-    </div>
-    """
-
-
-def render_match_cards(data, limit=6):
-    if data.empty:
-        st.info("Aucun pari à afficher.")
-        return
-
-    html = '<div class="match-grid">'
-
-    for _, row in data.head(limit).iterrows():
-        decision = row.get("decision", "")
-        cls = "match-card value" if decision == "VALUE BET" else "match-card"
-
-        value = pd.to_numeric(pd.Series([row.get("value", 0)]), errors="coerce").fillna(0).iloc[0]
-        proba = pd.to_numeric(pd.Series([row.get("ai_probability", 0)]), errors="coerce").fillna(0).iloc[0]
-
-        html += f"""
-        <div class="{cls}">
-            <div class="match-top">
-                <span>{escape(str(row.get("sport", "")))}</span>
-                <span>{escape(str(row.get("date", "")))}</span>
-            </div>
-            <div class="match-teams">{escape(str(row.get("home_team", "")))}<br>vs {escape(str(row.get("away_team", "")))}</div>
-            <div><span class="badge badge-blue">{escape(str(row.get("market", "")))}</span></div>
-            <br>
-            <div>Proba IA : <b>{proba*100:.1f}%</b></div>
-            <div>Cote : <b>{escape(str(row.get("bookmaker_odds", "")))}</b></div>
-            <div>Value : <b>{value*100:.1f}%</b></div>
-            <div style="margin-top:8px;"><span class="badge badge-green">{escape(str(row.get("ia_badge", "")))}</span></div>
-        </div>
-        """
-
-    html += "</div>"
-    st.markdown(html, unsafe_allow_html=True)
-
-
-def plot_line(data, x, y, title):
-    if data.empty or y not in data.columns:
-        st.info("Pas assez de données pour cette courbe.")
-        return
-
-    chart = data.copy()
-    chart[y] = pd.to_numeric(chart[y], errors="coerce")
-
-    if PLOTLY_OK:
-        fig = px.line(chart, x=x, y=y, title=title, markers=True)
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#f7f8ff"
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.line_chart(chart.set_index(x)[y])
 
 
 def plot_bar(data, x, y, title):
-    if data.empty or y not in data.columns:
+    if data.empty or x not in data.columns or y not in data.columns:
         st.info("Pas assez de données.")
         return
 
     chart = data.copy()
-    chart[y] = pd.to_numeric(chart[y], errors="coerce")
+    chart[y] = pd.to_numeric(chart[y], errors="coerce").fillna(0)
 
     if PLOTLY_OK:
         fig = px.bar(chart, x=x, y=y, title=title)
@@ -330,33 +272,76 @@ def plot_bar(data, x, y, title):
         st.bar_chart(chart.set_index(x)[y])
 
 
-df["category"] = df["sport"].apply(category_of_sport)
-df["value"] = to_num(df, "value")
-df["ai_probability"] = to_num(df, "ai_probability")
-df["suggested_stake"] = to_num(df, "suggested_stake")
+def plot_line(data, x, y, title):
+    if data.empty or x not in data.columns or y not in data.columns:
+        st.info("Pas assez de données.")
+        return
+
+    chart = data.copy()
+    chart[y] = pd.to_numeric(chart[y], errors="coerce").fillna(0)
+
+    if PLOTLY_OK:
+        fig = px.line(chart, x=x, y=y, title=title, markers=True)
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#f7f8ff"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.line_chart(chart.set_index(x)[y])
 
 
-# =========================
-# SIDEBAR FILTERS
-# =========================
+def render_cards(data, limit=6):
+    if data.empty:
+        st.info("Aucun pari à afficher.")
+        return
+
+    cols = st.columns(3)
+
+    for i, (_, row) in enumerate(data.head(limit).iterrows()):
+        with cols[i % 3]:
+            value = float(row.get("value", 0) or 0) * 100
+            proba = float(row.get("ai_probability", 0) or 0) * 100
+            odds = row.get("bookmaker_odds", "")
+
+            st.markdown(
+                f"""
+                <div class="card value-card">
+                    <b>{row.get("home_team", "")} vs {row.get("away_team", "")}</b><br>
+                    <span style="color:#9ea8c4;">{row.get("sport", "")}</span><br><br>
+                    <span class="badge badge-blue">{row.get("market", "")}</span><br><br>
+                    Proba IA : <b>{proba:.1f}%</b><br>
+                    Cote : <b>{odds}</b><br>
+                    Value : <b>{value:.1f}%</b><br>
+                    Confiance : <b>{row.get("confidence", "")}</b><br>
+                    Badge : <b>{row.get("ia_badge", "")}</b>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+
+df = prepare_base_data(df)
+
 
 st.sidebar.title("Filtres")
 
 sports = st.sidebar.multiselect(
     "Compétitions",
-    options=sorted(df["sport"].dropna().unique()),
+    sorted(df["sport"].dropna().unique()),
     default=sorted(df["sport"].dropna().unique())
 )
 
 categories = st.sidebar.multiselect(
     "Catégorie",
-    options=sorted(df["category"].dropna().unique()),
+    sorted(df["category"].dropna().unique()),
     default=sorted(df["category"].dropna().unique())
 )
 
 markets = st.sidebar.multiselect(
     "Marchés",
-    options=sorted(df["market"].dropna().unique()),
+    sorted(df["market"].dropna().unique()),
     default=sorted(df["market"].dropna().unique())
 )
 
@@ -380,63 +365,52 @@ if only_value:
 if search:
     s = search.lower()
     filtered = filtered[
-        filtered.astype(str).apply(lambda r: s in " ".join(r.values).lower(), axis=1)
+        filtered.astype(str).apply(
+            lambda r: s in " ".join(r.values).lower(),
+            axis=1
+        )
     ]
 
 football_df = filtered[filtered["category"] == "football"].copy()
 tennis_df = filtered[filtered["category"] == "tennis"].copy()
 value_bets = filtered[filtered["decision"] == "VALUE BET"].copy()
 
+last_update = df["last_update"].iloc[0] if "last_update" in df.columns else "Inconnue"
 
-# =========================
-# HEADER
-# =========================
-
-last_update = df["last_update"].iloc[0] if "last_update" in df.columns and not df.empty else "Inconnue"
 telegram_count = 0
-
 if TELEGRAM_SENT_PATH.exists():
     try:
         telegram_count = len(pd.read_csv(TELEGRAM_SENT_PATH))
     except Exception:
         telegram_count = 0
 
-st.markdown('<div class="shell">', unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="hero">
-    <div class="hero-card">
-        <div class="eyebrow">Plateforme privée</div>
-        <div class="hero-title">IA Paris Sportifs Ultime</div>
-        <div class="hero-copy">
-            Dashboard complet : football, tennis, value betting, Telegram, tracking ROI, rentabilité, courbes et historique.
-        </div>
-    </div>
-    <div class="status-card">
-        <div class="status-line"><span class="status-label">Dernière actualisation</span><span class="status-value">{escape(str(last_update))}</span></div>
-        <div class="status-line"><span class="status-label">Alertes Telegram mémorisées</span><span class="status-value">{telegram_count}</span></div>
-        <div class="status-line"><span class="status-label">Moteurs actifs</span><span class="status-value">Football + Tennis</span></div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-best_value = filtered["value"].max() if not filtered.empty else 0
-max_stake = filtered["suggested_stake"].max() if not filtered.empty else 0
 
 st.markdown(
-    '<div class="kpi-grid">'
-    + kpi("Lignes analysées", len(filtered), "après filtres")
-    + kpi("Value Bets", len(value_bets), "paris détectés")
-    + kpi("Meilleure value", f"{best_value*100:.2f}%", "edge maximal")
-    + kpi("Mise max", f"{max_stake:.2f}€", "stake IA conseillé")
-    + "</div>",
+    f"""
+    <div class="hero-box">
+        <div class="hero-title">IA Paris Sportifs Ultime</div>
+        <div class="hero-sub">
+            Football + Tennis • Value Betting • Telegram • ROI • Tracking • Courbes
+            <br><br>
+            Dernière actualisation : <b>{last_update}</b> |
+            Alertes Telegram mémorisées : <b>{telegram_count}</b>
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 
-# =========================
-# TABS
-# =========================
+c1, c2, c3, c4 = st.columns(4)
+
+best_value = filtered["value"].max() if not filtered.empty else 0
+max_stake = filtered["suggested_stake"].max() if not filtered.empty else 0
+
+c1.metric("Lignes analysées", len(filtered))
+c2.metric("Value Bets", len(value_bets))
+c3.metric("Meilleure value", f"{best_value * 100:.2f}%")
+c4.metric("Mise max", f"{max_stake:.2f}€")
+
 
 tabs = st.tabs([
     "Vue globale",
@@ -452,80 +426,105 @@ tabs = st.tabs([
 with tabs[0]:
     st.subheader("Vue globale")
 
-    render_match_cards(value_bets.sort_values("value", ascending=False), limit=6)
+    render_cards(value_bets.sort_values("value", ascending=False), limit=6)
 
     c1, c2 = st.columns(2)
 
     with c1:
-        chart = filtered.sort_values("value", ascending=False).head(30)
-        plot_bar(chart, "home_team", "value", "Top value par match")
+        plot_bar(
+            filtered.sort_values("value", ascending=False).head(25),
+            "home_team",
+            "value",
+            "Top value"
+        )
 
     with c2:
-        chart = filtered.sort_values("ai_probability", ascending=False).head(30)
-        plot_bar(chart, "home_team", "ai_probability", "Top probabilités IA")
+        plot_bar(
+            filtered.sort_values("ai_probability", ascending=False).head(25),
+            "home_team",
+            "ai_probability",
+            "Top probabilités IA"
+        )
 
-    st.subheader("Répartition des décisions")
-    if PLOTLY_OK:
-        decision_counts = filtered["decision"].value_counts().reset_index()
-        decision_counts.columns = ["decision", "count"]
-        fig = px.pie(decision_counts, names="decision", values="count", hole=.45)
-        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#f7f8ff")
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.bar_chart(filtered["decision"].value_counts())
+    st.subheader("Toutes les meilleures lignes")
+    show_table(filtered.sort_values("value", ascending=False).head(80), height=520)
 
 
 with tabs[1]:
     st.subheader("Football")
 
-    render_match_cards(football_df[football_df["decision"] == "VALUE BET"].sort_values("value", ascending=False), limit=6)
+    render_cards(
+        football_df[football_df["decision"] == "VALUE BET"].sort_values("value", ascending=False),
+        limit=6
+    )
 
     c1, c2 = st.columns(2)
 
     with c1:
-        plot_bar(football_df.sort_values("value", ascending=False).head(25), "home_team", "value", "Football - value")
+        plot_bar(
+            football_df.sort_values("value", ascending=False).head(25),
+            "home_team",
+            "value",
+            "Football - Value"
+        )
 
     with c2:
         if "over_25" in football_df.columns:
-            plot_bar(football_df.sort_values("over_25", ascending=False).head(25), "home_team", "over_25", "Football - Over 2.5")
+            plot_bar(
+                football_df.sort_values("over_25", ascending=False).head(25),
+                "home_team",
+                "over_25",
+                "Football - Over 2.5"
+            )
 
-    st.subheader("Tableau football")
-    render_table(football_df.sort_values("value", ascending=False), height=560)
+    show_table(football_df.sort_values("value", ascending=False), height=620)
 
 
 with tabs[2]:
     st.subheader("Tennis")
 
-    render_match_cards(tennis_df[tennis_df["decision"] == "VALUE BET"].sort_values("value", ascending=False), limit=6)
+    render_cards(
+        tennis_df[tennis_df["decision"] == "VALUE BET"].sort_values("value", ascending=False),
+        limit=6
+    )
 
     c1, c2 = st.columns(2)
 
     with c1:
-        plot_bar(tennis_df.sort_values("value", ascending=False).head(25), "home_team", "value", "Tennis - value")
+        plot_bar(
+            tennis_df.sort_values("value", ascending=False).head(25),
+            "home_team",
+            "value",
+            "Tennis - Value"
+        )
 
     with c2:
         if "tennis_engine_score" in tennis_df.columns:
-            plot_bar(tennis_df.sort_values("tennis_engine_score", ascending=False).head(25), "home_team", "tennis_engine_score", "Tennis - score IA")
+            plot_bar(
+                tennis_df.sort_values("tennis_engine_score", ascending=False).head(25),
+                "home_team",
+                "tennis_engine_score",
+                "Tennis - Score IA"
+            )
 
-    st.subheader("Tableau tennis")
-    render_table(tennis_df.sort_values("value", ascending=False), height=560)
+    show_table(tennis_df.sort_values("value", ascending=False), height=620)
 
 
 with tabs[3]:
     st.subheader("Value Bets")
 
-    render_match_cards(value_bets.sort_values("value", ascending=False), limit=9)
-
-    st.subheader("Tableau value bets")
-    render_table(value_bets.sort_values("value", ascending=False), height=620)
+    render_cards(value_bets.sort_values("value", ascending=False), limit=9)
+    show_table(value_bets.sort_values("value", ascending=False), height=650)
 
 
 with tabs[4]:
-    st.subheader("Résultats IA / ROI / Rentabilité")
+    st.subheader("Résultats IA / ROI")
 
     if tracking.empty:
         st.warning("Aucun tracking disponible.")
     else:
+        tracking = tracking.copy()
+
         if "result" not in tracking.columns:
             tracking["result"] = "PENDING"
 
@@ -558,22 +557,17 @@ with tabs[4]:
         roi = profit / total_staked if total_staked > 0 else 0
         win_rate = len(wins) / len(finished) if len(finished) else 0
 
-        st.markdown(
-            '<div class="kpi-grid">'
-            + kpi("Paris terminés", len(finished), "WIN + LOSS")
-            + kpi("Gagnés", len(wins), "paris validés")
-            + kpi("Perdus", len(losses), "paris perdus")
-            + kpi("ROI", f"{roi*100:.2f}%", f"profit {profit:.2f}€")
-            + "</div>",
-            unsafe_allow_html=True
-        )
+        r1, r2, r3, r4 = st.columns(4)
+        r1.metric("Paris terminés", len(finished))
+        r2.metric("Gagnés", len(wins))
+        r3.metric("Perdus", len(losses))
+        r4.metric("En attente", len(pending))
 
-        if profit > 0:
-            st.success(f"L’IA est en gain : +{profit:.2f}€")
-        elif profit < 0:
-            st.error(f"L’IA est en perte : {profit:.2f}€")
-        else:
-            st.info("L’IA est à l’équilibre.")
+        r5, r6, r7, r8 = st.columns(4)
+        r5.metric("Misé total", f"{total_staked:.2f}€")
+        r6.metric("Profit / perte", f"{profit:.2f}€")
+        r7.metric("ROI", f"{roi * 100:.2f}%")
+        r8.metric("Win Rate", f"{win_rate * 100:.2f}%")
 
         if not finished.empty:
             finished = finished.sort_values("date").copy()
@@ -583,10 +577,20 @@ with tabs[4]:
             c1, c2 = st.columns(2)
 
             with c1:
-                plot_line(finished, "bet_number", "cumulative_profit", "Courbe de rentabilité")
+                plot_line(
+                    finished,
+                    "bet_number",
+                    "cumulative_profit",
+                    "Courbe de rentabilité"
+                )
 
             with c2:
-                plot_bar(finished, "bet_number", "profit", "Gain / perte par pari")
+                plot_bar(
+                    finished,
+                    "bet_number",
+                    "profit",
+                    "Gain / perte par pari"
+                )
 
             if "sport" in finished.columns:
                 sport_profit = finished.groupby("sport")["profit"].sum().reset_index()
@@ -597,42 +601,42 @@ with tabs[4]:
                 plot_bar(market_profit, "market", "profit", "Profit par marché")
 
         st.subheader("Paris gagnés")
-        render_table(wins.sort_values("profit", ascending=False), height=360)
+        show_table(wins.sort_values("profit", ascending=False), height=360)
 
         st.subheader("Paris perdus")
-        render_table(losses.sort_values("profit", ascending=True), height=360)
+        show_table(losses.sort_values("profit", ascending=True), height=360)
 
         st.subheader("Paris en attente")
-        render_table(pending.sort_values("date", ascending=False), height=360)
+        show_table(pending.sort_values("date", ascending=False), height=360)
 
 
 with tabs[5]:
     st.subheader("Tech IA")
 
-    st.markdown("""
-    <div class="panel-card" style="padding:18px;">
-        <b>Moteur Football</b><br>
-        xG, Poisson, ELO équipes, calibration, value betting, score exact, BTTS, Over/Under, buteurs probables.
-        <br><br>
-        <b>Moteur Tennis</b><br>
-        ELO joueurs, forme récente, winrate, probabilité marché, edge/value, score IA tennis, marchés Player 1 / Player 2.
-        <br><br>
-        <b>Automatisation</b><br>
-        GitHub Actions, mise à jour données, tracking, anti-spam Telegram, dashboard Streamlit.
-    </div>
-    """, unsafe_allow_html=True)
+    st.info(
+        "Football : xG, Poisson, ELO équipes, calibration, score exact, BTTS, Over/Under, buteurs probables.\n\n"
+        "Tennis : ELO joueurs, forme récente, winrate, probabilité marché, edge/value, score IA tennis.\n\n"
+        "Automatisation : GitHub Actions, Telegram anti-spam, tracking ROI, dashboard Streamlit."
+    )
 
     tech_cols = [
-        "category", "sport", "market", "ai_probability", "bookmaker_odds",
-        "value", "confidence", "ia_badge", "tennis_engine_score", "tennis_edge"
+        "category",
+        "sport",
+        "market",
+        "ai_probability",
+        "bookmaker_odds",
+        "value",
+        "confidence",
+        "ia_badge",
+        "tennis_engine_score",
+        "tennis_edge",
     ]
+
     tech_cols = [c for c in tech_cols if c in filtered.columns]
 
-    render_table(filtered[tech_cols].sort_values("value", ascending=False), height=560)
+    show_table(filtered[tech_cols].sort_values("value", ascending=False), height=560)
 
 
 with tabs[6]:
     st.subheader("Toutes les prédictions")
-    render_table(filtered.sort_values("value", ascending=False), height=720)
-
-st.markdown("</div>", unsafe_allow_html=True)
+    show_table(filtered.sort_values("value", ascending=False), height=720)
