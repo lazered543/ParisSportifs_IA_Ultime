@@ -7,13 +7,19 @@ from src.utils.config import ODDS_API_KEY, REGION
 
 BASE_URL = "https://api.the-odds-api.com/v4"
 
-
 FOOTBALL_SPORTS = [
     "soccer_epl",
     "soccer_france_ligue_one",
     "soccer_spain_la_liga",
     "soccer_germany_bundesliga",
     "soccer_italy_serie_a",
+
+    # Europe
+    "soccer_uefa_champs_league",
+    "soccer_uefa_europa_league",
+
+    # International
+    "soccer_fifa_world_cup",
 ]
 
 
