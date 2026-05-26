@@ -1,13 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-
-try:
-    import plotly.express as px
-    PLOTLY_OK = True
-except Exception:
-    PLOTLY_OK = False
-
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="IA Paris Sportifs Ultime",
@@ -19,6 +13,112 @@ APP_PASSWORD = "29052007"
 PRED_PATH = Path("data/predictions/predictions_today.csv")
 TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
+
+is_mobile = st.query_params.get("mobile", "0") == "1"
+
+if not is_mobile:
+    components.html(
+        """
+        <script>
+        const isPhone = window.innerWidth < 850;
+        const url = new URL(window.parent.location.href);
+
+        if (isPhone && url.searchParams.get("mobile") !== "1") {
+            url.searchParams.set("mobile", "1");
+            window.parent.location.href = url.toString();
+        }
+        </script>
+        """,
+        height=0
+    )
+
+if is_mobile:
+    st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(135deg, #111827, #10131f, #0d1020);
+        color: white;
+    }
+    .block-container {
+        padding-top: 20px;
+        max-width: 100%;
+    }
+    [data-testid="stMetric"] {
+        background: #171b2b;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 16px;
+        padding: 14px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    if not st.session_state.authenticated:
+        st.title("IA Paris Sportifs")
+        st.caption("Version mobile rapide")
+
+        password = st.text_input("Mot de passe", type="password")
+
+        if password == APP_PASSWORD:
+            st.session_state.authenticated = True
+            st.rerun()
+        elif password:
+            st.error("Mot de passe incorrect.")
+
+        st.stop()
+
+    if not PRED_PATH.exists():
+        st.error("Aucune prédiction trouvée.")
+        st.stop()
+
+    df = pd.read_csv(PRED_PATH, low_memory=False)
+
+    df["value"] = pd.to_numeric(df.get("value", 0), errors="coerce").fillna(0)
+    df["ai_probability"] = pd.to_numeric(df.get("ai_probability", 0), errors="coerce").fillna(0)
+
+    value_bets = df[df["decision"] == "VALUE BET"].copy()
+
+    st.title("📱 IA Paris Sportifs")
+    st.caption("Mode mobile automatique")
+
+    c1, c2 = st.columns(2)
+    c1.metric("Matchs", len(df))
+    c2.metric("Value Bets", len(value_bets))
+
+    st.subheader("🔥 Meilleurs paris")
+
+    cols = [
+        "date",
+        "sport",
+        "home_team",
+        "away_team",
+        "market",
+        "ai_probability",
+        "bookmaker_odds",
+        "value",
+        "decision"
+    ]
+
+    cols = [c for c in cols if c in df.columns]
+
+    mobile_df = df[cols].sort_values("value", ascending=False).head(40)
+
+    if "ai_probability" in mobile_df.columns:
+        mobile_df["ai_probability"] = (mobile_df["ai_probability"] * 100).round(1).astype(str) + "%"
+
+    if "value" in mobile_df.columns:
+        mobile_df["value"] = (mobile_df["value"] * 100).round(1).astype(str) + "%"
+
+    st.dataframe(
+        mobile_df,
+        use_container_width=True,
+        hide_index=True,
+        height=650
+    )
+
+    st.stop()
 
 
 st.markdown("""
