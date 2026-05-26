@@ -516,7 +516,6 @@ with tabs[3]:
     render_cards(value_bets.sort_values("value", ascending=False), limit=9)
     show_table(value_bets.sort_values("value", ascending=False), height=650)
 
-
 with tabs[4]:
     st.subheader("Résultats IA / ROI")
 
@@ -538,24 +537,32 @@ with tabs[4]:
             errors="coerce"
         ).fillna(0)
 
-        def calc_profit(row):
-            if row["result"] == "WIN":
-                return row["stake"] * (row["bookmaker_odds"] - 1)
-            if row["result"] == "LOSS":
-                return -row["stake"]
-            return 0
+        tracking["profit"] = pd.to_numeric(
+            tracking.get("profit", 0),
+            errors="coerce"
+        ).fillna(0)
 
-        tracking["profit"] = tracking.apply(calc_profit, axis=1)
+        if "category" not in tracking.columns:
+            tracking["category"] = tracking["sport"].apply(sport_category)
 
         finished = tracking[tracking["result"].isin(["WIN", "LOSS"])].copy()
         wins = tracking[tracking["result"] == "WIN"].copy()
         losses = tracking[tracking["result"] == "LOSS"].copy()
         pending = tracking[tracking["result"] == "PENDING"].copy()
 
+        finished = finished.sort_values("date", ascending=False)
+        wins = wins.sort_values("profit", ascending=False)
+        losses = losses.sort_values("profit", ascending=True)
+        pending = pending.sort_values("date", ascending=True)
+
         total_staked = finished["stake"].sum() if len(finished) else 0
-        profit = finished["profit"].sum() if len(finished) else 0
-        roi = profit / total_staked if total_staked > 0 else 0
+        total_profit = finished["profit"].sum() if len(finished) else 0
+        roi = total_profit / total_staked if total_staked > 0 else 0
         win_rate = len(wins) / len(finished) if len(finished) else 0
+
+        avg_odds = finished["bookmaker_odds"].mean() if len(finished) else 0
+        best_win = wins["profit"].max() if len(wins) else 0
+        worst_loss = losses["profit"].min() if len(losses) else 0
 
         r1, r2, r3, r4 = st.columns(4)
         r1.metric("Paris terminés", len(finished))
@@ -565,50 +572,144 @@ with tabs[4]:
 
         r5, r6, r7, r8 = st.columns(4)
         r5.metric("Misé total", f"{total_staked:.2f}€")
-        r6.metric("Profit / perte", f"{profit:.2f}€")
+        r6.metric("Profit total", f"{total_profit:.2f}€")
         r7.metric("ROI", f"{roi * 100:.2f}%")
         r8.metric("Win Rate", f"{win_rate * 100:.2f}%")
 
+        r9, r10, r11, r12 = st.columns(4)
+        r9.metric("Cote moyenne", f"{avg_odds:.2f}")
+        r10.metric("Plus gros gain", f"{best_win:.2f}€")
+        r11.metric("Plus grosse perte", f"{worst_loss:.2f}€")
+        r12.metric("Rentabilité", "Positive" if total_profit > 0 else "Négative" if total_profit < 0 else "Neutre")
+
+        if total_profit > 0:
+            st.success(f"L’IA est rentable : +{total_profit:.2f}€")
+        elif total_profit < 0:
+            st.error(f"L’IA est en perte : {total_profit:.2f}€")
+        else:
+            st.info("L’IA est à l’équilibre.")
+
+        st.divider()
+
         if not finished.empty:
-            finished = finished.sort_values("date").copy()
-            finished["cumulative_profit"] = finished["profit"].cumsum()
-            finished["bet_number"] = range(1, len(finished) + 1)
+            finished_chart = finished.sort_values("date").copy()
+            finished_chart["cumulative_profit"] = finished_chart["profit"].cumsum()
+            finished_chart["bet_number"] = range(1, len(finished_chart) + 1)
 
             c1, c2 = st.columns(2)
 
             with c1:
                 plot_line(
-                    finished,
+                    finished_chart,
                     "bet_number",
                     "cumulative_profit",
-                    "Courbe de rentabilité"
+                    "Courbe bankroll / profit cumulé"
                 )
 
             with c2:
                 plot_bar(
-                    finished,
+                    finished_chart,
                     "bet_number",
                     "profit",
                     "Gain / perte par pari"
                 )
 
+            c3, c4 = st.columns(2)
+
+            with c3:
+                if "category" in finished.columns:
+                    cat_profit = (
+                        finished.groupby("category")["profit"]
+                        .sum()
+                        .reset_index()
+                        .sort_values("profit", ascending=False)
+                    )
+                    plot_bar(cat_profit, "category", "profit", "Profit par catégorie")
+
+            with c4:
+                if "market" in finished.columns:
+                    market_profit = (
+                        finished.groupby("market")["profit"]
+                        .sum()
+                        .reset_index()
+                        .sort_values("profit", ascending=False)
+                    )
+                    plot_bar(market_profit, "market", "profit", "Profit par marché")
+
             if "sport" in finished.columns:
-                sport_profit = finished.groupby("sport")["profit"].sum().reset_index()
-                plot_bar(sport_profit, "sport", "profit", "Profit par compétition")
+                sport_profit = (
+                    finished.groupby("sport")
+                    .agg(
+                        paris=("result", "count"),
+                        gains=("profit", "sum"),
+                        mise=("stake", "sum"),
+                    )
+                    .reset_index()
+                )
 
-            if "market" in finished.columns:
-                market_profit = finished.groupby("market")["profit"].sum().reset_index()
-                plot_bar(market_profit, "market", "profit", "Profit par marché")
+                sport_profit["roi"] = sport_profit.apply(
+                    lambda r: r["gains"] / r["mise"] if r["mise"] > 0 else 0,
+                    axis=1
+                )
 
-        st.subheader("Paris gagnés")
-        show_table(wins.sort_values("profit", ascending=False), height=360)
+                st.subheader("Rentabilité par compétition")
+                show_table(
+                    sport_profit.sort_values("gains", ascending=False),
+                    height=360
+                )
 
-        st.subheader("Paris perdus")
-        show_table(losses.sort_values("profit", ascending=True), height=360)
+        else:
+            st.info("Aucun pari terminé pour le moment.")
 
-        st.subheader("Paris en attente")
-        show_table(pending.sort_values("date", ascending=False), height=360)
+        st.divider()
 
+        result_tabs = st.tabs([
+            "✅ Gagnés",
+            "❌ Perdus",
+            "⏳ En attente",
+            "📋 Tous les résultats"
+        ])
+
+        with result_tabs[0]:
+            st.subheader("Paris gagnés triés par profit")
+
+            show_table(
+                wins.sort_values("profit", ascending=False),
+                height=520
+            )
+
+        with result_tabs[1]:
+            st.subheader("Paris perdus triés par perte")
+
+            show_table(
+                losses.sort_values("profit", ascending=True),
+                height=520
+            )
+
+        with result_tabs[2]:
+            st.subheader("Paris en attente triés par date")
+
+            show_table(
+                pending.sort_values("date", ascending=True),
+                height=520
+            )
+
+        with result_tabs[3]:
+            st.subheader("Historique complet trié par résultat puis date")
+
+            order = {
+                "WIN": 0,
+                "LOSS": 1,
+                "PENDING": 2
+            }
+
+            all_results = tracking.copy()
+            all_results["result_order"] = all_results["result"].map(order).fillna(3)
+
+            show_table(
+                all_results.sort_values(["result_order", "date"], ascending=[True, False]),
+                height=650
+            )
 
 with tabs[5]:
     st.subheader("Tech IA")
