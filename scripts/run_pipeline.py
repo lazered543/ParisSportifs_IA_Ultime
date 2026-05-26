@@ -102,6 +102,130 @@ def american_to_probability_from_decimal(odds):
 
     return 1 / odds
 
+# ============================================================
+# BET MODES
+# ============================================================
+
+def bet_mode(prob, odds, value, confidence, sport):
+    sport = str(sport).lower()
+
+    # Blacklist des compétitions/matchs trop dangereux
+    risky = any(x in sport for x in [
+        "itf",
+        "challenger",
+        "friendly",
+    ])
+
+    if risky or odds <= 1:
+        return "NO BET"
+
+    # MEGA VALUE : rare, gros edge + grosse confiance
+    if (
+        prob >= 0.82
+        and value >= 0.10
+        and 1.35 <= odds <= 2.40
+        and confidence in ["Fort", "Elite"]
+    ):
+        return "MEGA VALUE"
+
+    # ULTRA SAFE : objectif winrate très élevé
+    if (
+        prob >= 0.78
+        and value >= 0.04
+        and 1.25 <= odds <= 1.65
+        and confidence in ["Fort", "Elite"]
+    ):
+        return "ULTRA SAFE"
+
+    # SAFE : paris propres et contrôlés
+    if (
+        prob >= 0.70
+        and value >= 0.05
+        and 1.30 <= odds <= 2.00
+        and confidence in ["Moyen", "Fort", "Elite"]
+    ):
+        return "SAFE"
+
+    # VALUE : bon edge mais variance normale
+    if (
+        prob >= 0.58
+        and value >= 0.06
+        and 1.40 <= odds <= 3.00
+    ):
+        return "VALUE"
+
+    # AGGRESSIVE : value forte mais risque plus élevé
+    if (
+        prob >= 0.52
+        and value >= 0.10
+        and odds <= 5
+    ):
+        return "AGGRESSIVE"
+
+    return "NO BET"
+
+# ============================================================
+# BANKROLL MANAGEMENT IA
+# ============================================================
+
+def bankroll_management(prob, odds, value, mode, bankroll):
+    """
+    Gestion intelligente de bankroll :
+    - Kelly Criterion fractionné
+    - plafonds de sécurité par mode
+    - mise minimale seulement si le pari est accepté
+    """
+
+    if odds <= 1 or mode == "NO BET":
+        return 0.0, 0.0, 0.0
+
+    b = odds - 1
+    p = prob
+    q = 1 - p
+
+    # Kelly brut
+    kelly = ((b * p) - q) / b
+
+    # Si Kelly négatif, aucun edge réel
+    if kelly <= 0:
+        return 0.0, 0.0, 0.0
+
+    # Plafond Kelly sécurité
+    kelly = max(0.0, min(kelly, 0.12))
+
+    # Fractionnement selon le profil du pari
+    fractions = {
+        "ULTRA SAFE": 0.35,
+        "SAFE": 0.25,
+        "VALUE": 0.15,
+        "AGGRESSIVE": 0.08,
+        "MEGA VALUE": 0.50,
+    }
+
+    fraction = fractions.get(mode, 0.0)
+
+    stake_percent = kelly * fraction
+
+    # Plafonds par mode pour éviter les grosses mises dangereuses
+    max_by_mode = {
+        "ULTRA SAFE": 0.05,
+        "SAFE": 0.035,
+        "VALUE": 0.025,
+        "AGGRESSIVE": 0.0125,
+        "MEGA VALUE": 0.08,
+    }
+
+    max_percent = max_by_mode.get(mode, 0.0)
+
+    stake_percent = max(0.0, min(stake_percent, max_percent))
+
+    # Mise trop faible => on évite les micro-paris inutiles
+    if stake_percent < 0.003:
+        return 0.0, round(stake_percent, 4), round(kelly, 4)
+
+    stake = bankroll * stake_percent
+
+    return round(stake, 2), round(stake_percent, 4), round(kelly, 4)
 
 # ============================================================
 # BADGES / FILTERS
@@ -349,30 +473,31 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             prob
         )
 
-        stake = (
-            safe_stake(
-                bankroll,
-                prob,
-                odds,
-                MAX_STAKE_PCT
-            )
-            if odds > 0
-            else 0
+        mode = bet_mode(
+            prob,
+            odds,
+            value,
+            confidence,
+            m.get("sport")
         )
 
         decision = (
             "VALUE BET"
-            if (
-                value >= MIN_VALUE
-                and prob >= MIN_CONFIDENCE
-                and 1.40 <= odds <= 3.50
-                and confidence != "A éviter"
-            )
+            if mode != "NO BET"
             else "NO BET"
+        )
+
+        stake, stake_percent, kelly_fraction = bankroll_management(
+            prob,
+            odds,
+            value,
+            mode,
+            bankroll
         )
 
         rows.append({
             "last_update": last_update,
+            "bet_mode": mode,
             "date": m.get("commence_time"),
             "sport": m.get("sport"),
             "category": "football",
@@ -387,6 +512,9 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             "ia_badge": ia_badge(value, confidence, odds),
             "reliable_only": reliable_filter(decision, confidence, odds, value, prob),
             "decision": decision,
+            "bankroll": bankroll,
+            "stake_percent": stake_percent,
+            "kelly_fraction": kelly_fraction,
             "suggested_stake": stake if decision == "VALUE BET" else 0,
 
             "home_elo": elo["home_elo"],
@@ -816,16 +944,26 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             MAX_STAKE_PCT
         )
 
+        mode = bet_mode(
+            prob,
+            odds,
+            value,
+            confidence,
+            m.get("sport")
+        )
+
         decision = (
             "VALUE BET"
-            if (
-                value >= MIN_VALUE
-                and edge >= 0.015
-                and prob >= 0.54
-                and 1.30 <= odds <= 3.50
-                and confidence != "A éviter"
-            )
+            if mode != "NO BET"
             else "NO BET"
+        )
+
+        stake, stake_percent, kelly_fraction = bankroll_management(
+            prob,
+            odds,
+            value,
+            mode,
+            bankroll
         )
 
         badge = tennis_badge(
@@ -853,6 +991,7 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
 
         rows.append({
             "last_update": last_update,
+            "bet_mode": mode,
             "date": m.get("commence_time"),
             "sport": m.get("sport"),
             "category": "tennis",
@@ -869,6 +1008,9 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             "ia_badge": badge,
             "reliable_only": reliable,
             "decision": decision,
+            "bankroll": bankroll,
+            "stake_percent": stake_percent,
+            "kelly_fraction": kelly_fraction,
             "suggested_stake": stake if decision == "VALUE BET" else 0,
 
             "home_elo": round(meta["elo_a"], 2),
@@ -999,17 +1141,7 @@ def main():
     ).fillna(0)
 
     out_filtered = out[
-        (
-            out["bookmaker_odds_num"].isna()
-            & (out["ai_probability_num"] >= 0.45)
-        )
-        |
-        (
-            out["bookmaker_odds_num"].notna()
-            & (out["bookmaker_odds_num"] >= 1.30)
-            & (out["bookmaker_odds_num"] <= 3.50)
-            & (out["ai_probability_num"] >= 0.45)
-        )
+        out["bet_mode"] != "NO BET"
     ].copy()
 
     out_filtered = out_filtered.drop(

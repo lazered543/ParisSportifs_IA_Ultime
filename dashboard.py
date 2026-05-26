@@ -229,6 +229,13 @@ def clean_table(data):
         "away_team",
         "market",
         "selection",
+        "bet_mode",
+        "mode_category",
+        "result",
+        "stake",
+        "profit",
+        "final_winner",
+        "status_detail",
         "ai_probability",
         "bookmaker_odds",
         "implied_probability",
@@ -253,7 +260,7 @@ def clean_table(data):
             out[col] = pd.to_numeric(out[col], errors="coerce")
             out[col] = out[col].apply(lambda x: "" if pd.isna(x) else f"{x * 100:.2f}%")
 
-    for col in ["bookmaker_odds", "suggested_stake", "tennis_engine_score", "score_exact_1_proba"]:
+    for col in ["bookmaker_odds", "suggested_stake", "stake", "profit", "tennis_engine_score", "score_exact_1_proba"]:
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce").round(2)
 
@@ -566,6 +573,28 @@ with tabs[4]:
         if "category" not in tracking.columns:
             tracking["category"] = tracking["sport"].apply(sport_category)
 
+        if "bet_mode" not in tracking.columns:
+            tracking["bet_mode"] = "NON CLASSÉ"
+
+        def mode_group(mode):
+            mode = str(mode).upper().strip()
+
+            if "MEGA" in mode or "MONSTER" in mode:
+                return "💎 MEGA VALUE"
+
+            if "ULTRA SAFE" in mode or mode == "SAFE":
+                return "🟢 SAFE"
+
+            if mode == "VALUE":
+                return "🟡 MEDIUM"
+
+            if mode == "AGGRESSIVE":
+                return "🔴 RISKY"
+
+            return "⚪ AUTRE"
+
+        tracking["mode_category"] = tracking["bet_mode"].apply(mode_group)
+
         finished = tracking[tracking["result"].isin(["WIN", "LOSS"])].copy()
         wins = tracking[tracking["result"] == "WIN"].copy()
         losses = tracking[tracking["result"] == "LOSS"].copy()
@@ -578,6 +607,8 @@ with tabs[4]:
 
         total_staked = finished["stake"].sum() if len(finished) else 0
         total_profit = finished["profit"].sum() if len(finished) else 0
+        total_won = wins["profit"].sum() if len(wins) else 0
+        total_lost = losses["profit"].sum() if len(losses) else 0
         roi = total_profit / total_staked if total_staked > 0 else 0
         win_rate = len(wins) / len(finished) if len(finished) else 0
 
@@ -593,14 +624,14 @@ with tabs[4]:
 
         r5, r6, r7, r8 = st.columns(4)
         r5.metric("Misé total", f"{total_staked:.2f}€")
-        r6.metric("Profit total", f"{total_profit:.2f}€")
+        r6.metric("Profit net", f"{total_profit:.2f}€")
         r7.metric("ROI", f"{roi * 100:.2f}%")
         r8.metric("Win Rate", f"{win_rate * 100:.2f}%")
 
         r9, r10, r11, r12 = st.columns(4)
         r9.metric("Cote moyenne", f"{avg_odds:.2f}")
-        r10.metric("Plus gros gain", f"{best_win:.2f}€")
-        r11.metric("Plus grosse perte", f"{worst_loss:.2f}€")
+        r10.metric("Argent gagné", f"+{total_won:.2f}€")
+        r11.metric("Argent perdu", f"{total_lost:.2f}€")
         r12.metric("Rentabilité", "Positive" if total_profit > 0 else "Négative" if total_profit < 0 else "Neutre")
 
         if total_profit > 0:
@@ -609,6 +640,78 @@ with tabs[4]:
             st.error(f"L’IA est en perte : {total_profit:.2f}€")
         else:
             st.info("L’IA est à l’équilibre.")
+
+        st.divider()
+
+        st.subheader("📊 Performance par catégorie de pari")
+
+        finished_modes = tracking[tracking["result"].isin(["WIN", "LOSS"])].copy()
+
+        if finished_modes.empty:
+            st.info("Pas encore assez de résultats pour analyser les catégories.")
+        else:
+            mode_stats = (
+                finished_modes
+                .groupby("mode_category")
+                .agg(
+                    paris=("result", "count"),
+                    gagnes=("result", lambda x: (x == "WIN").sum()),
+                    perdus=("result", lambda x: (x == "LOSS").sum()),
+                    mise_totale=("stake", "sum"),
+                    profit_total=("profit", "sum"),
+                    cote_moyenne=("bookmaker_odds", "mean"),
+                )
+                .reset_index()
+            )
+
+            mode_stats["winrate"] = mode_stats["gagnes"] / mode_stats["paris"]
+            mode_stats["roi"] = mode_stats.apply(
+                lambda r: r["profit_total"] / r["mise_totale"] if r["mise_totale"] > 0 else 0,
+                axis=1
+            )
+
+            mode_order = {
+                "💎 MEGA VALUE": 0,
+                "🟢 SAFE": 1,
+                "🟡 MEDIUM": 2,
+                "🔴 RISKY": 3,
+                "⚪ AUTRE": 4,
+            }
+
+            mode_stats["order"] = mode_stats["mode_category"].map(mode_order).fillna(99)
+            mode_stats = mode_stats.sort_values("order")
+
+            mode_stats_display = mode_stats.copy()
+            mode_stats_display["mise_totale"] = mode_stats_display["mise_totale"].round(2).astype(str) + "€"
+            mode_stats_display["profit_total"] = mode_stats_display["profit_total"].round(2).astype(str) + "€"
+            mode_stats_display["cote_moyenne"] = mode_stats_display["cote_moyenne"].round(2)
+            mode_stats_display["winrate"] = (mode_stats_display["winrate"] * 100).round(2).astype(str) + "%"
+            mode_stats_display["roi"] = (mode_stats_display["roi"] * 100).round(2).astype(str) + "%"
+            mode_stats_display = mode_stats_display.drop(columns=["order"])
+
+            st.dataframe(
+                mode_stats_display,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            c1, c2 = st.columns(2)
+
+            with c1:
+                plot_bar(
+                    mode_stats,
+                    "mode_category",
+                    "profit_total",
+                    "Profit par catégorie"
+                )
+
+            with c2:
+                plot_bar(
+                    mode_stats,
+                    "mode_category",
+                    "winrate",
+                    "Winrate par catégorie"
+                )
 
         st.divider()
 
@@ -645,7 +748,7 @@ with tabs[4]:
                         .reset_index()
                         .sort_values("profit", ascending=False)
                     )
-                    plot_bar(cat_profit, "category", "profit", "Profit par catégorie")
+                    plot_bar(cat_profit, "category", "profit", "Profit par sport")
 
             with c4:
                 if "market" in finished.columns:
@@ -685,121 +788,60 @@ with tabs[4]:
         st.divider()
 
         result_tabs = st.tabs([
-    "💰 Argent gagné",
-    "📉 Argent perdu",
-    "✅ Paris gagnés",
-    "❌ Paris perdus",
-    "⏳ En attente",
-    "📋 Tous les résultats"
-])
+            "💰 Argent gagné",
+            "📉 Argent perdu",
+            "✅ Paris gagnés",
+            "❌ Paris perdus",
+            "⏳ En attente",
+            "📋 Tous les résultats"
+        ])
 
-with result_tabs[0]:
-    st.subheader("💰 Argent gagné")
+        with result_tabs[0]:
+            st.subheader("💰 Argent gagné")
+            st.metric("Bénéfice brut gagné", f"+{total_won:.2f}€")
 
-    total_gagne = wins["profit"].sum() if not wins.empty else 0
+            if not wins.empty:
+                top_gains = wins.sort_values("profit", ascending=False)
+                plot_bar(top_gains.head(20), "home_team", "profit", "Top gains")
+                show_table(top_gains, height=520)
+            else:
+                st.info("Aucun pari gagnant pour le moment.")
 
-    st.metric(
-        "Bénéfice total",
-        f"+{total_gagne:.2f}€"
-    )
+        with result_tabs[1]:
+            st.subheader("📉 Argent perdu")
+            st.metric("Perte totale", f"{total_lost:.2f}€")
 
-    if not wins.empty:
-        top_gains = wins.sort_values("profit", ascending=False)
+            if not losses.empty:
+                top_losses = losses.sort_values("profit", ascending=True)
+                plot_bar(top_losses.head(20), "home_team", "profit", "Top pertes")
+                show_table(top_losses, height=520)
+            else:
+                st.info("Aucun pari perdant pour le moment.")
 
-        plot_bar(
-            top_gains.head(20),
-            "home_team",
-            "profit",
-            "Top gains"
-        )
+        with result_tabs[2]:
+            st.subheader("✅ Paris gagnés triés par profit")
+            show_table(wins.sort_values("profit", ascending=False), height=520)
 
-        show_table(
-            top_gains,
-            height=520
-        )
-    else:
-        st.info("Aucun pari gagnant pour le moment.")
+        with result_tabs[3]:
+            st.subheader("❌ Paris perdus triés par perte")
+            show_table(losses.sort_values("profit", ascending=True), height=520)
 
+        with result_tabs[4]:
+            st.subheader("⏳ Paris en attente")
+            show_table(pending.sort_values("date", ascending=True), height=520)
 
-with result_tabs[1]:
-    st.subheader("📉 Argent perdu")
+        with result_tabs[5]:
+            st.subheader("📋 Historique complet")
 
-    total_perdu = losses["profit"].sum() if not losses.empty else 0
+            order = {"WIN": 0, "LOSS": 1, "PENDING": 2}
+            all_results = tracking.copy()
+            all_results["result_order"] = all_results["result"].map(order).fillna(3)
 
-    st.metric(
-        "Perte totale",
-        f"{total_perdu:.2f}€"
-    )
+            show_table(
+                all_results.sort_values(["result_order", "date"], ascending=[True, False]),
+                height=650
+            )
 
-    if not losses.empty:
-        top_losses = losses.sort_values("profit", ascending=True)
-
-        plot_bar(
-            top_losses.head(20),
-            "home_team",
-            "profit",
-            "Top pertes"
-        )
-
-        show_table(
-            top_losses,
-            height=520
-        )
-    else:
-        st.info("Aucun pari perdant pour le moment.")
-
-
-with result_tabs[2]:
-    st.subheader("✅ Paris gagnés triés par profit")
-
-    show_table(
-        wins.sort_values("profit", ascending=False),
-        height=520
-    )
-
-
-with result_tabs[3]:
-    st.subheader("❌ Paris perdus triés par perte")
-
-    show_table(
-        losses.sort_values("profit", ascending=True),
-        height=520
-    )
-
-
-with result_tabs[4]:
-    st.subheader("⏳ Paris en attente")
-
-    show_table(
-        pending.sort_values("date", ascending=True),
-        height=520
-    )
-
-
-with result_tabs[5]:
-    st.subheader("📋 Historique complet")
-
-    order = {
-        "WIN": 0,
-        "LOSS": 1,
-        "PENDING": 2
-    }
-
-    all_results = tracking.copy()
-
-    all_results["result_order"] = (
-        all_results["result"]
-        .map(order)
-        .fillna(3)
-    )
-
-    show_table(
-        all_results.sort_values(
-            ["result_order", "date"],
-            ascending=[True, False]
-        ),
-        height=650
-    )
 
 with tabs[5]:
     st.subheader("Tech IA")
@@ -807,12 +849,14 @@ with tabs[5]:
     st.info(
         "Football : xG, Poisson, ELO équipes, calibration, score exact, BTTS, Over/Under, buteurs probables.\n\n"
         "Tennis : ELO joueurs, forme récente, winrate, probabilité marché, edge/value, score IA tennis.\n\n"
+        "Modes de pari : ULTRA SAFE, SAFE, VALUE, AGGRESSIVE, MEGA VALUE.\n\n"
         "Automatisation : GitHub Actions, Telegram anti-spam, tracking ROI, dashboard Streamlit."
     )
 
     tech_cols = [
         "category",
         "sport",
+        "bet_mode",
         "market",
         "ai_probability",
         "bookmaker_odds",
