@@ -130,10 +130,12 @@ def normalized_market_probabilities(odds_home, odds_draw, odds_away):
 
 def bet_mode(prob, odds, value, confidence, sport):
     """
-    Filtres plus réalistes :
-    - assez sélectif pour éviter les paris poubelle
-    - pas trop strict pour éviter 1 seul value bet sur 200 matchs
-    - accepte un peu de risque seulement quand l'edge est fort
+    Version football + tennis réaliste :
+    - SAFE PICK = match probable, même si value faible
+    - VALUE BET = edge réel mais seuil réaliste
+    - MEGA VALUE = gros edge
+    - RISKY VALUE = grosse value mais variance plus haute
+    - WATCHLIST = intéressant, pas pari principal
     """
     sport = str(sport).lower()
     confidence = str(confidence)
@@ -147,54 +149,54 @@ def bet_mode(prob, odds, value, confidence, sport):
     if risky_competition or odds <= 1:
         return "NO BET"
 
-    # On refuse les cotes trop extrêmes : variance trop forte
-    if odds > 4.50:
+    if odds > 5.00:
         return "NO BET"
 
-    # MEGA VALUE : rare mais pas impossible
     if (
-        prob >= 0.70
-        and value >= 0.12
-        and 1.35 <= odds <= 3.20
-        and confidence in ["Moyen", "Fort", "Elite"]
+        prob >= 0.62
+        and value >= 0.07
+        and 1.35 <= odds <= 3.40
+        and confidence not in ["A éviter", "A Ã©viter"]
     ):
         return "MEGA VALUE"
 
-    # ULTRA SAFE : très propre, petites/moyennes cotes
     if (
-        prob >= 0.72
-        and value >= 0.035
-        and 1.22 <= odds <= 1.85
-        and confidence in ["Fort", "Elite"]
-    ):
-        return "ULTRA SAFE"
-
-    # SAFE : fiable mais pas bloquant
-    if (
-        prob >= 0.64
-        and value >= 0.035
-        and 1.25 <= odds <= 2.15
-        and confidence in ["Moyen", "Fort", "Elite"]
-    ):
-        return "SAFE"
-
-    # VALUE : catégorie principale, value raisonnable
-    if (
-        prob >= 0.55
-        and value >= 0.035
-        and 1.35 <= odds <= 3.20
+        prob >= 0.70
+        and value >= -0.015
+        and 1.15 <= odds <= 1.85
         and confidence not in ["A éviter", "A Ã©viter"]
     ):
-        return "VALUE"
+        return "SAFE PICK"
 
-    # AGGRESSIVE : un peu de risque accepté si value forte
     if (
-        prob >= 0.50
-        and value >= 0.10
+        prob >= 0.60
+        and value >= 0.000
+        and 1.25 <= odds <= 2.25
+        and confidence not in ["A éviter", "A Ã©viter"]
+    ):
+        return "SAFE PICK"
+
+    if (
+        prob >= 0.54
+        and value >= 0.015
+        and 1.35 <= odds <= 3.60
+        and confidence not in ["A éviter", "A Ã©viter"]
+    ):
+        return "VALUE BET"
+
+    if (
+        prob >= 0.48
+        and value >= 0.05
         and 1.80 <= odds <= 4.50
         and confidence not in ["A éviter", "A Ã©viter"]
     ):
-        return "AGGRESSIVE"
+        return "RISKY VALUE"
+
+    if (
+        prob >= 0.53
+        and 1.20 <= odds <= 3.80
+    ):
+        return "WATCHLIST"
 
     return "NO BET"
 
@@ -210,7 +212,7 @@ def bankroll_management(prob, odds, value, mode, bankroll):
     - mise minimale seulement si le pari est accepté
     """
 
-    if odds <= 1 or mode == "NO BET":
+    if odds <= 1 or mode in ["NO BET", "WATCHLIST"]:
         return 0.0, 0.0, 0.0
 
     b = odds - 1
@@ -229,11 +231,11 @@ def bankroll_management(prob, odds, value, mode, bankroll):
 
     # Fractionnement selon le profil du pari
     fractions = {
-        "ULTRA SAFE": 0.32,
-        "SAFE": 0.24,
-        "VALUE": 0.14,
-        "AGGRESSIVE": 0.07,
-        "MEGA VALUE": 0.42,
+        "SAFE PICK": 0.20,
+        "VALUE BET": 0.14,
+        "RISKY VALUE": 0.06,
+        "MEGA VALUE": 0.32,
+        "WATCHLIST": 0.0,
     }
 
     fraction = fractions.get(mode, 0.0)
@@ -242,11 +244,11 @@ def bankroll_management(prob, odds, value, mode, bankroll):
 
     # Plafonds par mode pour éviter les grosses mises dangereuses
     max_by_mode = {
-        "ULTRA SAFE": 0.045,
-        "SAFE": 0.03,
-        "VALUE": 0.02,
-        "AGGRESSIVE": 0.01,
-        "MEGA VALUE": 0.055,
+        "SAFE PICK": 0.025,
+        "VALUE BET": 0.018,
+        "RISKY VALUE": 0.008,
+        "MEGA VALUE": 0.04,
+        "WATCHLIST": 0.0,
     }
 
     max_percent = max_by_mode.get(mode, 0.0)
@@ -265,17 +267,40 @@ def bankroll_management(prob, odds, value, mode, bankroll):
 # BADGES / FILTERS
 # ============================================================
 
-def ia_badge(value, confidence, odds):
-    if value >= 0.10 and confidence in ["Moyen", "Fort", "Elite"] and 1.40 <= odds <= 2.80:
-        return "🟢 STRONG VALUE"
+def mode_badge(mode, value, confidence, odds):
+    mode = str(mode).upper().strip()
 
-    if value >= 0.05 and confidence in ["Moyen", "Fort", "Elite"] and 1.40 <= odds <= 3.50:
-        return "🟡 MEDIUM VALUE"
+    if mode == "MEGA VALUE":
+        return "💎 MEGA VALUE"
 
-    if value > 0:
+    if mode == "SAFE PICK":
+        if value >= 0:
+            return "🟢 SAFE PICK"
+        return "🟢 SAFE PICK / COTE FAIBLE"
+
+    if mode == "VALUE BET":
+        return "🟡 VALUE BET"
+
+    if mode == "RISKY VALUE":
         return "🔴 RISKY VALUE"
 
-    return "⚪ NO VALUE"
+    if mode == "WATCHLIST":
+        return "👀 WATCHLIST"
+
+    return "⚪ NO BET"
+
+
+def ia_badge(value, confidence, odds):
+    if value >= 0.07 and confidence in ["Moyen", "Fort", "Elite"] and 1.35 <= odds <= 3.40:
+        return "🟢 STRONG VALUE"
+
+    if value >= 0.015 and confidence in ["Moyen", "Fort", "Elite"] and 1.30 <= odds <= 3.60:
+        return "🟡 VALUE"
+
+    if value >= 0.05:
+        return "🔴 RISKY VALUE"
+
+    return "⚪ WATCH / NO VALUE"
 
 
 def reliable_filter(decision, confidence, odds, value, prob):
@@ -344,30 +369,220 @@ def safety_score(prob, odds, value, confidence, mode, reliable):
 
 
 def safety_level(score, mode, decision, prob=None, value=None):
-    mode = str(mode).upper()
+    mode = str(mode).upper().strip()
     prob = safe_float(prob, 0)
     value = safe_float(value, 0)
 
-    if decision != "VALUE BET":
-        if prob >= 0.68 and value < 0:
-            return "5 - PROBABLE SANS VALUE"
+    if mode == "MEGA VALUE":
+        return "1 - MEGA VALUE"
 
-        if score >= 28 or prob >= 0.55:
-            return "6 - OBSERVATION"
+    if mode == "SAFE PICK":
+        return "2 - SAFE PICK"
 
-        return "7 - A EVITER"
+    if mode == "VALUE BET":
+        return "3 - VALUE BET"
 
-    if mode in ["MEGA VALUE", "ULTRA SAFE"]:
-        return "1 - TRES SUR"
+    if mode == "RISKY VALUE":
+        return "4 - RISKY VALUE"
 
-    if mode == "SAFE":
-        return "2 - SUR"
+    if mode == "WATCHLIST":
+        if prob >= 0.65 and value < 0:
+            return "5 - PROBABLE MAIS COTE FAIBLE"
+        return "5 - WATCHLIST"
 
-    if mode == "VALUE":
-        return "3 - VALUE"
+    if prob >= 0.68 and value < 0:
+        return "6 - PROBABLE SANS VALUE"
 
-    return "4 - RISQUE"
+    return "7 - A EVITER"
 
+
+# ============================================================
+# FOOTBALL ENGINE V2 HELPERS
+# ============================================================
+
+def _find_col(df, candidates):
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return None
+
+
+def _match_result_points(goals_for, goals_against):
+    if goals_for > goals_against:
+        return 3
+    if goals_for == goals_against:
+        return 1
+    return 0
+
+
+def _extract_team_matches(history, team, limit=8):
+    """
+    Récupère les derniers matchs d'une équipe avec un maximum de compatibilité
+    selon les colonnes disponibles dans tes CSV football.
+    """
+    if history is None or history.empty or not team:
+        return pd.DataFrame()
+
+    home_col = _find_col(history, ["HomeTeam", "home_team", "home", "Home"])
+    away_col = _find_col(history, ["AwayTeam", "away_team", "away", "Away"])
+    hg_col = _find_col(history, ["FTHG", "home_goals", "HomeGoals", "HG"])
+    ag_col = _find_col(history, ["FTAG", "away_goals", "AwayGoals", "AG"])
+    date_col = _find_col(history, ["Date", "date", "match_date"])
+
+    if not home_col or not away_col or not hg_col or not ag_col:
+        return pd.DataFrame()
+
+    h = history.copy()
+
+    if date_col:
+        h[date_col] = pd.to_datetime(h[date_col], errors="coerce", dayfirst=True)
+        h = h.sort_values(date_col)
+
+    team_clean = normalize_name(team)
+
+    mask = (
+        h[home_col].astype(str).str.lower().str.strip().eq(team_clean)
+        | h[away_col].astype(str).str.lower().str.strip().eq(team_clean)
+    )
+
+    # Fallback plus souple si les noms exacts ne matchent pas
+    if mask.sum() == 0:
+        mask = (
+            h[home_col].astype(str).str.lower().str.contains(team_clean, na=False)
+            | h[away_col].astype(str).str.lower().str.contains(team_clean, na=False)
+        )
+
+    matches = h[mask].tail(limit).copy()
+
+    rows = []
+
+    for _, r in matches.iterrows():
+        is_home = normalize_name(r.get(home_col)) == team_clean
+
+        try:
+            home_goals = float(r.get(hg_col))
+            away_goals = float(r.get(ag_col))
+        except Exception:
+            continue
+
+        gf = home_goals if is_home else away_goals
+        ga = away_goals if is_home else home_goals
+
+        rows.append({
+            "gf": gf,
+            "ga": ga,
+            "points": _match_result_points(gf, ga),
+            "is_home": is_home,
+        })
+
+    return pd.DataFrame(rows)
+
+
+def football_recent_profile(team, history, limit=8):
+    matches = _extract_team_matches(history, team, limit=limit)
+
+    if matches.empty:
+        return {
+            "form_points": 0.50,
+            "attack_recent": 1.20,
+            "defense_recent": 1.20,
+            "home_boost": 0.00,
+            "data_quality": 0.25,
+            "matches_used": 0,
+        }
+
+    n = len(matches)
+    weights = list(range(1, n + 1))
+    weight_sum = sum(weights)
+
+    form_points = sum(matches["points"].iloc[i] * weights[i] for i in range(n)) / (3 * weight_sum)
+    attack_recent = sum(matches["gf"].iloc[i] * weights[i] for i in range(n)) / weight_sum
+    defense_recent = sum(matches["ga"].iloc[i] * weights[i] for i in range(n)) / weight_sum
+
+    home_matches = matches[matches["is_home"] == True]
+    away_matches = matches[matches["is_home"] == False]
+
+    home_ppg = home_matches["points"].mean() / 3 if not home_matches.empty else form_points
+    away_ppg = away_matches["points"].mean() / 3 if not away_matches.empty else form_points
+    home_boost = clamp(home_ppg - away_ppg, -0.18, 0.18)
+
+    return {
+        "form_points": round(float(form_points), 4),
+        "attack_recent": round(float(attack_recent), 4),
+        "defense_recent": round(float(defense_recent), 4),
+        "home_boost": round(float(home_boost), 4),
+        "data_quality": round(min(n / limit, 1), 4),
+        "matches_used": int(n),
+    }
+
+
+def adjust_football_probability(base_prob, market, home_profile, away_profile, elo_diff, market_prob=None):
+    """
+    Ajuste la probabilité football avec forme récente + dynamique attaque/défense.
+    """
+    prob = float(base_prob)
+
+    home_form_edge = home_profile["form_points"] - away_profile["form_points"]
+    attack_edge = home_profile["attack_recent"] - away_profile["defense_recent"]
+    away_attack_edge = away_profile["attack_recent"] - home_profile["defense_recent"]
+
+    data_quality = min(home_profile["data_quality"], away_profile["data_quality"])
+
+    if market == "Home Win":
+        boost = (
+            home_form_edge * 0.10
+            + attack_edge * 0.025
+            + home_profile["home_boost"] * 0.08
+            + clamp(float(elo_diff), -220, 220) / 4000
+        ) * data_quality
+        prob += boost
+
+    elif market == "Away Win":
+        boost = (
+            -home_form_edge * 0.10
+            + away_attack_edge * 0.025
+            - home_profile["home_boost"] * 0.06
+            + clamp(float(-elo_diff), -220, 220) / 4000
+        ) * data_quality
+        prob += boost
+
+    elif market == "Draw":
+        # Plus les équipes sont proches, plus le nul est plausible
+        closeness = 1 - min(abs(float(elo_diff)) / 250, 1)
+        prob += (closeness - 0.5) * 0.035 * data_quality
+
+    # Ne pas trop s'écarter du marché quand il est disponible
+    if market_prob is not None and market_prob > 0:
+        prob = prob * 0.72 + float(market_prob) * 0.28
+
+    return clamp(prob, 0.03, 0.92)
+
+
+def football_trap_signal(prob, odds, market_prob, value, confidence):
+    """
+    Détecte les faux favoris / pièges bookmaker.
+    """
+    if odds <= 1:
+        return "NO ODDS"
+
+    if market_prob is None or market_prob <= 0:
+        return "NO MARKET"
+
+    edge = prob - market_prob
+
+    if prob >= 0.58 and value >= 0.025 and edge >= 0.025:
+        return "BOOKMAKER VALUE"
+
+    if market_prob >= 0.62 and prob <= 0.52:
+        return "FALSE FAVORITE ALERT"
+
+    if edge <= -0.06:
+        return "MARKET OVERPRICED"
+
+    if confidence == "Faible" and value > 0.10:
+        return "HIGH VARIANCE VALUE"
+
+    return "OK"
 
 # ============================================================
 # FOOTBALL ENGINE
@@ -472,12 +687,15 @@ def scorer_prediction(home_team, away_team, home_xg, away_xg, player_df):
     return " | ".join(results)
 
 
-def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankroll, last_update):
+def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankroll, last_update, history=None):
     rows = []
 
     home = m.get("home_team")
     away = m.get("away_team")
     sport = str(m.get("sport", "")).lower()
+
+    home_profile = football_recent_profile(home, history)
+    away_profile = football_recent_profile(away, history)
 
     home_known = not strengths[
         strengths["team"] == home
@@ -595,12 +813,22 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         market_prob = market_probs.get(market)
 
         if market_prob is not None:
-            market_weight = 0.65 if market_led else 0.35
+            market_weight = 0.58 if market_led else 0.30
             prob = (
                 prob * (1 - market_weight)
                 + market_prob * market_weight
             )
             prob = clamp(prob, 0.03, 0.97)
+
+        if market in ["Home Win", "Away Win", "Draw"]:
+            prob = adjust_football_probability(
+                prob,
+                market,
+                home_profile,
+                away_profile,
+                elo["elo_diff"],
+                market_prob
+            )
 
         value = safe_value(
             prob,
@@ -619,9 +847,11 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             m.get("sport")
         )
 
+        recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"]
+
         decision = (
             "VALUE BET"
-            if mode != "NO BET"
+            if mode in recommended_modes
             else "NO BET"
         )
 
@@ -650,6 +880,17 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             bankroll
         )
 
+        if decision == "VALUE BET" and stake <= 0:
+            decision = "NO BET"
+
+        trap_signal = football_trap_signal(
+            prob,
+            odds,
+            market_prob,
+            value,
+            confidence
+        )
+
         rows.append({
             "last_update": last_update,
             "bet_mode": mode,
@@ -664,10 +905,18 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             "implied_probability": round(1 / odds, 4) if odds > 0 else "",
             "value": round(value, 4),
             "confidence": confidence,
-            "ia_badge": ia_badge(value, confidence, odds),
+            "ia_badge": mode_badge(mode, value, confidence, odds),
             "reliable_only": reliable,
             "safety_score": safe_score,
             "safety_level": safety_level(safe_score, mode, decision, prob, value),
+            "football_trap_signal": trap_signal,
+            "home_recent_form": home_profile["form_points"],
+            "away_recent_form": away_profile["form_points"],
+            "home_recent_attack": home_profile["attack_recent"],
+            "away_recent_attack": away_profile["attack_recent"],
+            "home_recent_defense": home_profile["defense_recent"],
+            "away_recent_defense": away_profile["defense_recent"],
+            "football_data_quality": min(home_profile["data_quality"], away_profile["data_quality"]),
             "decision": decision,
             "bankroll": bankroll,
             "stake_percent": stake_percent,
@@ -1021,16 +1270,16 @@ def tennis_confidence(prob, odds, edge, history_strength):
 
 
 def tennis_badge(value, confidence, odds):
-    if value >= 0.08 and confidence in ["Fort", "Elite"] and 1.35 <= odds <= 2.80:
+    if value >= 0.06 and confidence in ["Fort", "Elite"] and 1.25 <= odds <= 3.20:
         return "🟢 TENNIS STRONG VALUE"
 
-    if value >= 0.04 and confidence in ["Moyen", "Fort", "Elite"] and 1.35 <= odds <= 3.20:
-        return "🟡 TENNIS MEDIUM VALUE"
+    if value >= 0.015 and confidence in ["Moyen", "Fort", "Elite"] and 1.25 <= odds <= 3.60:
+        return "🟡 TENNIS VALUE"
 
-    if value > 0:
+    if value >= 0.05:
         return "🔴 TENNIS RISKY VALUE"
 
-    return "⚪ NO VALUE"
+    return "⚪ WATCH / NO VALUE"
 
 
 def tennis_reliable_filter(decision, confidence, odds, value, prob):
@@ -1103,9 +1352,11 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             m.get("sport")
         )
 
+        recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"]
+
         decision = (
             "VALUE BET"
-            if mode != "NO BET"
+            if mode in recommended_modes
             else "NO BET"
         )
 
@@ -1117,7 +1368,13 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             bankroll
         )
 
-        badge = tennis_badge(
+        if decision == "VALUE BET" and stake <= 0:
+            decision = "NO BET"
+
+        badge = mode_badge(mode, value, confidence, odds)
+
+        # Ancien badge tennis conservé seulement si besoin de debug
+        _tennis_raw_badge = tennis_badge(
             value,
             confidence,
             odds
@@ -1169,6 +1426,14 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             "reliable_only": reliable,
             "safety_score": safe_score,
             "safety_level": safety_level(safe_score, mode, decision, prob, value),
+            "football_trap_signal": "",
+            "home_recent_form": "",
+            "away_recent_form": "",
+            "home_recent_attack": "",
+            "away_recent_attack": "",
+            "home_recent_defense": "",
+            "away_recent_defense": "",
+            "football_data_quality": "",
             "decision": decision,
             "bankroll": bankroll,
             "stake_percent": stake_percent,
@@ -1276,7 +1541,8 @@ def main():
                 ml_model,
                 player_df,
                 bankroll,
-                last_update
+                last_update,
+                history
             )
 
         else:
@@ -1306,15 +1572,27 @@ def main():
         out["bookmaker_odds_num"] > 1
     ].copy()
 
+    decision_rank = {
+        "MEGA VALUE": 0,
+        "SAFE PICK": 1,
+        "VALUE BET": 2,
+        "RISKY VALUE": 3,
+        "WATCHLIST": 4,
+        "NO BET": 5,
+    }
+
+    out_display["decision_rank"] = out_display["bet_mode"].map(decision_rank).fillna(9)
+
     out_display = out_display.sort_values(
-        ["safety_score", "value", "ai_probability_num"],
-        ascending=[False, False, False]
+        ["decision_rank", "safety_score", "value", "ai_probability_num"],
+        ascending=[True, False, False, False]
     )
 
     out_display = out_display.drop(
         columns=[
             "bookmaker_odds_num",
-            "ai_probability_num"
+            "ai_probability_num",
+            "decision_rank"
         ]
     )
 
@@ -1328,9 +1606,12 @@ def main():
         index=False
     )
 
-    out_display[
-        out_display["decision"] == "VALUE BET"
-    ].to_csv(
+    recommended_output = out_display[
+        (out_display["decision"] == "VALUE BET")
+        & (pd.to_numeric(out_display["suggested_stake"], errors="coerce").fillna(0) > 0)
+    ].copy()
+
+    recommended_output.to_csv(
         "data/predictions/value_bets_today.csv",
         index=False
     )
@@ -1342,8 +1623,17 @@ def main():
 
     print(
         "Value bets retenus :",
-        int((out_display["decision"] == "VALUE BET").sum())
+        len(recommended_output)
     )
+
+    if "category" in out_display.columns:
+        print("Répartition recommandations :")
+        print(
+            out_display[out_display["decision"] == "VALUE BET"]
+            .groupby(["category", "bet_mode"])
+            .size()
+            .to_string()
+        )
 
     preview = (
         out_display

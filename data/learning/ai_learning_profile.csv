@@ -1,1 +1,8 @@
-
+segment,bets,wins,losses,stake,profit,avg_odds,dimension,winrate,roi,ai_recommendation
+MEDIUM,1,0,1,0.8,-0.8,1.95,Mode de pari,0.0,-1.0,WAIT_MORE_DATA
+OTHER,2,1,1,1.2,-1.2,1.415,Mode de pari,0.5,-1.0,WAIT_MORE_DATA
+tennis,3,1,2,2.0,-2.0,1.5933333333333335,Sport,0.3333333333333333,-1.0,REDUCE
+tennis_atp_french_open,1,1,0,0.0,0.0,1.34,Compétition,1.0,0.0,WAIT_MORE_DATA
+tennis_wta_french_open,2,0,2,2.0,-2.0,1.72,Compétition,0.0,-1.0,WAIT_MORE_DATA
+Player 1 Win,1,0,1,0.8,-0.8,1.95,Marché,0.0,-1.0,WAIT_MORE_DATA
+Player 2 Win,2,1,1,1.2,-1.2,1.415,Marché,0.5,-1.0,WAIT_MORE_DATA

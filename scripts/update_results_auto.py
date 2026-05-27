@@ -7,16 +7,27 @@ from pathlib import Path
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+from rapidfuzz import fuzz
+
+try:
+    from sofascore_wrapper import SofaScore
+    SOFASCORE_OK = True
+except Exception:
+    SOFASCORE_OK = False
 
 load_dotenv()
 
 ODDS_API_KEY = os.getenv("ODDS_API_KEY")
+FOOTBALL_DATA_TOKEN = os.getenv("FOOTBALL_DATA_TOKEN")
+API_TENNIS_KEY = os.getenv("API_TENNIS_KEY")
 
 TRACK_PATH = Path("tracking_results.csv")
 MANUAL_RESULTS_PATH = Path("manual_results.csv")
 LEARNING_PATH = Path("data/learning/ai_learning_profile.csv")
 LEARNING_SUMMARY_PATH = Path("data/learning/ai_learning_summary.csv")
 BASE_URL = "https://api.the-odds-api.com/v4"
+
+sofa = SofaScore() if SOFASCORE_OK else None
 
 
 def safe_str(x):
@@ -27,17 +38,24 @@ def safe_str(x):
 
     text = unicodedata.normalize("NFD", text)
     text = text.encode("ascii", "ignore").decode("utf-8")
-    text = re.sub(r"[^a-z0-9 ]", "", text)
+    text = re.sub(r"[^a-z0-9 ]", " ", text)
 
     replacements = {
         "paris saint germain": "psg",
         "paris sg": "psg",
+        "st etienne": "saint etienne",
+        "as saint etienne": "saint etienne",
         "manchester united": "man utd",
         "manchester city": "man city",
+        "tottenham hotspur": "tottenham",
         "internazionale": "inter",
         "fc internazionale milano": "inter",
         "bayern munich": "bayern",
         "real madrid cf": "real madrid",
+        "atletico madrid": "atl madrid",
+        "borussia dortmund": "dortmund",
+        "sporting cp": "sporting",
+        "rb leipzig": "leipzig",
     }
 
     for k, v in replacements.items():
@@ -46,14 +64,82 @@ def safe_str(x):
     return " ".join(text.split())
 
 
-def names_match(a, b):
-    a = safe_str(a)
-    b = safe_str(b)
+def last_name(text):
+    parts = safe_str(text).split()
+    if not parts:
+        return ""
 
-    if not a or not b:
+    # tennis : "H. Hurkacz", "Hurkacz Hubert", etc.
+    if len(parts) >= 2:
+        return parts[-1]
+
+    return parts[0]
+
+
+def tennis_name_variants(name):
+    clean = safe_str(name)
+    parts = clean.split()
+
+    variants = {clean}
+
+    if len(parts) >= 2:
+        first = parts[0]
+        last = parts[-1]
+        variants.add(last)
+        variants.add(f"{first[0]} {last}")
+        variants.add(f"{last} {first[0]}")
+        variants.add(f"{last} {first}")
+
+    return {v for v in variants if v}
+
+
+def names_match(a, b, threshold=82):
+    a_clean = safe_str(a)
+    b_clean = safe_str(b)
+
+    if not a_clean or not b_clean:
         return False
 
-    return a == b or a in b or b in a
+    if a_clean == b_clean or a_clean in b_clean or b_clean in a_clean:
+        return True
+
+    score = max(
+        fuzz.token_sort_ratio(a_clean, b_clean),
+        fuzz.partial_ratio(a_clean, b_clean),
+        fuzz.WRatio(a_clean, b_clean),
+    )
+
+    if score >= threshold:
+        return True
+
+    # Cas tennis : nom de famille suffisant si assez distinctif
+    a_last = last_name(a_clean)
+    b_last = last_name(b_clean)
+
+    if len(a_last) >= 5 and len(b_last) >= 5:
+        if fuzz.ratio(a_last, b_last) >= 88:
+            return True
+
+    return False
+
+
+def match_pair_score(home, away, event_home, event_away):
+    home_clean = safe_str(home)
+    away_clean = safe_str(away)
+    eh = safe_str(event_home)
+    ea = safe_str(event_away)
+
+    direct = (
+        fuzz.WRatio(home_clean, eh)
+        + fuzz.WRatio(away_clean, ea)
+    ) / 2
+
+    reverse = (
+        fuzz.WRatio(home_clean, ea)
+        + fuzz.WRatio(away_clean, eh)
+    ) / 2
+
+    return direct, reverse
 
 
 def get_score_number(score):
@@ -201,6 +287,265 @@ def find_manual_result(row, manual_df):
     return None
 
 
+
+def fetch_sofascore_events_for_date(sport, target_date=None):
+    """
+    Remplacé par API-FOOTBALL / API-TENNIS.
+    On garde le nom pour compatibilité avec le reste du script.
+    """
+
+    if target_date is None:
+        target_date = datetime.now(timezone.utc)
+
+    sport_lower = str(sport).lower()
+
+    try:
+        if "tennis" in sport_lower:
+            return fetch_api_tennis_events(target_date)
+
+        return fetch_api_football_events(target_date)
+
+    except Exception as e:
+        print("Erreur API events :", e)
+        return []
+
+
+def fetch_api_football_events(target_date):
+    if not FOOTBALL_DATA_TOKEN:
+        print("FOOTBALL_DATA_TOKEN manquante.")
+        return []
+
+    date_str = target_date.strftime("%Y-%m-%d")
+
+    url = "https://api.football-data.org/v4/matches"
+
+    headers = {
+        "X-Auth-Token": FOOTBALL_DATA_TOKEN,
+    }
+
+    params = {
+        "dateFrom": date_str,
+        "dateTo": date_str,
+    }
+
+    try:
+        r = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=30,
+        )
+
+        r.raise_for_status()
+
+        data = r.json()
+
+        events = []
+
+        for item in data.get("matches", []):
+            status = item.get("status", "")
+
+            home_score = (
+                item.get("score", {})
+                .get("fullTime", {})
+                .get("home")
+            )
+
+            away_score = (
+                item.get("score", {})
+                .get("fullTime", {})
+                .get("away")
+            )
+
+            events.append({
+                "homeTeam": {
+                    "name": item.get("homeTeam", {}).get("name", "")
+                },
+                "awayTeam": {
+                    "name": item.get("awayTeam", {}).get("name", "")
+                },
+                "homeScore": {
+                    "current": home_score
+                },
+                "awayScore": {
+                    "current": away_score
+                },
+                "status": {
+                    "type": (
+                        "finished"
+                        if status == "FINISHED"
+                        else "notfinished"
+                    )
+                },
+                "date": item.get("utcDate"),
+            })
+
+        return events
+
+    except Exception as e:
+        print("Erreur Football-Data :", e)
+        return []
+
+
+def fetch_api_tennis_events(target_date):
+    if not API_TENNIS_KEY:
+        return []
+
+    date_str = target_date.strftime("%Y-%m-%d")
+
+    url = "https://api.api-tennis.com/tennis/"
+
+    params = {
+        "method": "get_fixtures",
+        "APIkey": API_TENNIS_KEY,
+        "date_start": date_str,
+        "date_stop": date_str,
+    }
+
+    try:
+        r = requests.get(
+            url,
+            params=params,
+            timeout=30,
+        )
+
+        r.raise_for_status()
+
+        data = r.json()
+
+        events = []
+
+        for item in data.get("result", []):
+            home_name = item.get("event_first_player", "")
+            away_name = item.get("event_second_player", "")
+
+            home_score = item.get("event_final_result", "")
+
+            h_score = None
+            a_score = None
+
+            if "-" in str(home_score):
+                try:
+                    split_score = str(home_score).split("-")
+                    h_score = float(split_score[0].strip())
+                    a_score = float(split_score[1].strip())
+                except Exception:
+                    pass
+
+            status_raw = str(
+                item.get("event_status", "")
+            ).lower()
+
+            finished = (
+                "finished" in status_raw
+                or "after" in status_raw
+                or "ended" in status_raw
+            )
+
+            events.append({
+                "homeTeam": {
+                    "name": home_name
+                },
+                "awayTeam": {
+                    "name": away_name
+                },
+                "homeScore": {
+                    "current": h_score
+                },
+                "awayScore": {
+                    "current": a_score
+                },
+                "status": {
+                    "type": "finished" if finished else "notfinished"
+                },
+                "date": item.get("event_date"),
+            })
+
+        return events
+
+    except Exception as e:
+        print("Erreur API-TENNIS :", e)
+        return []
+
+
+def find_sofascore_match(row, events):
+    home = row.get("home_team", "")
+    away = row.get("away_team", "")
+
+    best_event = None
+    best_score = 0
+
+    for event in events:
+        try:
+            event_home = event.get("homeTeam", {}).get("name", "")
+            event_away = event.get("awayTeam", {}).get("name", "")
+
+            direct, reverse = match_pair_score(
+                home,
+                away,
+                event_home,
+                event_away,
+            )
+
+            score = max(direct, reverse)
+
+            if score > best_score:
+                best_score = score
+                best_event = event
+
+        except Exception:
+            continue
+
+    if best_score >= 78:
+        return best_event
+
+    return None
+
+
+def resolve_sofascore_result(row, event):
+    if not event:
+        return None, None, None
+
+    try:
+        status = (
+            event.get("status", {})
+            .get("type", "")
+        )
+
+        if status != "finished":
+            return None, None, None
+
+        home_score = (
+            event.get("homeScore", {})
+            .get("current")
+        )
+
+        away_score = (
+            event.get("awayScore", {})
+            .get("current")
+        )
+
+        if home_score is None or away_score is None:
+            return None, None, None
+
+        home_score = float(home_score)
+        away_score = float(away_score)
+
+        if home_score > away_score:
+            winner = row.get("home_team")
+
+        elif away_score > home_score:
+            winner = row.get("away_team")
+
+        else:
+            winner = "DRAW"
+
+        return winner, home_score, away_score
+
+    except Exception:
+        return None, None, None
+
+
 def fetch_scores(sport):
     if not ODDS_API_KEY:
         return []
@@ -226,16 +571,23 @@ def find_matching_score(row, scores):
     home = row.get("home_team", "")
     away = row.get("away_team", "")
     row_dt = parse_datetime(row.get("date", ""))
+
     candidates = []
 
     for event in scores:
         event_home = event.get("home_team", "")
         event_away = event.get("away_team", "")
 
-        same_match = names_match(home, event_home) and names_match(away, event_away)
-        reversed_match = names_match(home, event_away) and names_match(away, event_home)
+        direct, reverse = match_pair_score(
+            home,
+            away,
+            event_home,
+            event_away,
+        )
 
-        if same_match or reversed_match:
+        score = max(direct, reverse)
+
+        if score >= 76:
             event_dt = event_datetime(event)
 
             if row_dt is not None and event_dt is not None:
@@ -246,11 +598,11 @@ def find_matching_score(row, scores):
             else:
                 delta = timedelta(days=99)
 
-            candidates.append((delta, event))
+            candidates.append((score, -delta.total_seconds(), event))
 
     if candidates:
-        candidates.sort(key=lambda item: item[0])
-        return candidates[0][1]
+        candidates.sort(reverse=True, key=lambda item: (item[0], item[1]))
+        return candidates[0][2]
 
     return None
 
@@ -559,6 +911,28 @@ def main():
         print("Tracking vide.")
         return
 
+    # ============================================================
+    # FORCE LES COLONNES TEXTE
+    # ============================================================
+    text_cols = [
+        "status_detail",
+        "final_winner",
+        "final_score_home",
+        "final_score_away",
+        "result",
+        "selection",
+    ]
+
+    for col in text_cols:
+        if col not in tracking.columns:
+            tracking[col] = ""
+
+        tracking[col] = (
+            tracking[col]
+            .fillna("")
+            .astype(str)
+        )
+
     if "result" not in tracking.columns:
         tracking["result"] = "PENDING"
 
@@ -577,30 +951,37 @@ def main():
             errors="coerce",
         ).fillna(0.0).astype(float)
 
+    tracking["stake"] = pd.to_numeric(
+        tracking.get("stake", 0),
+        errors="coerce",
+    ).fillna(0.0).astype(float)
+
     tracking["profit"] = pd.to_numeric(
         tracking.get("profit", 0),
         errors="coerce",
     ).fillna(0.0).astype(float)
 
-    for col in [
-        "final_winner",
-        "final_score_home",
-        "final_score_away",
-        "status_detail",
-    ]:
-        if col not in tracking.columns:
-            tracking[col] = ""
-
     if "category" not in tracking.columns:
         tracking["category"] = ""
 
     category_blank = tracking["category"].fillna("").astype(str).str.strip() == ""
+
+    if "sport" not in tracking.columns:
+        tracking["sport"] = ""
+
     tracking.loc[category_blank, "category"] = (
         tracking.loc[category_blank, "sport"]
         .fillna("")
         .astype(str)
         .str.lower()
-        .apply(lambda sport: "tennis" if "tennis" in sport else "football" if "soccer" in sport or "football" in sport else "autre")
+        .apply(
+            lambda sport:
+            "tennis"
+            if "tennis" in sport
+            else "football"
+            if "soccer" in sport or "football" in sport
+            else "autre"
+        )
     )
 
     manual_df = load_manual_results()
@@ -617,10 +998,46 @@ def main():
     sports = pending["sport"].dropna().unique()
 
     scores_by_sport = {}
+    api_events_by_key = {}
 
     for sport in sports:
         print("Recuperation scores :", sport)
         scores_by_sport[sport] = fetch_scores(sport)
+
+    # ============================================================
+    # API-FOOTBALL / API-TENNIS PAR DATE REELLE DU PARI
+    # ============================================================
+    for _, pending_row in pending.iterrows():
+        sport = pending_row.get("sport", "")
+        row_dt = parse_datetime(pending_row.get("date", ""))
+
+        if row_dt is None:
+            row_dt = datetime.now(timezone.utc)
+
+        date_key = row_dt.strftime("%Y-%m-%d")
+        cache_key = (str(sport), date_key)
+
+        if cache_key in api_events_by_key:
+            continue
+
+        try:
+            events = fetch_sofascore_events_for_date(
+                sport,
+                row_dt,
+            )
+
+            api_events_by_key[cache_key] = events
+
+            print(
+                "API events trouves :",
+                sport,
+                date_key,
+                len(events),
+            )
+
+        except Exception as e:
+            print("Erreur API date :", sport, date_key, e)
+            api_events_by_key[cache_key] = []
 
     updated = 0
     manual_updated = 0
@@ -647,11 +1064,57 @@ def main():
             sport = row.get("sport", "")
             scores = scores_by_sport.get(sport, [])
 
-            event = find_matching_score(row, scores)
-            winner, score_home, score_away = get_winner_from_event(row, event)
+            # ============================================================
+            # PRIORITÉ 1 : SOFASCORE
+            # ============================================================
+
+            row_dt = parse_datetime(row.get("date", ""))
+
+            if row_dt is None:
+                row_dt = datetime.now(timezone.utc)
+
+            date_key = row_dt.strftime("%Y-%m-%d")
+
+            sofa_events = api_events_by_key.get(
+                (str(sport), date_key),
+                []
+            )
+
+            sofa_match = find_sofascore_match(
+                row,
+                sofa_events
+            )
+
+            winner, score_home, score_away = (
+                resolve_sofascore_result(
+                    row,
+                    sofa_match
+                )
+            )
 
             if winner is not None:
-                status_detail = "RESOLVED_FROM_ODDS_API"
+                status_detail = "RESOLVED_FROM_SOFASCORE"
+
+            # ============================================================
+            # PRIORITÉ 2 : ODDS API
+            # ============================================================
+
+            if winner is None:
+                event = find_matching_score(row, scores)
+
+                winner, score_home, score_away = (
+                    get_winner_from_event(
+                        row,
+                        event
+                    )
+                )
+
+                if winner is not None:
+                    status_detail = "RESOLVED_FROM_ODDS_API"
+
+            # ============================================================
+            # PRIORITÉ 3 : HISTORIQUE TENNIS
+            # ============================================================
 
             if winner is None and "tennis" in str(sport).lower():
                 winner, _ = try_resolve_tennis_from_history(row)
@@ -671,8 +1134,14 @@ def main():
         if result in ["WIN", "LOSS"]:
             tracking.at[idx, "result"] = result
             tracking.at[idx, "final_winner"] = winner
-            tracking.at[idx, "final_score_home"] = score_home
-            tracking.at[idx, "final_score_away"] = score_away
+            tracking.at[idx, "final_score_home"] = (
+                "" if score_home is None else str(score_home)
+            )
+
+            tracking.at[idx, "final_score_away"] = (
+                "" if score_away is None else str(score_away)
+            )
+
             tracking.at[idx, "profit"] = calc_profit(tracking.loc[idx])
             tracking.at[idx, "status_detail"] = status_detail or "RESOLVED"
 

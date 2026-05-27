@@ -13,6 +13,14 @@ TRACKING_KEY_COLS = [
     "selection",
 ]
 
+# ✅ MODES AUTORISÉS DANS LE TRACKING
+ALLOWED_MODES = [
+    "SAFE PICK",
+    "VALUE BET",
+    "MEGA VALUE",
+    "RISKY VALUE",
+]
+
 if not pred_path.exists():
     print("Aucun fichier value_bets_today.csv trouvé.")
     raise SystemExit
@@ -20,7 +28,15 @@ if not pred_path.exists():
 bets = pd.read_csv(pred_path)
 
 if bets.empty:
-    print("Aucun value bet à tracker aujourd'hui.")
+    print("Aucun pari trouvé.")
+    raise SystemExit
+
+# ✅ FILTRE DES MODES
+if "bet_mode" in bets.columns:
+    bets = bets[bets["bet_mode"].isin(ALLOWED_MODES)].copy()
+
+if bets.empty:
+    print("Aucun pari recommandé après filtrage.")
     raise SystemExit
 
 cols = [
@@ -44,7 +60,9 @@ cols = [
 ]
 
 bets = bets[[c for c in cols if c in bets.columns]].copy()
+
 bets = bets.rename(columns={"suggested_stake": "stake"})
+
 bets["result"] = "PENDING"
 bets["profit"] = 0
 
@@ -57,13 +75,10 @@ for col in [
     if col not in bets.columns:
         bets[col] = ""
 
-
 def safe_text(value):
     if pd.isna(value):
         return ""
-
     return str(value).strip().lower()
-
 
 def inferred_selection(row):
     selection = safe_text(row.get("selection", ""))
@@ -84,7 +99,6 @@ def inferred_selection(row):
 
     return ""
 
-
 def add_tracking_key(df):
     df = df.copy()
 
@@ -98,38 +112,71 @@ def add_tracking_key(df):
         if col == "selection":
             key_parts.append(df.apply(inferred_selection, axis=1))
         else:
-            key_parts.append(df[col].fillna("").astype(str).str.strip().str.lower())
+            key_parts.append(
+                df[col]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
 
     df["_tracking_key"] = key_parts[0]
 
     for part in key_parts[1:]:
-        df["_tracking_key"] = df["_tracking_key"] + "|" + part
+        df["_tracking_key"] = (
+            df["_tracking_key"] + "|" + part
+        )
 
     return df
 
 if track_path.exists():
     existing = pd.read_csv(track_path)
+
     existing = add_tracking_key(existing)
     bets = add_tracking_key(bets)
 
-    existing_keys = set(existing["_tracking_key"].dropna().astype(str))
-    new_bets = bets[~bets["_tracking_key"].isin(existing_keys)].copy()
+    existing_keys = set(
+        existing["_tracking_key"]
+        .dropna()
+        .astype(str)
+    )
 
-    final = pd.concat([existing, new_bets], ignore_index=True)
+    new_bets = bets[
+        ~bets["_tracking_key"].isin(existing_keys)
+    ].copy()
+
+    final = pd.concat(
+        [existing, new_bets],
+        ignore_index=True
+    )
+
     final = final.drop_duplicates(
         subset=["_tracking_key"],
         keep="first"
     )
+
     final = final.drop(columns=["_tracking_key"])
+
 else:
     new_bets = bets
-    final = add_tracking_key(bets).drop(columns=["_tracking_key"])
+    final = add_tracking_key(bets).drop(
+        columns=["_tracking_key"]
+    )
 
 if "selection" not in final.columns:
     final["selection"] = ""
 
-selection_blank = final["selection"].fillna("").astype(str).str.strip() == ""
-final.loc[selection_blank, "selection"] = final[selection_blank].apply(
+selection_blank = (
+    final["selection"]
+    .fillna("")
+    .astype(str)
+    .str.strip() == ""
+)
+
+final.loc[
+    selection_blank,
+    "selection"
+] = final[selection_blank].apply(
     inferred_selection,
     axis=1
 )
@@ -137,16 +184,32 @@ final.loc[selection_blank, "selection"] = final[selection_blank].apply(
 if "category" not in final.columns:
     final["category"] = ""
 
-category_blank = final["category"].fillna("").astype(str).str.strip() == ""
-final.loc[category_blank, "category"] = (
+category_blank = (
+    final["category"]
+    .fillna("")
+    .astype(str)
+    .str.strip() == ""
+)
+
+final.loc[
+    category_blank,
+    "category"
+] = (
     final.loc[category_blank, "sport"]
     .fillna("")
     .astype(str)
     .str.lower()
-    .apply(lambda sport: "tennis" if "tennis" in sport else "football" if "soccer" in sport or "football" in sport else "autre")
+    .apply(
+        lambda sport:
+        "tennis"
+        if "tennis" in sport
+        else "football"
+        if "soccer" in sport or "football" in sport
+        else "autre"
+    )
 )
 
 final.to_csv(track_path, index=False)
 
-print("Paris ajoutes au tracking :", len(new_bets))
+print("Paris ajoutés au tracking :", len(new_bets))
 print("Fichier mis à jour : tracking_results.csv")
