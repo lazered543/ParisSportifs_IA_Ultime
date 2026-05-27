@@ -350,7 +350,9 @@ def clean_table(data, compact=True):
     ]
 
     cols = core_cols + ([] if compact else tracking_cols)
+    cols = list(dict.fromkeys(cols))
     cols = [c for c in cols if c in data.columns]
+    
     out = data[cols].copy()
 
     for col in ["ai_probability", "implied_probability", "value", "tennis_edge"]:
