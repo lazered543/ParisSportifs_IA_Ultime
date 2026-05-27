@@ -40,7 +40,7 @@ def load_or_demo_upcoming():
         if not df.empty:
             before = len(df)
             df = filter_upcoming_window(df)
-            print(f"Matchs proches gardés : {len(df)} / {before}")
+            print(f"Matchs gardés après filtre dynamique : {len(df)} / {before}")
             return df
 
     return pd.DataFrame([])
@@ -136,8 +136,27 @@ def normalized_market_probabilities(odds_home, odds_draw, odds_away):
 # MATCH FILTERING / PRIORITY
 # ============================================================
 
-MAX_HOURS_AHEAD = 72
 PAST_GRACE_HOURS = 4
+
+def dynamic_hours_window(sport):
+    """
+    Fenêtre dynamique :
+    - Tennis : 48h pour garder les matchs du jour / lendemain
+    - Foot classique : 7 jours pour garder Ligue 1, Ligue 2, barrages, week-end
+    - World Cup / international : 10 jours car les calendriers sortent plus tôt
+    """
+    sport = str(sport).lower()
+
+    if "tennis" in sport:
+        return 48
+
+    if "world_cup" in sport or "international" in sport:
+        return 240  # 10 jours
+
+    if "soccer" in sport or "football" in sport:
+        return 168  # 7 jours
+
+    return 72
 
 BIG_PLAYERS = [
     "djokovic", "alcaraz", "sinner", "nadal", "federer", "medvedev", "zverev",
@@ -149,7 +168,7 @@ BIG_PLAYERS = [
 BIG_COMPETITIONS = [
     "french_open", "roland", "wimbledon", "us_open", "australian_open",
     "champions_league", "premier_league", "laliga", "serie_a", "bundesliga",
-    "ligue_one", "world_cup",
+    "ligue_one", "ligue_two", "ligue_2", "france", "world_cup",
 ]
 
 
@@ -187,8 +206,10 @@ def priority_score(home_team, away_team, sport):
 
 def filter_upcoming_window(df):
     """
-    Garde uniquement les vrais matchs proches.
-    Objectif : éviter d'afficher des matchs à +1 mois alors que des matchs tennis/foot existent aujourd'hui.
+    Garde les matchs utiles sans tout couper :
+    - tennis proche uniquement
+    - football sur 7 jours
+    - Coupe du monde / international sur 10 jours
     """
     if df.empty or "commence_time" not in df.columns:
         return df
@@ -198,14 +219,44 @@ def filter_upcoming_window(df):
 
     now = datetime.now(timezone.utc)
     start = now - timedelta(hours=PAST_GRACE_HOURS)
-    end = now + timedelta(hours=MAX_HOURS_AHEAD)
 
     valid = out["_dt"].notna()
-    near = out[valid & (out["_dt"] >= start) & (out["_dt"] <= end)].copy()
+
+    out["_max_hours"] = out["sport"].apply(dynamic_hours_window)
+    out["_end"] = out["_max_hours"].apply(lambda h: now + timedelta(hours=int(h)))
+
+    near = out[
+        valid
+        & (out["_dt"] >= start)
+        & (out["_dt"] <= out["_end"])
+    ].copy()
 
     if near.empty:
-        print("Aucun match dans la fenêtre proche. Vérifie data/processed/upcoming_odds.csv.")
-        return near.drop(columns=["_dt"], errors="ignore")
+        print("Aucun match dans la fenêtre dynamique. Vérifie data/processed/upcoming_odds.csv.")
+        return near.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
+
+    near["_priority"] = near.apply(
+        lambda r: priority_score(
+            r.get("home_team", ""),
+            r.get("away_team", ""),
+            r.get("sport", "")
+        ),
+        axis=1,
+    )
+
+    near = near.sort_values(
+        ["_priority", "_dt"],
+        ascending=[False, True]
+    )
+
+    print(
+        "Fenêtre dynamique :",
+        "tennis=48h, foot=7j, international=10j",
+        "| matchs gardés =",
+        len(near),
+    )
+
+    return near.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
 
     near["_priority"] = near.apply(
         lambda r: priority_score(
@@ -2508,14 +2559,17 @@ def main():
         if "date" in out.columns:
             out["_dt"] = out["date"].apply(parse_match_datetime)
             now = datetime.now(timezone.utc)
+            out["_max_hours"] = out["sport"].apply(dynamic_hours_window)
+            out["_end"] = out["_max_hours"].apply(lambda h: now + timedelta(hours=int(h)))
+
             out = out[
                 out["_dt"].isna()
                 | (
                     (out["_dt"] >= now - timedelta(hours=PAST_GRACE_HOURS))
-                    & (out["_dt"] <= now + timedelta(hours=MAX_HOURS_AHEAD))
+                    & (out["_dt"] <= out["_end"])
                 )
             ].copy()
-            out = out.drop(columns=["_dt"], errors="ignore")
+            out = out.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
 
     if out.empty:
         print("Aucune prédiction.")
