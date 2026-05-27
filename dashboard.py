@@ -277,7 +277,7 @@ df = prepare_data(df)
 
 SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 RISKY_MODES = ["RISKY VALUE"]
-RECOMMENDED_MODES = SAFE_MODES + RISKY_MODES
+RECOMMENDED_MODES = SAFE_MODES
 
 
 def sort_recommendations(data):
@@ -309,7 +309,11 @@ def format_pct(x):
         return f"{float(x) * 100:.2f}%"
     except Exception:
         return ""
-  
+
+# Sécurité Streamlit / PyArrow : évite les crashs d'affichage
+for col in out.columns:
+    out[col] = out[col].astype(str)
+    
 def clean_table(data, compact=True):
     core_cols = [
         "date",
@@ -352,7 +356,6 @@ def clean_table(data, compact=True):
     cols = core_cols + ([] if compact else tracking_cols)
     cols = list(dict.fromkeys(cols))
     cols = [c for c in cols if c in data.columns]
-    
     out = data[cols].copy()
 
     for col in ["ai_probability", "implied_probability", "value", "tennis_edge"]:
@@ -625,11 +628,10 @@ recommended = filtered[
 
 def rebalance_stake(row):
     """
-    Corrige le problème :
-    SAFE < RISKY niveau mise.
-    Maintenant :
-    - SAFE et MEGA VALUE ont les plus grosses mises,
-    - RISKY reste limité.
+    Affichage bankroll plus cohérent :
+    - RISKY = petite mise max 0.50€
+    - VALUE = moyen
+    - SAFE / MEGA = plus forte mise
     """
 
     stake = float(row.get("suggested_stake", 0) or 0)
@@ -637,41 +639,33 @@ def rebalance_stake(row):
     value = float(row.get("value", 0) or 0)
     mode = str(row.get("bet_mode", "")).upper()
 
-    base = max(stake, 0.35)
+    if "RISKY" in mode:
+        return min(max(stake, 0.30), 0.50)
+
+    if "VALUE BET" in mode:
+        base = max(stake, 0.70)
+        mult = 1.00 + max(prob - 0.55, 0) * 1.4 + min(max(value, 0), 0.20) * 0.6
+        return min(round(base * mult, 2), 1.60)
+
+    if "SAFE PICK" in mode:
+        base = max(stake, 1.00)
+        mult = 1.25 + max(prob - 0.60, 0) * 1.8 + min(max(value, 0), 0.20) * 0.5
+        return min(round(base * mult, 2), 2.40)
 
     if "MEGA VALUE" in mode:
-        mult = 1.90
-    elif "SAFE PICK" in mode:
-        mult = 1.60
-    elif "VALUE BET" in mode:
-        mult = 1.20
-    elif "RISKY" in mode:
-        mult = 0.65
-    else:
-        mult = 1.0
+        base = max(stake, 1.50)
+        mult = 1.35 + max(prob - 0.62, 0) * 2.0 + min(max(value, 0), 0.25) * 0.7
+        return min(round(base * mult, 2), 3.00)
 
-    # Ajustement léger selon proba réelle
-    mult += max(prob - 0.50, 0) * 1.2
-
-    # Value énorme => petit bonus
-    mult += min(max(value, 0), 0.25) * 0.8
-
-    final_stake = round(base * mult, 2)
-
-    # Sécurité bankroll
-    if "RISKY" in mode:
-        final_stake = min(final_stake, 1.25)
-    elif "SAFE PICK" in mode or "MEGA VALUE" in mode:
-        final_stake = min(final_stake, 4.50)
-    else:
-        final_stake = min(final_stake, 2.75)
-
-    return max(final_stake, 0.35)
+    return max(stake, 0.35)
 
 recommended["suggested_stake"] = recommended.apply(
     rebalance_stake,
     axis=1
 )
+risky_list = filtered[
+    filtered["bet_mode"].astype(str).str.upper().str.contains("RISKY")
+].copy()
 watchlist = filtered[filtered["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
 
 last_update = df["last_update"].iloc[0] if "last_update" in df.columns else "Inconnue"
@@ -701,7 +695,7 @@ st.markdown(
 
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Lignes analysées", len(filtered))
-c2.metric("Paris conseillés", len(recommended))
+c2.metric("Paris conseillés SAFE", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
 c5.metric("Mise max", f"{filtered['suggested_stake'].max() if not filtered.empty else 0:.2f}€")
@@ -845,6 +839,11 @@ with tabs[5]:
 
         total_won = wins["profit"].sum() if not wins.empty else 0
         total_lost = abs(losses["profit"].sum()) if not losses.empty else 0
+
+        if len(finished) < 50:
+            st.info(
+                "Échantillon encore trop faible : il faut idéalement 50 à 100 paris terminés pour juger la fiabilité réelle."
+            )
 
         r5, r6, r7 = st.columns(3)
         r5.metric("Misé total", f"{total_staked:.2f}€")

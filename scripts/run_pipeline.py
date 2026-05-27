@@ -192,16 +192,16 @@ def format_top_scores(top_scores):
 
 def bet_mode(prob, odds, value, confidence, sport):
     """
-    Recalibrage réaliste :
-    - SAFE PICK : probabilité forte, cote correcte, value légèrement positive ou neutre
-    - VALUE BET : edge mathématique positif
-    - RISKY VALUE : edge fort mais proba/cote plus volatile
-    - WATCHLIST : intéressant mais pas assez rentable pour miser
+    Version plus stricte :
+    - SAFE PICK = pari assez sûr
+    - VALUE BET = vraie value raisonnable
+    - RISKY VALUE = visible dans le dashboard mais très petite mise
+    - WATCHLIST / NO BET = pas conseillé
     """
     sport = str(sport).lower()
     confidence = str(confidence)
 
-    if odds <= 1 or odds > 5.00:
+    if odds <= 1 or odds > 4.50:
         return "NO BET"
 
     risky_competition = any(x in sport for x in [
@@ -216,27 +216,27 @@ def bet_mode(prob, odds, value, confidence, sport):
     if confidence in ["A éviter", "A Ã©viter"]:
         return "NO BET"
 
-    # Très gros edge avec proba solide
-    if prob >= 0.60 and value >= 0.055 and 1.35 <= odds <= 3.40:
+    # Très bon spot : proba solide + vraie value
+    if prob >= 0.64 and value >= 0.055 and 1.30 <= odds <= 2.90:
         return "MEGA VALUE"
 
-    # Favori probable avec cote acceptable
-    if prob >= 0.66 and value >= -0.01 and 1.18 <= odds <= 2.05:
+    # Match plus sûr : proba haute, cote correcte, value pas négative
+    if prob >= 0.60 and value >= 0.000 and 1.18 <= odds <= 2.20:
         return "SAFE PICK"
 
-    # Pari value principal : l'IA estime la cote mal payée par le bookmaker
-    if prob >= 0.515 and value >= 0.010 and 1.28 <= odds <= 3.80:
+    # Value raisonnable : edge positif réel
+    if prob >= 0.545 and value >= 0.030 and 1.30 <= odds <= 3.20:
         return "VALUE BET"
 
-    # Value risquée : on accepte un peu plus de variance
-    if prob >= 0.46 and value >= 0.040 and 1.75 <= odds <= 4.60:
+    # Risqué : affiché mais pas pari principal
+    if prob >= 0.49 and value >= 0.060 and 1.80 <= odds <= 3.80:
         return "RISKY VALUE"
 
-    # Pas pari conseillé, mais à surveiller dans le dashboard
-    if prob >= 0.55 and 1.18 <= odds <= 3.80:
+    if prob >= 0.55 and 1.18 <= odds <= 3.60:
         return "WATCHLIST"
 
     return "NO BET"
+
 
 # ============================================================
 # BANKROLL MANAGEMENT IA
@@ -244,10 +244,10 @@ def bet_mode(prob, odds, value, confidence, sport):
 
 def bankroll_management(prob, odds, value, mode, bankroll):
     """
-    Gestion intelligente de bankroll :
-    - Kelly Criterion fractionné
-    - plafonds de sécurité par mode
-    - mise minimale seulement si le pari est accepté
+    Bankroll plus logique :
+    - RISKY = très petite mise, jamais gros montant
+    - SAFE / MEGA = mises plus élevées
+    - VALUE = intermédiaire
     """
 
     if odds <= 1 or mode in ["NO BET", "WATCHLIST"]:
@@ -257,49 +257,54 @@ def bankroll_management(prob, odds, value, mode, bankroll):
     p = prob
     q = 1 - p
 
-    # Kelly brut
     kelly = ((b * p) - q) / b
 
-    # Si Kelly négatif, aucun edge réel
     if kelly <= 0:
         return 0.0, 0.0, 0.0
 
-    # Plafond Kelly sécurité
-    kelly = max(0.0, min(kelly, 0.12))
+    kelly = max(0.0, min(kelly, 0.10))
 
-    # Fractionnement selon le profil du pari
+    # Fractions plus prudentes
     fractions = {
-        "SAFE PICK": 0.20,
+        "MEGA VALUE": 0.30,
+        "SAFE PICK": 0.24,
         "VALUE BET": 0.14,
-        "RISKY VALUE": 0.06,
-        "MEGA VALUE": 0.32,
+        "RISKY VALUE": 0.035,
+        "WATCHLIST": 0.0,
+    }
+
+    # Plafonds beaucoup plus logiques
+    max_by_mode = {
+        "MEGA VALUE": 0.030,   # max 3.00€ pour 100€
+        "SAFE PICK": 0.022,    # max 2.20€
+        "VALUE BET": 0.014,    # max 1.40€
+        "RISKY VALUE": 0.005,  # max 0.50€
         "WATCHLIST": 0.0,
     }
 
     fraction = fractions.get(mode, 0.0)
-
-    stake_percent = kelly * fraction
-
-    # Plafonds par mode pour éviter les grosses mises dangereuses
-    max_by_mode = {
-        "SAFE PICK": 0.025,
-        "VALUE BET": 0.018,
-        "RISKY VALUE": 0.008,
-        "MEGA VALUE": 0.04,
-        "WATCHLIST": 0.0,
-    }
-
     max_percent = max_by_mode.get(mode, 0.0)
 
+    stake_percent = kelly * fraction
     stake_percent = max(0.0, min(stake_percent, max_percent))
 
-    # Mise trop faible => on évite seulement les ultra micro-paris
-    if stake_percent < 0.001:
-        return 0.0, round(stake_percent, 4), round(kelly, 4)
+    if stake_percent <= 0:
+        return 0.0, 0.0, round(kelly, 4)
 
     stake = bankroll * stake_percent
 
-    return round(stake, 2), round(stake_percent, 4), round(kelly, 4)
+    # Plancher uniquement sur les vrais paris, mais RISKY reste faible
+    if mode == "RISKY VALUE":
+        stake = min(max(stake, 0.30), 0.50)
+    elif mode == "VALUE BET":
+        stake = min(max(stake, 0.60), 1.40)
+    elif mode == "SAFE PICK":
+        stake = min(max(stake, 1.00), 2.20)
+    elif mode == "MEGA VALUE":
+        stake = min(max(stake, 1.50), 3.00)
+
+    return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
+
 
 # ============================================================
 # BADGES / FILTERS
@@ -344,10 +349,10 @@ def ia_badge(value, confidence, odds):
 def reliable_filter(decision, confidence, odds, value, prob):
     return (
         decision == "VALUE BET"
-        and confidence in ["Faible", "Moyen", "Fort", "Elite"]
-        and 1.20 <= odds <= 3.80
-        and value >= 0.010
-        and prob >= 0.50
+        and confidence in ["Moyen", "Fort", "Elite"]
+        and 1.20 <= odds <= 3.20
+        and value >= 0.030
+        and prob >= 0.545
     )
 
 
@@ -911,7 +916,7 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             m.get("sport")
         )
 
-        recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"]
+        recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 
         decision = (
             "VALUE BET"
@@ -1310,22 +1315,22 @@ def tennis_probability(player_a, player_b, odds_a, odds_b, ratings):
 
 def tennis_confidence(prob, odds, edge, history_strength):
     if history_strength < 0.25:
-        if prob >= 0.58 and edge >= 0.010:
+        if prob >= 0.60 and edge >= 0.025:
             return "Moyen"
-        if prob >= 0.52:
+        if prob >= 0.54:
             return "Faible"
         return "A éviter"
 
-    if prob >= 0.68 and edge >= 0.040 and 1.25 <= odds <= 2.60:
+    if prob >= 0.68 and edge >= 0.050 and 1.25 <= odds <= 2.50:
         return "Elite"
 
-    if prob >= 0.60 and edge >= 0.020 and 1.25 <= odds <= 3.00:
+    if prob >= 0.62 and edge >= 0.035 and 1.25 <= odds <= 2.80:
         return "Fort"
 
-    if prob >= 0.54 and edge >= 0.005 and 1.20 <= odds <= 3.50:
+    if prob >= 0.56 and edge >= 0.020 and 1.20 <= odds <= 3.20:
         return "Moyen"
 
-    if prob >= 0.50:
+    if prob >= 0.52:
         return "Faible"
 
     return "A éviter"
@@ -1363,10 +1368,10 @@ def tennis_badge(value, confidence, odds):
 def tennis_reliable_filter(decision, confidence, odds, value, prob):
     return (
         decision == "VALUE BET"
-        and confidence in ["Faible", "Moyen", "Fort", "Elite"]
-        and 1.20 <= odds <= 3.80
-        and value >= 0.010
-        and prob >= 0.50
+        and confidence in ["Moyen", "Fort", "Elite"]
+        and 1.20 <= odds <= 3.20
+        and value >= 0.030
+        and prob >= 0.545
     )
 
 
@@ -1430,7 +1435,7 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             m.get("sport")
         )
 
-        recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"]
+        recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 
         decision = (
             "VALUE BET"
