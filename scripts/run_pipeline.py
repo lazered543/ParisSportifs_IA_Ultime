@@ -116,6 +116,21 @@ def normalized_market_probabilities(odds_home, odds_draw, odds_away):
         "Away Win": american_to_probability_from_decimal(odds_away),
     }
 
+    total = sum(v for v in implied.values() if v > 0)
+
+    if total <= 0:
+        return {
+            "Home Win": 0.36,
+            "Draw": 0.28,
+            "Away Win": 0.36,
+        }
+
+    return {
+        market: prob / total
+        for market, prob in implied.items()
+        if prob > 0
+    }
+
 
 # ============================================================
 # MATCH FILTERING / PRIORITY
@@ -209,18 +224,6 @@ def filter_upcoming_window(df):
     return near.drop(columns=["_dt"], errors="ignore")
 
 
-    total = sum(v for v in implied.values() if v > 0)
-
-    if total <= 0:
-        return {}
-
-    return {
-        market: prob / total
-        for market, prob in implied.items()
-        if prob > 0
-    }
-
-
 def odds_based_expected_goals(odds_home, odds_draw, odds_away, home_profile=None, away_profile=None):
     """
     Estime des xG réalistes quand l'historique équipe est faible ou absent.
@@ -230,6 +233,13 @@ def odds_based_expected_goals(odds_home, odds_draw, odds_away, home_profile=None
     - la forme récente ajuste légèrement attaque/défense.
     """
     market_probs = normalized_market_probabilities(odds_home, odds_draw, odds_away)
+
+    if not isinstance(market_probs, dict):
+        market_probs = {
+            "Home Win": 0.36,
+            "Draw": 0.28,
+            "Away Win": 0.36,
+        }
 
     p_home = market_probs.get("Home Win", 0.36)
     p_draw = market_probs.get("Draw", 0.28)
@@ -1037,6 +1047,13 @@ def market_total_goal_adjustment(odds_home, odds_draw, odds_away, base_home_xg, 
     """
     probs = normalized_market_probabilities(odds_home, odds_draw, odds_away)
 
+    if not isinstance(probs, dict):
+        probs = {
+            "Home Win": 0.36,
+            "Draw": 0.28,
+            "Away Win": 0.36,
+        }
+
     p_home = probs.get("Home Win", 0.36)
     p_draw = probs.get("Draw", 0.28)
     p_away = probs.get("Away Win", 0.36)
@@ -1318,6 +1335,13 @@ def market_total_goal_adjustment(odds_home, odds_draw, odds_away, base_home_xg, 
     """
     probs = normalized_market_probabilities(odds_home, odds_draw, odds_away)
 
+    if not isinstance(probs, dict):
+        probs = {
+            "Home Win": 0.36,
+            "Draw": 0.28,
+            "Away Win": 0.36,
+        }
+
     p_home = probs.get("Home Win", 0.36)
     p_draw = probs.get("Draw", 0.28)
     p_away = probs.get("Away Win", 0.36)
@@ -1475,6 +1499,13 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         m.get("odds_draw"),
         m.get("odds_away")
     )
+
+    if not isinstance(market_probs, dict):
+        market_probs = {
+            "Home Win": 0.36,
+            "Draw": 0.28,
+            "Away Win": 0.36,
+        }
 
     market_led = (
         "world_cup" in sport
