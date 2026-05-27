@@ -375,6 +375,10 @@ def clean_table(data, compact=True):
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce").round(2)
 
+    # Sécurité Streamlit / PyArrow : évite les crashs d'affichage
+    for col in out.columns:
+        out[col] = out[col].astype(str)
+
     return out
 
 
