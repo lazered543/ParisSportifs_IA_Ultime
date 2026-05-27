@@ -124,21 +124,85 @@ def normalized_market_probabilities(odds_home, odds_draw, odds_away):
         if prob > 0
     }
 
+
+def odds_based_expected_goals(odds_home, odds_draw, odds_away, home_profile=None, away_profile=None):
+    """
+    Estime des xG réalistes quand l'historique équipe est faible ou absent.
+    Logique :
+    - les cotes donnent la force relative,
+    - le nul donne une indication sur le total de buts,
+    - la forme récente ajuste légèrement attaque/défense.
+    """
+    market_probs = normalized_market_probabilities(odds_home, odds_draw, odds_away)
+
+    p_home = market_probs.get("Home Win", 0.36)
+    p_draw = market_probs.get("Draw", 0.28)
+    p_away = market_probs.get("Away Win", 0.36)
+
+    # Total de buts attendu : si le nul est très haut, match plus ouvert.
+    # Si le nul est bas, match plus fermé/équilibré.
+    total_goals = 2.35 + (0.28 - p_draw) * 1.25
+    total_goals = clamp(total_goals, 1.80, 3.35)
+
+    dominance = clamp(p_home - p_away, -0.45, 0.45)
+
+    home_xg = total_goals * (0.50 + dominance * 0.55)
+    away_xg = total_goals - home_xg
+
+    if home_profile and away_profile:
+        form_edge = home_profile.get("form_points", 0.5) - away_profile.get("form_points", 0.5)
+        attack_edge = home_profile.get("attack_recent", 1.2) - away_profile.get("defense_recent", 1.2)
+        away_attack_edge = away_profile.get("attack_recent", 1.2) - home_profile.get("defense_recent", 1.2)
+        quality = min(home_profile.get("data_quality", 0.25), away_profile.get("data_quality", 0.25))
+
+        home_xg += (form_edge * 0.28 + attack_edge * 0.08) * quality
+        away_xg += (-form_edge * 0.22 + away_attack_edge * 0.08) * quality
+
+    home_xg = clamp(home_xg, 0.25, 3.60)
+    away_xg = clamp(away_xg, 0.25, 3.60)
+
+    return round(home_xg, 3), round(away_xg, 3)
+
+
+def blend_xg(history_xg, odds_xg, data_quality):
+    """
+    Mélange xG historique et xG marché.
+    Si peu de données : on écoute davantage le marché.
+    Si beaucoup de données : on garde plus d'historique.
+    """
+    hxg = safe_float(history_xg, 1.2)
+    oxg = safe_float(odds_xg, 1.2)
+    q = clamp(safe_float(data_quality, 0.25), 0, 1)
+
+    hist_weight = 0.25 + 0.50 * q
+    odds_weight = 1 - hist_weight
+
+    return round(clamp(hxg * hist_weight + oxg * odds_weight, 0.20, 3.80), 3)
+
+
+def format_top_scores(top_scores):
+    clean = []
+    for score, proba in top_scores[:5]:
+        clean.append((score, round(float(proba), 4)))
+    return str(clean)
+
 # ============================================================
 # BET MODES
 # ============================================================
 
 def bet_mode(prob, odds, value, confidence, sport):
     """
-    Version football + tennis réaliste :
-    - SAFE PICK = match probable, même si value faible
-    - VALUE BET = edge réel mais seuil réaliste
-    - MEGA VALUE = gros edge
-    - RISKY VALUE = grosse value mais variance plus haute
-    - WATCHLIST = intéressant, pas pari principal
+    Recalibrage réaliste :
+    - SAFE PICK : probabilité forte, cote correcte, value légèrement positive ou neutre
+    - VALUE BET : edge mathématique positif
+    - RISKY VALUE : edge fort mais proba/cote plus volatile
+    - WATCHLIST : intéressant mais pas assez rentable pour miser
     """
     sport = str(sport).lower()
     confidence = str(confidence)
+
+    if odds <= 1 or odds > 5.00:
+        return "NO BET"
 
     risky_competition = any(x in sport for x in [
         "itf",
@@ -146,56 +210,30 @@ def bet_mode(prob, odds, value, confidence, sport):
         "friendly",
     ])
 
-    if risky_competition or odds <= 1:
+    if risky_competition:
         return "NO BET"
 
-    if odds > 5.00:
+    if confidence in ["A éviter", "A Ã©viter"]:
         return "NO BET"
 
-    if (
-        prob >= 0.62
-        and value >= 0.07
-        and 1.35 <= odds <= 3.40
-        and confidence not in ["A éviter", "A Ã©viter"]
-    ):
+    # Très gros edge avec proba solide
+    if prob >= 0.60 and value >= 0.055 and 1.35 <= odds <= 3.40:
         return "MEGA VALUE"
 
-    if (
-        prob >= 0.70
-        and value >= -0.015
-        and 1.15 <= odds <= 1.85
-        and confidence not in ["A éviter", "A Ã©viter"]
-    ):
+    # Favori probable avec cote acceptable
+    if prob >= 0.66 and value >= -0.01 and 1.18 <= odds <= 2.05:
         return "SAFE PICK"
 
-    if (
-        prob >= 0.60
-        and value >= 0.000
-        and 1.25 <= odds <= 2.25
-        and confidence not in ["A éviter", "A Ã©viter"]
-    ):
-        return "SAFE PICK"
-
-    if (
-        prob >= 0.54
-        and value >= 0.015
-        and 1.35 <= odds <= 3.60
-        and confidence not in ["A éviter", "A Ã©viter"]
-    ):
+    # Pari value principal : l'IA estime la cote mal payée par le bookmaker
+    if prob >= 0.515 and value >= 0.010 and 1.28 <= odds <= 3.80:
         return "VALUE BET"
 
-    if (
-        prob >= 0.48
-        and value >= 0.05
-        and 1.80 <= odds <= 4.50
-        and confidence not in ["A éviter", "A Ã©viter"]
-    ):
+    # Value risquée : on accepte un peu plus de variance
+    if prob >= 0.46 and value >= 0.040 and 1.75 <= odds <= 4.60:
         return "RISKY VALUE"
 
-    if (
-        prob >= 0.53
-        and 1.20 <= odds <= 3.80
-    ):
+    # Pas pari conseillé, mais à surveiller dans le dashboard
+    if prob >= 0.55 and 1.18 <= odds <= 3.80:
         return "WATCHLIST"
 
     return "NO BET"
@@ -255,8 +293,8 @@ def bankroll_management(prob, odds, value, mode, bankroll):
 
     stake_percent = max(0.0, min(stake_percent, max_percent))
 
-    # Mise trop faible => on évite les micro-paris inutiles
-    if stake_percent < 0.003:
+    # Mise trop faible => on évite seulement les ultra micro-paris
+    if stake_percent < 0.001:
         return 0.0, round(stake_percent, 4), round(kelly, 4)
 
     stake = bankroll * stake_percent
@@ -306,10 +344,10 @@ def ia_badge(value, confidence, odds):
 def reliable_filter(decision, confidence, odds, value, prob):
     return (
         decision == "VALUE BET"
-        and confidence in ["Moyen", "Fort", "Elite"]
-        and 1.30 <= odds <= 3.20
-        and value >= 0.035
-        and prob >= 0.52
+        and confidence in ["Faible", "Moyen", "Fort", "Elite"]
+        and 1.20 <= odds <= 3.80
+        and value >= 0.010
+        and prob >= 0.50
     )
 
 
@@ -319,7 +357,7 @@ def safe_value(prob, odds):
 
     value = value_score(prob, odds)
 
-    return min(value, 1.5)
+    return round(clamp(value, -0.50, 0.80), 4)
 
 
 def safety_score(prob, odds, value, confidence, mode, reliable):
@@ -337,11 +375,11 @@ def safety_score(prob, odds, value, confidence, mode, reliable):
     }.get(str(confidence), 0)
 
     mode_bonus = {
-        "MEGA VALUE": 12,
-        "ULTRA SAFE": 14,
-        "SAFE": 10,
-        "VALUE": 6,
-        "AGGRESSIVE": -4,
+        "MEGA VALUE": 14,
+        "SAFE PICK": 12,
+        "VALUE BET": 8,
+        "RISKY VALUE": -1,
+        "WATCHLIST": 1,
         "NO BET": -16,
     }.get(str(mode), 0)
 
@@ -553,7 +591,7 @@ def adjust_football_probability(base_prob, market, home_profile, away_profile, e
 
     # Ne pas trop s'écarter du marché quand il est disponible
     if market_prob is not None and market_prob > 0:
-        prob = prob * 0.72 + float(market_prob) * 0.28
+        prob = prob * 0.80 + float(market_prob) * 0.20
 
     return clamp(prob, 0.03, 0.92)
 
@@ -602,10 +640,10 @@ def draw_hunter(probs, elo_diff):
 
 
 def exact_score_alert(score_proba):
-    if score_proba >= 10:
+    if score_proba >= 13:
         return "🟢 SCORE FORT"
 
-    if score_proba >= 8:
+    if score_proba >= 9:
         return "🟡 SCORE INTÉRESSANT"
 
     return "⚪ SCORE FAIBLE"
@@ -724,10 +762,36 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         elo_ratings
     )
 
-    home_xg, away_xg = estimate_xg(
+    history_home_xg, history_away_xg = estimate_xg(
         home,
         away,
         strengths
+    )
+
+    odds_home_xg, odds_away_xg = odds_based_expected_goals(
+        m.get("odds_home"),
+        m.get("odds_draw"),
+        m.get("odds_away"),
+        home_profile,
+        away_profile,
+    )
+
+    data_quality = min(
+        home_profile["data_quality"],
+        away_profile["data_quality"]
+    )
+
+    # Si l'historique est faible ou trop neutre, on évite les scores copiés/collés.
+    home_xg = blend_xg(
+        history_home_xg,
+        odds_home_xg,
+        data_quality
+    )
+
+    away_xg = blend_xg(
+        history_away_xg,
+        odds_away_xg,
+        data_quality
     )
 
     features = pd.DataFrame([{
@@ -813,7 +877,7 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         market_prob = market_probs.get(market)
 
         if market_prob is not None:
-            market_weight = 0.58 if market_led else 0.30
+            market_weight = 0.42 if market_led else 0.24
             prob = (
                 prob * (1 - market_weight)
                 + market_prob * market_weight
@@ -947,7 +1011,7 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             "btts_yes": round(probs["btts_yes"], 4),
             "btts_no": round(probs["btts_no"], 4),
 
-            "top_scores": str(probs["top_scores"]),
+            "top_scores": format_top_scores(probs["top_scores"]),
 
             "tennis_engine_score": "",
             "tennis_form_home": "",
@@ -1246,27 +1310,41 @@ def tennis_probability(player_a, player_b, odds_a, odds_b, ratings):
 
 def tennis_confidence(prob, odds, edge, history_strength):
     if history_strength < 0.25:
-        if prob >= 0.62 and edge >= 0.03:
+        if prob >= 0.58 and edge >= 0.010:
             return "Moyen"
-
-        if prob >= 0.55:
+        if prob >= 0.52:
             return "Faible"
-
         return "A éviter"
 
-    if prob >= 0.70 and edge >= 0.06 and 1.35 <= odds <= 2.40:
+    if prob >= 0.68 and edge >= 0.040 and 1.25 <= odds <= 2.60:
         return "Elite"
 
-    if prob >= 0.63 and edge >= 0.04 and 1.35 <= odds <= 2.80:
+    if prob >= 0.60 and edge >= 0.020 and 1.25 <= odds <= 3.00:
         return "Fort"
 
-    if prob >= 0.56 and edge >= 0.02 and 1.35 <= odds <= 3.20:
+    if prob >= 0.54 and edge >= 0.005 and 1.20 <= odds <= 3.50:
         return "Moyen"
 
-    if prob >= 0.52:
+    if prob >= 0.50:
         return "Faible"
 
     return "A éviter"
+
+
+def tennis_set_probabilities(match_prob, elo_diff, history_strength):
+    """
+    Estime 2-0 / 2-1 en conditionnel sur le joueur sélectionné.
+    Plus l'écart ELO est grand, plus le 2-0 augmente.
+    """
+    dominance = clamp(abs(safe_float(elo_diff, 0)) / 260, 0, 1)
+    confidence = clamp(history_strength, 0, 1)
+
+    straight = 0.50 + dominance * 0.22 + (match_prob - 0.55) * 0.18 + confidence * 0.04
+    straight = clamp(straight, 0.42, 0.78)
+
+    three_sets = 1 - straight
+
+    return round(straight * 100, 2), round(three_sets * 100, 2)
 
 
 def tennis_badge(value, confidence, odds):
@@ -1285,10 +1363,10 @@ def tennis_badge(value, confidence, odds):
 def tennis_reliable_filter(decision, confidence, odds, value, prob):
     return (
         decision == "VALUE BET"
-        and confidence in ["Moyen", "Fort", "Elite"]
-        and 1.30 <= odds <= 3.20
-        and value >= 0.035
-        and prob >= 0.54
+        and confidence in ["Faible", "Moyen", "Fort", "Elite"]
+        and 1.20 <= odds <= 3.80
+        and value >= 0.010
+        and prob >= 0.50
     )
 
 
@@ -1406,6 +1484,23 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             2
         )
 
+        set_20_proba, set_21_proba = tennis_set_probabilities(
+            prob,
+            meta["elo_diff"],
+            meta["history_strength"]
+        )
+
+        if set_20_proba >= set_21_proba:
+            set_score_1 = "2-0"
+            set_score_1_proba = set_20_proba
+            set_score_2 = "2-1"
+            set_score_2_proba = set_21_proba
+        else:
+            set_score_1 = "2-1"
+            set_score_1_proba = set_21_proba
+            set_score_2 = "2-0"
+            set_score_2_proba = set_20_proba
+
         rows.append({
             "last_update": last_update,
             "bet_mode": mode,
@@ -1450,10 +1545,10 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             "draw_probability": "",
             "draw_hunter": "🎾 NO DRAW SPORT",
 
-            "score_exact_1": "2-0",
-            "score_exact_1_proba": round(prob * 55, 2),
-            "score_exact_2": "2-1",
-            "score_exact_2_proba": round(prob * 45, 2),
+            "score_exact_1": set_score_1,
+            "score_exact_1_proba": set_score_1_proba,
+            "score_exact_2": set_score_2,
+            "score_exact_2_proba": set_score_2_proba,
             "score_exact_3": "",
             "score_exact_3_proba": "",
             "score_exact_alert": "🎾 SET SCORE ESTIMATION",
@@ -1465,7 +1560,7 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             "btts_yes": "",
             "btts_no": "",
 
-            "top_scores": f"2-0 {round(prob * 55, 2)}% | 2-1 {round(prob * 45, 2)}%",
+            "top_scores": f"{set_score_1} {set_score_1_proba}% | {set_score_2} {set_score_2_proba}%",
 
             "tennis_engine_score": tennis_engine_score,
             "tennis_form_home": round(meta["form_a"], 3),
@@ -1628,12 +1723,12 @@ def main():
 
     if "category" in out_display.columns:
         print("Répartition recommandations :")
-        print(
+        reco_stats = (
             out_display[out_display["decision"] == "VALUE BET"]
             .groupby(["category", "bet_mode"])
             .size()
-            .to_string()
         )
+        print(reco_stats.to_string() if len(reco_stats) else "Aucune recommandation avec mise positive.")
 
     preview = (
         out_display
