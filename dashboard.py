@@ -275,7 +275,9 @@ df = prepare_data(df)
 # HELPERS AFFICHAGE
 # ============================================================
 
-RECOMMENDED_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"]
+SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
+RISKY_MODES = ["RISKY VALUE"]
+RECOMMENDED_MODES = SAFE_MODES + RISKY_MODES
 
 
 def sort_recommendations(data):
@@ -345,6 +347,7 @@ def clean_table(data, compact=True):
         "profit",
         "final_winner",
         "status_detail",
+        "bet_mode",
     ]
 
     cols = core_cols + ([] if compact else tracking_cols)
@@ -461,6 +464,9 @@ def render_cards(data, limit=6):
                     Cote : <b>{odds}</b><br>
                     Value : <b>{value:.1f}%</b><br>
                     Mise conseillée : <b>{stake:.2f}€</b><br>
+                    <span class="small-muted">
+                    Plus le pari est SAFE + rentable, plus la mise augmente.
+                    </span><br>
                     Score / Set probable : <b>{row.get("score_exact_1", "")}</b>
                 </div>
                 """,
@@ -607,6 +613,60 @@ recommended = filtered[
     filtered["bet_mode"].isin(RECOMMENDED_MODES)
     & (filtered["suggested_stake"] > 0)
 ].copy()
+
+# ============================================================
+# REBALANCE DES MISES
+# ============================================================
+
+def rebalance_stake(row):
+    """
+    Corrige le problème :
+    SAFE < RISKY niveau mise.
+    Maintenant :
+    - SAFE et MEGA VALUE ont les plus grosses mises,
+    - RISKY reste limité.
+    """
+
+    stake = float(row.get("suggested_stake", 0) or 0)
+    prob = float(row.get("ai_probability", 0) or 0)
+    value = float(row.get("value", 0) or 0)
+    mode = str(row.get("bet_mode", "")).upper()
+
+    base = max(stake, 0.35)
+
+    if "MEGA VALUE" in mode:
+        mult = 1.90
+    elif "SAFE PICK" in mode:
+        mult = 1.60
+    elif "VALUE BET" in mode:
+        mult = 1.20
+    elif "RISKY" in mode:
+        mult = 0.65
+    else:
+        mult = 1.0
+
+    # Ajustement léger selon proba réelle
+    mult += max(prob - 0.50, 0) * 1.2
+
+    # Value énorme => petit bonus
+    mult += min(max(value, 0), 0.25) * 0.8
+
+    final_stake = round(base * mult, 2)
+
+    # Sécurité bankroll
+    if "RISKY" in mode:
+        final_stake = min(final_stake, 1.25)
+    elif "SAFE PICK" in mode or "MEGA VALUE" in mode:
+        final_stake = min(final_stake, 4.50)
+    else:
+        final_stake = min(final_stake, 2.75)
+
+    return max(final_stake, 0.35)
+
+recommended["suggested_stake"] = recommended.apply(
+    rebalance_stake,
+    axis=1
+)
 watchlist = filtered[filtered["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
 
 last_update = df["last_update"].iloc[0] if "last_update" in df.columns else "Inconnue"
@@ -778,10 +838,33 @@ with tabs[5]:
         r3.metric("ROI", f"{roi * 100:.2f}%")
         r4.metric("Winrate", f"{winrate * 100:.2f}%")
 
+        total_won = wins["profit"].sum() if not wins.empty else 0
+        total_lost = abs(losses["profit"].sum()) if not losses.empty else 0
+
         r5, r6, r7 = st.columns(3)
         r5.metric("Misé total", f"{total_staked:.2f}€")
         r6.metric("Profit net", f"{total_profit:.2f}€")
         r7.metric("Cote moyenne", f"{finished['bookmaker_odds'].mean() if not finished.empty else 0:.2f}")
+
+        g1, g2 = st.columns(2)
+        g1.metric(
+            "💰 Argent gagné",
+            f"+{total_won:.2f}€"
+        )
+        g2.metric(
+            "📉 Argent perdu",
+            f"-{total_lost:.2f}€"
+        )
+
+        if not wins.empty:
+            st.success(
+                f"Les gains viennent principalement des paris WIN avec bonnes cotes et value positive."
+            )
+
+        if not losses.empty:
+            st.warning(
+                f"Les pertes viennent surtout des paris plus volatils ou des scores exacts difficiles."
+            )
 
         if not finished.empty:
             chart = finished.sort_values("date").copy()
