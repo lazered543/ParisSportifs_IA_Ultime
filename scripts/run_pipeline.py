@@ -187,6 +187,121 @@ def format_top_scores(top_scores):
     return str(clean)
 
 
+def smart_exact_scores(home_xg, away_xg, home_prob, draw_prob, away_prob, elo_diff):
+    """
+    Génère des scores exacts plus réalistes.
+    Objectif : éviter le 1-0 automatique partout.
+
+    Logique :
+    - xG maison / extérieur
+    - domination du favori
+    - total de buts attendu
+    - probabilité du nul
+    - écart Elo
+    """
+    home_xg = safe_float(home_xg, 1.2)
+    away_xg = safe_float(away_xg, 1.0)
+    home_prob = safe_float(home_prob, 0.33)
+    draw_prob = safe_float(draw_prob, 0.28)
+    away_prob = safe_float(away_prob, 0.33)
+    elo_diff = safe_float(elo_diff, 0)
+
+    total_xg = home_xg + away_xg
+    dominance = home_prob - away_prob
+
+    candidates = []
+
+    def add(score, weight):
+        if weight > 0:
+            candidates.append((score, weight))
+
+    # Match très équilibré
+    if abs(dominance) < 0.08:
+        add("1-1", 0.34 + draw_prob * 0.45)
+        add("1-0", 0.16 + max(home_prob - 0.33, 0) * 0.25)
+        add("0-1", 0.16 + max(away_prob - 0.33, 0) * 0.25)
+
+        if total_xg >= 2.65:
+            add("2-2", 0.18)
+            add("2-1", 0.16 + max(home_xg - away_xg, 0) * 0.10)
+            add("1-2", 0.16 + max(away_xg - home_xg, 0) * 0.10)
+        else:
+            add("0-0", 0.12 + max(draw_prob - 0.28, 0) * 0.50)
+
+    # Domicile favori
+    elif dominance > 0:
+        fav_strength = dominance + max(elo_diff, 0) / 600
+
+        if fav_strength >= 0.25 or home_xg >= 2.10:
+            add("2-0", 0.30 + fav_strength * 0.25)
+            add("3-0", 0.18 + max(home_xg - 2.0, 0) * 0.12)
+            add("3-1", 0.16 + max(total_xg - 2.7, 0) * 0.10)
+            add("2-1", 0.18)
+        elif fav_strength >= 0.14 or home_xg >= 1.65:
+            add("2-1", 0.30)
+            add("2-0", 0.25)
+            add("1-0", 0.20)
+            add("1-1", 0.12 + draw_prob * 0.18)
+        else:
+            add("1-0", 0.28)
+            add("2-1", 0.24)
+            add("1-1", 0.18)
+            add("2-0", 0.16)
+
+    # Extérieur favori
+    else:
+        fav_strength = abs(dominance) + max(-elo_diff, 0) / 600
+
+        if fav_strength >= 0.25 or away_xg >= 2.10:
+            add("0-2", 0.30 + fav_strength * 0.25)
+            add("0-3", 0.18 + max(away_xg - 2.0, 0) * 0.12)
+            add("1-3", 0.16 + max(total_xg - 2.7, 0) * 0.10)
+            add("1-2", 0.18)
+        elif fav_strength >= 0.14 or away_xg >= 1.65:
+            add("1-2", 0.30)
+            add("0-2", 0.25)
+            add("0-1", 0.20)
+            add("1-1", 0.12 + draw_prob * 0.18)
+        else:
+            add("0-1", 0.28)
+            add("1-2", 0.24)
+            add("1-1", 0.18)
+            add("0-2", 0.16)
+
+    # Ajustement match ouvert
+    if total_xg >= 3.0:
+        add("2-2", 0.12)
+        if dominance > 0:
+            add("3-2", 0.10)
+        elif dominance < 0:
+            add("2-3", 0.10)
+
+    # Normalisation en pseudo-probas lisibles
+    total_weight = sum(w for _, w in candidates)
+    if total_weight <= 0:
+        return [("1-1", 0.10), ("1-0", 0.08), ("0-1", 0.08)]
+
+    merged = {}
+    for score, weight in candidates:
+        merged[score] = merged.get(score, 0) + weight
+
+    ranked = sorted(
+        merged.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    # Les scores exacts sont naturellement faibles : affichage entre 6% et 16%
+    result = []
+    for score, weight in ranked[:5]:
+        proba = (weight / total_weight) * 0.42
+        proba = clamp(proba, 0.055, 0.165)
+        result.append((score, round(proba, 4)))
+
+    return result
+
+
+
 # ============================================================
 # IA AUTO-CORRECTIVE / CALIBRATION
 # ============================================================
@@ -1084,14 +1199,26 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         away_xg
     )
 
-    score_1 = probs["top_scores"][0][0]
-    score_1_proba = round(float(probs["top_scores"][0][1]) * 100, 2)
+    smart_scores = smart_exact_scores(
+        home_xg,
+        away_xg,
+        probs["p_home"],
+        probs["p_draw"],
+        probs["p_away"],
+        elo["elo_diff"],
+    )
 
-    score_2 = probs["top_scores"][1][0]
-    score_2_proba = round(float(probs["top_scores"][1][1]) * 100, 2)
+    # On remplace les scores Poisson trop répétitifs par le moteur intelligent.
+    probs["top_scores"] = smart_scores
 
-    score_3 = probs["top_scores"][2][0]
-    score_3_proba = round(float(probs["top_scores"][2][1]) * 100, 2)
+    score_1 = smart_scores[0][0]
+    score_1_proba = round(float(smart_scores[0][1]) * 100, 2)
+
+    score_2 = smart_scores[1][0]
+    score_2_proba = round(float(smart_scores[1][1]) * 100, 2)
+
+    score_3 = smart_scores[2][0]
+    score_3_proba = round(float(smart_scores[2][1]) * 100, 2)
 
     draw_probability = round(float(probs["p_draw"]) * 100, 2)
 
