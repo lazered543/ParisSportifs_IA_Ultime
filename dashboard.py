@@ -310,7 +310,10 @@ def format_pct(x):
     except Exception:
         return ""
 
-
+# Sécurité Streamlit / PyArrow : évite les crashs d'affichage
+for col in out.columns:
+    out[col] = out[col].astype(str)
+    
 def clean_table(data, compact=True):
     core_cols = [
         "date",

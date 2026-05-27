@@ -1,7 +1,11 @@
 segment,bets,wins,losses,stake,profit,avg_odds,dimension,winrate,roi,ai_recommendation
-MEDIUM,2,1,1,3.6,-0.6799999999999999,1.745,Mode de pari,0.5,-0.18888888888888886,WAIT_MORE_DATA
-tennis,2,1,1,3.6,-0.6799999999999999,1.745,Sport,0.5,-0.18888888888888886,WAIT_MORE_DATA
-tennis_atp_french_open,1,1,0,1.8,1.12,1.62,Compétition,1.0,0.6222222222222222,WAIT_MORE_DATA
-tennis_wta_french_open,1,0,1,1.8,-1.8,1.87,Compétition,0.0,-1.0,WAIT_MORE_DATA
-Player 1 Win,1,0,1,1.8,-1.8,1.87,Marché,0.0,-1.0,WAIT_MORE_DATA
-Player 2 Win,1,1,0,1.8,1.12,1.62,Marché,1.0,0.6222222222222222,WAIT_MORE_DATA
+MEDIUM,5,1,4,6.46,-3.54,2.066,Mode de pari,0.2,-0.5479876160990712,REDUCE
+RISKY,3,2,1,2.88,1.5,2.2866666666666666,Mode de pari,0.6666666666666666,0.5208333333333334,BOOST
+football,1,0,1,1.8,-1.8,2.38,Sport,0.0,-1.0,WAIT_MORE_DATA
+tennis,7,3,4,7.54,-0.23999999999999994,2.1157142857142857,Sport,0.42857142857142855,-0.031830238726790444,REDUCE
+soccer_france_ligue_one,1,0,1,1.8,-1.8,2.38,Compétition,0.0,-1.0,WAIT_MORE_DATA
+tennis_atp_french_open,5,3,2,5.4,1.9000000000000001,2.168,Compétition,0.6,0.35185185185185186,KEEP
+tennis_wta_french_open,2,0,2,2.14,-2.14,1.985,Compétition,0.0,-1.0,WAIT_MORE_DATA
+Home Win,1,0,1,1.8,-1.8,2.38,Marché,0.0,-1.0,WAIT_MORE_DATA
+Player 1 Win,3,0,3,2.86,-2.86,2.11,Marché,0.0,-1.0,REDUCE
+Player 2 Win,4,3,1,4.68,2.62,2.12,Marché,0.75,0.5598290598290598,BOOST
