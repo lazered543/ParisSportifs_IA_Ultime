@@ -186,6 +186,272 @@ def format_top_scores(top_scores):
         clean.append((score, round(float(proba), 4)))
     return str(clean)
 
+
+# ============================================================
+# IA AUTO-CORRECTIVE / CALIBRATION
+# ============================================================
+
+def load_tracking_learning():
+    path = Path("tracking_results.csv")
+
+    learning = {
+        "global_bets": 0,
+        "global_winrate": 0.50,
+        "global_roi": 0.0,
+        "sport_stats": {},
+        "mode_stats": {},
+        "prob_bins": {},
+        "blacklist_sports": set(),
+        "reduce_sports": set(),
+        "reduce_modes": set(),
+    }
+
+    if not path.exists():
+        return learning
+
+    try:
+        tr = pd.read_csv(path, low_memory=False)
+    except Exception:
+        return learning
+
+    if tr.empty or "result" not in tr.columns:
+        return learning
+
+    tr = tr.copy()
+    tr["result"] = tr["result"].fillna("").astype(str).str.upper()
+    finished = tr[tr["result"].isin(["WIN", "LOSS"])].copy()
+
+    if finished.empty:
+        return learning
+
+    finished["stake"] = pd.to_numeric(finished.get("stake", 0), errors="coerce").fillna(0)
+    finished["profit"] = pd.to_numeric(finished.get("profit", 0), errors="coerce").fillna(0)
+    finished["ai_probability"] = pd.to_numeric(finished.get("ai_probability", 0), errors="coerce").fillna(0)
+
+    if "sport" not in finished.columns:
+        finished["sport"] = ""
+    if "bet_mode" not in finished.columns:
+        finished["bet_mode"] = ""
+
+    finished["sport"] = finished["sport"].fillna("").astype(str)
+    finished["bet_mode"] = finished["bet_mode"].fillna("").astype(str)
+
+    total_stake = finished["stake"].sum()
+    total_profit = finished["profit"].sum()
+
+    learning["global_bets"] = int(len(finished))
+    learning["global_winrate"] = round(float((finished["result"] == "WIN").mean()), 4)
+    learning["global_roi"] = round(float(total_profit / total_stake), 4) if total_stake > 0 else 0.0
+
+    for sport, g in finished.groupby("sport"):
+        stake = g["stake"].sum()
+        profit = g["profit"].sum()
+        bets = len(g)
+        winrate = (g["result"] == "WIN").mean()
+        roi = profit / stake if stake > 0 else 0
+
+        learning["sport_stats"][sport] = {
+            "bets": int(bets),
+            "winrate": round(float(winrate), 4),
+            "roi": round(float(roi), 4),
+            "profit": round(float(profit), 2),
+        }
+
+        if bets >= 30 and roi <= -0.15:
+            learning["blacklist_sports"].add(sport)
+        elif bets >= 8 and roi <= -0.12:
+            learning["reduce_sports"].add(sport)
+
+    for mode, g in finished.groupby("bet_mode"):
+        stake = g["stake"].sum()
+        profit = g["profit"].sum()
+        bets = len(g)
+        winrate = (g["result"] == "WIN").mean()
+        roi = profit / stake if stake > 0 else 0
+
+        learning["mode_stats"][mode] = {
+            "bets": int(bets),
+            "winrate": round(float(winrate), 4),
+            "roi": round(float(roi), 4),
+            "profit": round(float(profit), 2),
+        }
+
+        if bets >= 6 and roi <= -0.12:
+            learning["reduce_modes"].add(mode)
+
+    bins = [
+        (0.00, 0.54, "0-54"),
+        (0.54, 0.58, "54-58"),
+        (0.58, 0.62, "58-62"),
+        (0.62, 0.66, "62-66"),
+        (0.66, 0.72, "66-72"),
+        (0.72, 1.00, "72+"),
+    ]
+
+    for low, high, label in bins:
+        g = finished[
+            (finished["ai_probability"] >= low)
+            & (finished["ai_probability"] < high)
+        ]
+
+        if g.empty:
+            continue
+
+        predicted = g["ai_probability"].mean()
+        actual = (g["result"] == "WIN").mean()
+
+        learning["prob_bins"][label] = {
+            "bets": int(len(g)),
+            "predicted": round(float(predicted), 4),
+            "actual": round(float(actual), 4),
+            "gap": round(float(actual - predicted), 4),
+        }
+
+    return learning
+
+
+def probability_bin(prob):
+    prob = safe_float(prob, 0)
+
+    if prob < 0.54:
+        return "0-54"
+    if prob < 0.58:
+        return "54-58"
+    if prob < 0.62:
+        return "58-62"
+    if prob < 0.66:
+        return "62-66"
+    if prob < 0.72:
+        return "66-72"
+
+    return "72+"
+
+
+def apply_learning_calibration(prob, sport, mode, learning):
+    prob = safe_float(prob, 0.5)
+    sport = str(sport)
+    mode = str(mode)
+
+    if learning is None or learning.get("global_bets", 0) <= 0:
+        return round(clamp(prob, 0.03, 0.92), 4), "NO_LEARNING_YET"
+
+    correction = 0.0
+    reasons = []
+
+    bin_name = probability_bin(prob)
+    bin_stats = learning.get("prob_bins", {}).get(bin_name)
+
+    if bin_stats and bin_stats.get("bets", 0) >= 3:
+        gap = safe_float(bin_stats.get("gap", 0), 0)
+        weight = min(bin_stats.get("bets", 0) / 30, 0.65)
+        correction += gap * weight
+        reasons.append(f"CALIB_{bin_name}")
+
+    sport_stats = learning.get("sport_stats", {}).get(sport)
+
+    if sport_stats:
+        bets = sport_stats.get("bets", 0)
+        roi = safe_float(sport_stats.get("roi", 0), 0)
+        winrate = safe_float(sport_stats.get("winrate", 0.5), 0.5)
+
+        if bets >= 8 and roi < -0.10:
+            correction -= min(abs(roi) * 0.18, 0.045)
+            reasons.append("SPORT_REDUCED")
+
+        if bets >= 8 and winrate < 0.45:
+            correction -= 0.025
+            reasons.append("SPORT_LOW_WINRATE")
+
+    mode_stats = learning.get("mode_stats", {}).get(mode)
+
+    if mode_stats:
+        bets = mode_stats.get("bets", 0)
+        roi = safe_float(mode_stats.get("roi", 0), 0)
+
+        if bets >= 6 and roi < -0.10:
+            correction -= min(abs(roi) * 0.14, 0.040)
+            reasons.append("MODE_REDUCED")
+
+    if prob < 0.54:
+        correction -= 0.030
+        reasons.append("COINFLIP_PENALTY")
+
+    if learning.get("global_bets", 0) >= 8 and learning.get("global_roi", 0) < -0.10:
+        correction -= 0.015
+        reasons.append("GLOBAL_PRUDENCE")
+
+    calibrated = round(clamp(prob + correction, 0.03, 0.92), 4)
+    return calibrated, "|".join(reasons) if reasons else "OK"
+
+
+def learning_adjusted_mode(mode, prob, value, sport, learning, reason):
+    sport = str(sport)
+    mode = str(mode)
+
+    if learning and sport in learning.get("blacklist_sports", set()):
+        return "NO BET"
+
+    if prob < 0.54:
+        return "WATCHLIST"
+
+    if "SPORT_REDUCED" in str(reason) and mode in ["RISKY VALUE", "VALUE BET"]:
+        return "WATCHLIST"
+
+    if "MODE_REDUCED" in str(reason) and mode == "RISKY VALUE":
+        return "WATCHLIST"
+
+    if value < 0.02 and mode == "VALUE BET":
+        return "WATCHLIST"
+
+    return mode
+
+
+def learning_summary_to_csv(learning):
+    out_dir = Path("data/learning")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    rows = []
+
+    for sport, stats in learning.get("sport_stats", {}).items():
+        rows.append({
+            "dimension": "sport",
+            "segment": sport,
+            **stats,
+            "action": (
+                "BLACKLIST" if sport in learning.get("blacklist_sports", set())
+                else "REDUCE" if sport in learning.get("reduce_sports", set())
+                else "KEEP"
+            ),
+        })
+
+    for mode, stats in learning.get("mode_stats", {}).items():
+        rows.append({
+            "dimension": "mode",
+            "segment": mode,
+            **stats,
+            "action": (
+                "REDUCE" if mode in learning.get("reduce_modes", set())
+                else "KEEP"
+            ),
+        })
+
+    for bin_name, stats in learning.get("prob_bins", {}).items():
+        rows.append({
+            "dimension": "probability_bin",
+            "segment": bin_name,
+            "bets": stats.get("bets", 0),
+            "winrate": stats.get("actual", 0),
+            "roi": "",
+            "profit": "",
+            "predicted": stats.get("predicted", 0),
+            "actual": stats.get("actual", 0),
+            "gap": stats.get("gap", 0),
+            "action": "CALIBRATE",
+        })
+
+    if rows:
+        pd.DataFrame(rows).to_csv(out_dir / "ai_auto_learning_segments.csv", index=False)
+
 # ============================================================
 # BET MODES
 # ============================================================
@@ -730,7 +996,7 @@ def scorer_prediction(home_team, away_team, home_xg, away_xg, player_df):
     return " | ".join(results)
 
 
-def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankroll, last_update, history=None):
+def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankroll, last_update, history=None, learning=None):
     rows = []
 
     home = m.get("home_team")
@@ -916,6 +1182,28 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             m.get("sport")
         )
 
+        learning_reason = "NO_LEARNING"
+
+        if learning is not None:
+            prob, learning_reason = apply_learning_calibration(
+                prob,
+                m.get("sport"),
+                mode,
+                learning
+            )
+
+            value = safe_value(prob, odds)
+            confidence = classify_confidence(prob)
+            mode = bet_mode(prob, odds, value, confidence, m.get("sport"))
+            mode = learning_adjusted_mode(
+                mode,
+                prob,
+                value,
+                m.get("sport"),
+                learning,
+                learning_reason
+            )
+
         recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 
         decision = (
@@ -979,6 +1267,7 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
             "safety_score": safe_score,
             "safety_level": safety_level(safe_score, mode, decision, prob, value),
             "football_trap_signal": trap_signal,
+            "learning_adjustment": learning_reason,
             "home_recent_form": home_profile["form_points"],
             "away_recent_form": away_profile["form_points"],
             "home_recent_attack": home_profile["attack_recent"],
@@ -1375,7 +1664,7 @@ def tennis_reliable_filter(decision, confidence, odds, value, prob):
     )
 
 
-def process_tennis_match(m, tennis_ratings, bankroll, last_update):
+def process_tennis_match(m, tennis_ratings, bankroll, last_update, learning=None):
     rows = []
 
     player_a = m.get("home_team")
@@ -1434,6 +1723,35 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             confidence,
             m.get("sport")
         )
+
+        learning_reason = "NO_LEARNING"
+
+        if learning is not None:
+            prob, learning_reason = apply_learning_calibration(
+                prob,
+                m.get("sport"),
+                mode,
+                learning
+            )
+
+            implied = 1 / odds
+            value = safe_value(prob, odds)
+            edge = prob - implied
+            confidence = tennis_confidence(
+                prob,
+                odds,
+                edge,
+                meta["history_strength"]
+            )
+            mode = bet_mode(prob, odds, value, confidence, m.get("sport"))
+            mode = learning_adjusted_mode(
+                mode,
+                prob,
+                value,
+                m.get("sport"),
+                learning,
+                learning_reason
+            )
 
         recommended_modes = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 
@@ -1527,6 +1845,7 @@ def process_tennis_match(m, tennis_ratings, bankroll, last_update):
             "safety_score": safe_score,
             "safety_level": safety_level(safe_score, mode, decision, prob, value),
             "football_trap_signal": "",
+            "learning_adjustment": learning_reason,
             "home_recent_form": "",
             "away_recent_form": "",
             "home_recent_attack": "",
@@ -1612,6 +1931,19 @@ def main():
     player_df = load_player_scorers()
     upcoming = load_or_demo_upcoming()
 
+    learning = load_tracking_learning()
+    learning_summary_to_csv(learning)
+
+    print(
+        "IA learning:",
+        "bets=",
+        learning.get("global_bets", 0),
+        "winrate=",
+        learning.get("global_winrate", 0),
+        "roi=",
+        learning.get("global_roi", 0),
+    )
+
     rows = []
 
     bankroll = BANKROLL_START
@@ -1630,7 +1962,8 @@ def main():
                 m,
                 tennis_ratings,
                 bankroll,
-                last_update
+                last_update,
+                learning
             )
 
         elif is_football_sport(sport):
@@ -1642,7 +1975,8 @@ def main():
                 player_df,
                 bankroll,
                 last_update,
-                history
+                history,
+                learning
             )
 
         else:
