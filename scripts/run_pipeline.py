@@ -1,1029 +1,878 @@
-import ast
+from __future__ import annotations
+
+import math
+import re
+import sys
+import unicodedata
+from collections import defaultdict, deque
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-import streamlit as st
 
-try:
-    import plotly.express as px
-    import plotly.graph_objects as go
-    PLOTLY_OK = True
-except Exception:
-    PLOTLY_OK = False
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
-st.set_page_config(
-    page_title="IA Paris Sportifs Ultime",
-    layout="wide",
-    page_icon="PS",
-)
+from src.features.football_features import build_team_strength, estimate_xg
+from src.models.elo import build_elo_ratings, get_match_elo
+from src.models.poisson import football_poisson_probs
+from src.utils.config import BANKROLL_START
 
-APP_PASSWORD = "29052007"
-PRED_PATH = Path("data/predictions/predictions_today.csv")
-TRACK_PATH = Path("tracking_results.csv")
-TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
+UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
+FOOTBALL_HISTORY_PATH = Path("data/processed/football_history_all.csv")
+TENNIS_HISTORY_PATH = Path("data/processed/tennis_history_all.csv")
+PREDICTIONS_PATH = Path("data/predictions/predictions_today.csv")
+VALUE_BETS_PATH = Path("data/predictions/value_bets_today.csv")
+LEARNING_PROFILE_PATH = Path("data/learning/ai_learning_profile.csv")
 
-# ============================================================
-# STYLE / DESIGN
-# ============================================================
+OUTPUT_COLUMNS = [
+    "last_update",
+    "bet_mode",
+    "date",
+    "sport",
+    "category",
+    "home_team",
+    "away_team",
+    "market",
+    "selection",
+    "ai_probability",
+    "bookmaker_odds",
+    "implied_probability",
+    "value",
+    "confidence",
+    "ia_badge",
+    "reliable_only",
+    "safety_score",
+    "safety_level",
+    "football_trap_signal",
+    "learning_adjustment",
+    "home_recent_form",
+    "away_recent_form",
+    "home_recent_attack",
+    "away_recent_attack",
+    "home_recent_defense",
+    "away_recent_defense",
+    "football_data_quality",
+    "decision",
+    "bankroll",
+    "stake_percent",
+    "kelly_fraction",
+    "suggested_stake",
+    "home_elo",
+    "away_elo",
+    "elo_diff",
+    "home_xg",
+    "away_xg",
+    "draw_probability",
+    "draw_hunter",
+    "score_exact_1",
+    "score_exact_1_proba",
+    "score_exact_2",
+    "score_exact_2_proba",
+    "score_exact_3",
+    "score_exact_3_proba",
+    "score_exact_alert",
+    "scorer_prediction",
+    "over_25",
+    "under_25",
+    "btts_yes",
+    "btts_no",
+    "top_scores",
+    "tennis_engine_score",
+    "tennis_form_home",
+    "tennis_form_away",
+    "tennis_edge",
+    "priority",
+]
 
-st.markdown(
-    """
-<style>
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-@keyframes floatCard {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
-    100% { transform: translateY(0px); }
-}
-
-.stApp {
-    color: #f8fafc;
-    background:
-        linear-gradient(rgba(8, 12, 24, .88), rgba(8, 12, 24, .94)),
-        url("https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=2400&q=80");
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
-}
-
-.stApp:before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(120deg, rgba(236,72,153,.20), rgba(59,130,246,.20), rgba(16,185,129,.16));
-    background-size: 300% 300%;
-    animation: gradientMove 12s ease infinite;
-    z-index: 0;
-}
-
-.block-container {
-    max-width: 1540px;
-    padding-top: 26px;
-    padding-bottom: 42px;
-    position: relative;
-    z-index: 1;
-}
-
-section[data-testid="stSidebar"] {
-    background: rgba(12, 18, 34, .88);
-    border-right: 1px solid rgba(255,255,255,.12);
-    backdrop-filter: blur(16px);
-}
-
-h1, h2, h3, h4 { color: #f8fafc !important; }
-
-[data-testid="stMetric"] {
-    background: rgba(15, 23, 42, .78);
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 22px;
-    padding: 18px;
-    box-shadow: 0 18px 44px rgba(0,0,0,.30);
-    backdrop-filter: blur(14px);
-}
-
-.hero-box {
-    position: relative;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at 8% 0%, rgba(244,114,182,.30), transparent 34%),
-        radial-gradient(circle at 95% 20%, rgba(34,211,238,.24), transparent 36%),
-        rgba(15, 23, 42, .76);
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 30px;
-    padding: 30px;
-    margin-bottom: 22px;
-    box-shadow: 0 26px 70px rgba(0,0,0,.38);
-    backdrop-filter: blur(18px);
-}
-
-.hero-title {
-    font-size: 42px;
-    line-height: 1.04;
-    font-weight: 950;
-    margin-bottom: 10px;
-}
-
-.hero-sub {
-    color: #cbd5e1;
-    font-size: 15px;
-    line-height: 1.6;
-}
-
-.pro-card {
-    background: rgba(15, 23, 42, .78);
-    border: 1px solid rgba(255,255,255,.13);
-    border-radius: 22px;
-    padding: 18px;
-    margin-bottom: 15px;
-    box-shadow: 0 16px 42px rgba(0,0,0,.28);
-    backdrop-filter: blur(14px);
-    animation: floatCard 7s ease-in-out infinite;
-}
-
-.pick-card {
-    border-left: 5px solid #22c55e;
-}
-
-.risky-card {
-    border-left: 5px solid #fb7185;
-}
-
-.watch-card {
-    border-left: 5px solid #f59e0b;
-}
-
-.badge {
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-weight: 900;
-    font-size: 12px;
-    margin-right: 6px;
-}
-
-.badge-green { background: rgba(34,197,94,.18); color: #86efac; }
-.badge-yellow { background: rgba(251,191,36,.18); color: #fde68a; }
-.badge-red { background: rgba(251,113,133,.18); color: #fecdd3; }
-.badge-blue { background: rgba(96,165,250,.18); color: #bfdbfe; }
-.badge-purple { background: rgba(168,85,247,.20); color: #e9d5ff; }
-
-.small-muted { color:#94a3b8; font-size: 13px; }
-.big-number { font-size: 28px; font-weight: 950; }
-
-.stDataFrame {
-    border-radius: 18px !important;
-    overflow: hidden !important;
-}
-
-hr { border-color: rgba(255,255,255,.12); }
-
-@media (max-width: 900px) {
-    .block-container { padding: 16px 10px 32px; }
-    .hero-title { font-size: 28px; }
-    .hero-box { padding: 18px; border-radius: 20px; }
-    [data-testid="stMetric"] { padding: 12px; }
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
-# ============================================================
-# AUTH
-# ============================================================
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-if not st.session_state.authenticated:
-    st.markdown(
-        """
-        <div class="hero-box">
-            <div class="hero-title">IA Paris Sportifs Ultime</div>
-            <div class="hero-sub">Accès privé • Football • Tennis • Value Betting • ROI • Tracking</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    password = st.text_input("Mot de passe", type="password")
-
-    if password == APP_PASSWORD:
-        st.session_state.authenticated = True
-        st.rerun()
-    elif password:
-        st.error("Mot de passe incorrect.")
-
-    st.stop()
-
-# ============================================================
-# DATA
-# ============================================================
-
-@st.cache_data(ttl=300)
-def load_csv(path):
-    path = Path(path)
-    if path.exists():
-        return pd.read_csv(path, low_memory=False)
-    return pd.DataFrame()
+RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"}
 
 
-df = load_csv(PRED_PATH)
-tracking = load_csv(TRACK_PATH)
-
-if df.empty:
-    st.error("Aucune prédiction trouvée. Lance d'abord le pipeline.")
-    st.stop()
-
-
-def num_col(data, col, default=0):
-    if col in data.columns:
-        return pd.to_numeric(data[col], errors="coerce").fillna(default)
-    return pd.Series([default] * len(data), index=data.index)
+def safe_float(value, default=0.0):
+    try:
+        if pd.isna(value):
+            return default
+        return float(value)
+    except Exception:
+        return default
 
 
-def sport_category(sport):
+def clamp(value, low, high):
+    return max(low, min(high, value))
+
+
+def sigmoid(value):
+    value = clamp(value, -9, 9)
+    return 1 / (1 + math.exp(-value))
+
+
+def logit(value):
+    value = clamp(value, 0.001, 0.999)
+    return math.log(value / (1 - value))
+
+
+def clean_name(value):
+    text = str(value or "").strip().lower()
+    text = unicodedata.normalize("NFD", text)
+    text = text.encode("ascii", "ignore").decode("utf-8")
+    text = re.sub(r"[^a-z0-9 ]", " ", text)
+    replacements = {
+        "paris saint germain": "psg",
+        "paris sg": "psg",
+        "st etienne": "saint etienne",
+        "as saint etienne": "saint etienne",
+    }
+    for source, target in replacements.items():
+        text = text.replace(source, target)
+    return " ".join(text.split())
+
+
+def is_tennis_sport(sport):
+    return "tennis" in str(sport).lower()
+
+
+def is_football_sport(sport):
     s = str(sport).lower()
-    if "tennis" in s:
-        return "tennis"
-    if "soccer" in s or "football" in s:
-        return "football"
-    return "autre"
+    return "soccer" in s or "football" in s
 
 
-def prepare_data(data):
-    data = data.copy()
-
-    if "sport" not in data.columns:
-        data["sport"] = ""
-
-    data["category"] = data["sport"].apply(sport_category)
-
-    for col in [
-        "value",
-        "ai_probability",
-        "suggested_stake",
-        "bookmaker_odds",
-        "implied_probability",
-        "safety_score",
-        "score_exact_1_proba",
-        "score_exact_2_proba",
-        "score_exact_3_proba",
-        "tennis_engine_score",
-        "tennis_edge",
-    ]:
-        data[col] = num_col(data, col)
-
-    if "bet_mode" not in data.columns:
-        data["bet_mode"] = "NON CLASSÉ"
-
-    if "decision" not in data.columns:
-        data["decision"] = "NO BET"
-
-    if "date" not in data.columns:
-        data["date"] = ""
-
-    data["match_key"] = (
-        data["category"].astype(str) + "|" +
-        data["sport"].astype(str) + "|" +
-        data["date"].astype(str).str[:10] + "|" +
-        data["home_team"].astype(str) + "|" +
-        data["away_team"].astype(str)
-    )
-
-    return data
+def implied_probability(odds):
+    odds = safe_float(odds)
+    if odds <= 1:
+        return 0.0
+    return 1 / odds
 
 
-df = prepare_data(df)
+def normalized_probabilities(items):
+    implied = {
+        key: implied_probability(odds)
+        for key, odds in items.items()
+        if safe_float(odds) > 1
+    }
+    total = sum(implied.values())
+    if total <= 0:
+        return {}
+    return {key: value / total for key, value in implied.items()}
 
-# ============================================================
-# HELPERS AFFICHAGE
-# ============================================================
 
-SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
-RISKY_MODES = ["RISKY VALUE"]
-RECOMMENDED_MODES = SAFE_MODES
+def confidence_label(probability):
+    if probability >= 0.74:
+        return "Elite"
+    if probability >= 0.64:
+        return "Forte"
+    if probability >= 0.56:
+        return "Moyenne"
+    if probability >= 0.49:
+        return "Faible"
+    return "A EVITER"
 
 
-def sort_recommendations(data):
-    if data.empty:
-        return data
+def load_upcoming():
+    if not UPCOMING_PATH.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(UPCOMING_PATH)
+    required = ["sport", "commence_time", "home_team", "away_team"]
+    for col in required:
+        if col not in df.columns:
+            df[col] = ""
+    return df
 
-    rank = {
-        "MEGA VALUE": 0,
-        "SAFE PICK": 1,
-        "VALUE BET": 2,
-        "RISKY VALUE": 3,
-        "WATCHLIST": 4,
-        "NO BET": 5,
+
+def load_football_context():
+    if not FOOTBALL_HISTORY_PATH.exists():
+        return pd.DataFrame(), pd.DataFrame(), {}
+
+    history = pd.read_csv(FOOTBALL_HISTORY_PATH, low_memory=False)
+    history = history.dropna(subset=["HomeTeam", "AwayTeam", "FTHG", "FTAG"]).copy()
+    history["FTHG"] = pd.to_numeric(history["FTHG"], errors="coerce")
+    history["FTAG"] = pd.to_numeric(history["FTAG"], errors="coerce")
+    history = history.dropna(subset=["FTHG", "FTAG"]).copy()
+
+    strengths = build_team_strength(history)
+    ratings = build_elo_ratings(history)
+    return history, strengths, ratings
+
+
+def team_row(strengths, team):
+    if strengths.empty:
+        return None
+    exact = strengths[strengths["team"].astype(str).str.lower() == str(team).lower()]
+    if not exact.empty:
+        return exact.iloc[0]
+    cleaned = clean_name(team)
+    strengths = strengths.copy()
+    strengths["_clean"] = strengths["team"].apply(clean_name)
+    fuzzy = strengths[strengths["_clean"] == cleaned]
+    if not fuzzy.empty:
+        return fuzzy.iloc[0]
+    return None
+
+
+def team_metric(strengths, team, metric, default):
+    row = team_row(strengths, team)
+    if row is None:
+        return default
+    return safe_float(row.get(metric, default), default)
+
+
+def market_xg_from_odds(book_probs):
+    home_prob = book_probs.get("home", 0.42)
+    away_prob = book_probs.get("away", 0.31)
+    draw_prob = book_probs.get("draw", 0.27)
+    diff = clamp(home_prob - away_prob, -0.48, 0.48)
+    draw_drag = clamp((draw_prob - 0.27) * 1.1, -0.20, 0.25)
+
+    home_xg = 1.28 + diff * 1.35 - draw_drag * 0.45
+    away_xg = 1.08 - diff * 1.08 - draw_drag * 0.35
+    return round(clamp(home_xg, 0.35, 3.8), 3), round(clamp(away_xg, 0.25, 3.4), 3)
+
+
+def blend_football_probabilities(book_probs, poisson_probs, elo_home_prob, quality):
+    draw_anchor = book_probs.get("draw", poisson_probs["p_draw"])
+    elo_draw = clamp((poisson_probs["p_draw"] + draw_anchor) / 2, 0.16, 0.34)
+    non_draw = max(1 - elo_draw, 0.01)
+    elo_probs = {
+        "home": non_draw * elo_home_prob,
+        "away": non_draw * (1 - elo_home_prob),
+        "draw": elo_draw,
     }
 
-    out = data.copy()
-    out["_rank"] = out["bet_mode"].map(rank).fillna(9)
-    if "priority" not in out.columns:
-        out["priority"] = 0
+    raw = {}
+    for key, poisson_key in [("home", "p_home"), ("draw", "p_draw"), ("away", "p_away")]:
+        b = book_probs.get(key, 1 / 3)
+        p = poisson_probs.get(poisson_key, 1 / 3)
+        e = elo_probs.get(key, 1 / 3)
+        raw[key] = 0.48 * b + 0.32 * p + 0.20 * e
 
-    out = out.sort_values(
-        ["priority", "_rank", "safety_score", "value", "ai_probability"],
-        ascending=[False, True, False, False, False],
-    )
-    return out.drop(columns=["_rank"])
+    total = sum(raw.values())
+    raw = {key: value / total for key, value in raw.items()}
 
-
-def best_market_per_match(data, include_watchlist=False):
-    if data.empty:
-        return data
-
-    out = data.copy()
-    if "match_key" not in out.columns:
-        out["match_key"] = (
-            out.get("category", "").astype(str) + "|" +
-            out.get("sport", "").astype(str) + "|" +
-            out.get("date", "").astype(str).str[:10] + "|" +
-            out.get("home_team", "").astype(str) + "|" +
-            out.get("away_team", "").astype(str)
-        )
-
-    if not include_watchlist:
-        out = out[(out["suggested_stake"] > 0) & (out["value"] > 0)].copy()
-        if out.empty:
-            return out
-
-    out["_stake"] = pd.to_numeric(out.get("suggested_stake", 0), errors="coerce").fillna(0)
-    out["_value"] = pd.to_numeric(out.get("value", 0), errors="coerce").fillna(-999)
-    out["_safety"] = pd.to_numeric(out.get("safety_score", 0), errors="coerce").fillna(0)
-    out["_prob"] = pd.to_numeric(out.get("ai_probability", 0), errors="coerce").fillna(0)
-    if "priority" not in out.columns:
-        out["priority"] = 0
-
-    out = out.sort_values(
-        ["priority", "_stake", "_value", "_safety", "_prob"],
-        ascending=[False, False, False, False, False],
-    ).drop_duplicates("match_key", keep="first")
-
-    return out.drop(columns=["_stake", "_value", "_safety", "_prob"], errors="ignore")
+    model_weight = 0.52 + 0.20 * clamp(quality, 0, 1)
+    calibrated = {
+        key: book_probs.get(key, raw[key]) + (raw[key] - book_probs.get(key, raw[key])) * model_weight
+        for key in raw
+    }
+    total = sum(calibrated.values())
+    return {key: clamp(value / total, 0.03, 0.86) for key, value in calibrated.items()}
 
 
-def format_pct(x):
-    try:
-        if pd.isna(x):
-            return ""
-        return f"{float(x) * 100:.2f}%"
-    except Exception:
-        return ""
+def safety_score(probability, value, odds, data_quality, mode_hint=""):
+    odds = safe_float(odds)
+    score = 42
+    score += probability * 42
+    score += clamp(value, -0.10, 0.22) * 115
+    score += clamp(data_quality, 0, 1) * 13
 
-def parse_display_datetime(value):
-    try:
-        return pd.to_datetime(value, utc=True, errors="coerce")
-    except Exception:
-        return pd.NaT
+    if 1.35 <= odds <= 2.30:
+        score += 8
+    elif 2.30 < odds <= 3.50:
+        score += 3
+    elif odds > 4.00:
+        score -= 10
 
+    if "draw" in mode_hint.lower():
+        score -= 4
 
-def dynamic_dashboard_hours(sport):
-    s = str(sport).lower()
-    if "tennis" in s:
-        return 48
-    if "world_cup" in s or "international" in s:
-        return 240
-    if "soccer" in s or "football" in s:
-        return 168
-    return 72
-
-def upcoming_only(data, hours=None):
-    if data.empty or "date" not in data.columns:
-        return data
-
-    out = data.copy()
-    out["_dt"] = out["date"].apply(parse_display_datetime)
-    now = pd.Timestamp.utcnow()
-    out["_max_hours"] = out["sport"].apply(dynamic_dashboard_hours)
-    out["_end"] = out["_max_hours"].apply(lambda h: now + pd.Timedelta(hours=int(h)))
-
-    out = out[
-        out["_dt"].isna()
-        | (
-            (out["_dt"] >= now - pd.Timedelta(hours=4))
-            & (out["_dt"] <= out["_end"])
-        )
-    ].copy()
-
-    return out.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
+    return round(clamp(score, 0, 100), 2)
 
 
-def match_display_label(row):
-    sport = str(row.get("category", "")).lower()
-    if sport == "tennis":
-        return f"{row.get('home_team', '')} vs {row.get('away_team', '')}"
-    return f"{row.get('home_team', '')} vs {row.get('away_team', '')}"
+def select_bet_mode(probability, value, odds, safety, category):
+    if odds <= 1 or value <= 0:
+        if probability >= 0.55 and value > -0.035:
+            return "WATCHLIST"
+        return "NO BET"
 
-  
-def clean_table(data, compact=True):
-    core_cols = [
-        "date",
-        "sport",
-        "category",
-        "home_team",
-        "away_team",
-        "market",
-        "selection",
-        "bet_mode",
-        "safety_level",
-        "safety_score",
-        "ai_probability",
-        "bookmaker_odds",
-        "value",
-        "suggested_stake",
-        "score_exact_1",
-        "score_exact_1_proba",
-        "score_exact_2",
-        "score_exact_2_proba",
-        "score_exact_3",
-        "score_exact_3_proba",
-        "tennis_engine_score",
-        "tennis_edge",
-        "football_trap_signal",
-        "confidence",
-        "ia_badge",
-        "decision",
-    ]
+    if value >= 0.095 and probability >= 0.62 and safety >= 72 and odds <= 3.20:
+        return "MEGA VALUE"
 
-    tracking_cols = [
-        "result",
-        "stake",
-        "profit",
-        "final_winner",
-        "status_detail",
-        "bet_mode",
-    ]
+    if probability >= 0.64 and value >= 0.003 and 1.25 <= odds <= 1.95 and safety >= 61:
+        return "SAFE PICK"
 
-    cols = core_cols + ([] if compact else tracking_cols)
-    cols = list(dict.fromkeys(cols))
-    cols = [c for c in cols if c in data.columns]
-    out = data[cols].copy()
+    min_value = 0.018 if category == "tennis" else 0.024
+    if value >= min_value and probability >= 0.52 and safety >= 50 and odds <= 3.85:
+        return "VALUE BET"
 
-    for col in ["ai_probability", "implied_probability", "value", "tennis_edge"]:
-        if col in out.columns:
-            out[col] = pd.to_numeric(out[col], errors="coerce").apply(format_pct)
+    if category == "football" and value >= 0.05 and probability >= 0.20 and safety >= 32 and odds <= 5.50:
+        return "RISKY VALUE"
 
-    for col in [
-        "bookmaker_odds",
-        "suggested_stake",
-        "stake",
-        "profit",
-        "safety_score",
-        "tennis_engine_score",
-        "score_exact_1_proba",
-        "score_exact_2_proba",
-        "score_exact_3_proba",
+    if value >= 0.006 and probability >= 0.47 and odds <= 5.20 and safety >= 40:
+        return "RISKY VALUE"
+
+    if value > -0.025 and probability >= 0.50:
+        return "WATCHLIST"
+
+    return "NO BET"
+
+
+def safety_level(mode, safety):
+    if mode == "MEGA VALUE":
+        return "1 - MEGA VALUE"
+    if mode == "SAFE PICK":
+        return "2 - SAFE PICK"
+    if mode == "VALUE BET":
+        return "3 - VALUE BET"
+    if mode == "RISKY VALUE":
+        return "4 - RISKY VALUE"
+    if safety >= 55:
+        return "5 - WATCHLIST"
+    return "6 - NO BET"
+
+
+def ia_badge(mode):
+    badges = {
+        "MEGA VALUE": "MEGA VALUE",
+        "SAFE PICK": "SAFE PICK",
+        "VALUE BET": "VALUE BET",
+        "RISKY VALUE": "RISKY VALUE",
+        "WATCHLIST": "WATCHLIST",
+    }
+    return badges.get(mode, "NO BET")
+
+
+def bankroll_management(probability, odds, mode, bankroll=BANKROLL_START):
+    if mode not in RECOMMENDED_MODES or odds <= 1:
+        return 0.0, 0.0, 0.0
+
+    b = odds - 1
+    edge = probability * odds - 1
+    if edge <= 0:
+        return 0.0, 0.0, 0.0
+
+    kelly = max(0.0, ((b * probability) - (1 - probability)) / b)
+    kelly = min(kelly, 0.18)
+
+    fractions = {
+        "MEGA VALUE": 0.34,
+        "SAFE PICK": 0.26,
+        "VALUE BET": 0.18,
+        "RISKY VALUE": 0.08,
+    }
+    caps = {
+        "MEGA VALUE": 0.030,
+        "SAFE PICK": 0.022,
+        "VALUE BET": 0.016,
+        "RISKY VALUE": 0.006,
+    }
+
+    stake_percent = min(kelly * fractions[mode], caps[mode])
+    if stake_percent < 0.0025:
+        return 0.0, round(stake_percent, 4), round(kelly, 4)
+
+    stake = bankroll * stake_percent
+    stake = max(stake, 0.30 if mode == "RISKY VALUE" else 0.50)
+    return round(stake, 2), round(stake_percent, 4), round(kelly, 4)
+
+
+def score_exact_fields(poisson_probs):
+    top_scores = poisson_probs.get("top_scores", [])
+    fields = {}
+    for idx in range(3):
+        score, probability = ("", 0.0)
+        if idx < len(top_scores):
+            score, probability = top_scores[idx]
+        fields[f"score_exact_{idx + 1}"] = score
+        fields[f"score_exact_{idx + 1}_proba"] = round(probability * 100, 2)
+    return fields
+
+
+def football_trap_signal(market, probability, book_prob, value, odds, draw_probability):
+    if value > 0.06 and probability > book_prob + 0.035:
+        return "VALUE CLAIRE"
+    if str(market).lower() == "draw" and draw_probability < 0.22:
+        return "DRAW RISQUE"
+    if odds > 4.5:
+        return "COTE HAUTE"
+    if abs(probability - book_prob) < 0.015:
+        return "MARCHE JUSTE"
+    return "OK"
+
+
+def process_football_match(row, strengths, ratings):
+    home = row.get("home_team", "")
+    away = row.get("away_team", "")
+    sport = row.get("sport", "")
+    date = row.get("commence_time", "")
+
+    odds = {
+        "home": safe_float(row.get("odds_home")),
+        "draw": safe_float(row.get("odds_draw")),
+        "away": safe_float(row.get("odds_away")),
+    }
+    book_probs = normalized_probabilities(odds)
+    if len(book_probs) < 2:
+        return []
+
+    market_home_xg, market_away_xg = market_xg_from_odds(book_probs)
+    model_home_xg, model_away_xg = estimate_xg(home, away, strengths)
+
+    home_matches = team_metric(strengths, home, "matches", 0)
+    away_matches = team_metric(strengths, away, "matches", 0)
+    quality = clamp((home_matches + away_matches) / 40, 0, 1)
+
+    home_xg = model_home_xg * quality + market_home_xg * (1 - quality)
+    away_xg = model_away_xg * quality + market_away_xg * (1 - quality)
+    poisson_probs = football_poisson_probs(home_xg, away_xg, max_goals=8)
+
+    elo = get_match_elo(home, away, ratings)
+    if home_matches == 0 or away_matches == 0:
+        elo_home_prob = book_probs.get("home", 0.45) / max(book_probs.get("home", 0.45) + book_probs.get("away", 0.35), 0.01)
+    else:
+        elo_home_prob = 1 / (1 + 10 ** (-safe_float(elo["elo_diff"]) / 400))
+
+    ai_probs = blend_football_probabilities(book_probs, poisson_probs, elo_home_prob, quality)
+    score_fields = score_exact_fields(poisson_probs)
+    top_scores = [(score, round(prob, 4)) for score, prob in poisson_probs.get("top_scores", [])]
+
+    rows = []
+    for key, market, selection, bookmaker_odds in [
+        ("home", "Home Win", home, odds.get("home")),
+        ("draw", "Draw", "Draw", odds.get("draw")),
+        ("away", "Away Win", away, odds.get("away")),
     ]:
-        if col in out.columns:
-            out[col] = pd.to_numeric(out[col], errors="coerce").round(2)
+        bookmaker_odds = safe_float(bookmaker_odds)
+        if bookmaker_odds <= 1:
+            continue
 
-    # Sécurité Streamlit / PyArrow : évite les crashs d'affichage
-    for col in out.columns:
-        out[col] = out[col].astype(str)
+        probability = ai_probs.get(key, 0.0)
+        implied = implied_probability(bookmaker_odds)
+        value = probability * bookmaker_odds - 1
+        safety = safety_score(probability, value, bookmaker_odds, quality, market)
+        mode = select_bet_mode(probability, value, bookmaker_odds, safety, "football")
+        stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
+        if stake <= 0 and mode in RECOMMENDED_MODES:
+            mode = "WATCHLIST"
 
+        confidence = confidence_label(probability)
+        priority = round(safety * 1.5 + max(value, 0) * 420 + probability * 70, 2)
+
+        rows.append({
+            "date": date,
+            "sport": sport,
+            "category": "football",
+            "home_team": home,
+            "away_team": away,
+            "market": market,
+            "selection": selection,
+            "ai_probability": round(probability, 4),
+            "bookmaker_odds": round(bookmaker_odds, 3),
+            "implied_probability": round(implied, 4),
+            "value": round(value, 4),
+            "confidence": confidence,
+            "ia_badge": ia_badge(mode),
+            "reliable_only": mode in {"MEGA VALUE", "SAFE PICK", "VALUE BET"},
+            "safety_score": safety,
+            "safety_level": safety_level(mode, safety),
+            "football_trap_signal": football_trap_signal(market, probability, book_probs.get(key, implied), value, bookmaker_odds, poisson_probs["p_draw"]),
+            "learning_adjustment": "BASELINE",
+            "home_recent_form": round(team_metric(strengths, home, "form", 0.50), 3),
+            "away_recent_form": round(team_metric(strengths, away, "form", 0.50), 3),
+            "home_recent_attack": round(team_metric(strengths, home, "attack", 1.20), 3),
+            "away_recent_attack": round(team_metric(strengths, away, "attack", 1.10), 3),
+            "home_recent_defense": round(team_metric(strengths, home, "defense", 1.20), 3),
+            "away_recent_defense": round(team_metric(strengths, away, "defense", 1.20), 3),
+            "football_data_quality": round(quality, 3),
+            "decision": "VALUE BET" if mode in RECOMMENDED_MODES and stake > 0 else "NO BET",
+            "bankroll": round(BANKROLL_START, 2),
+            "stake_percent": stake_percent,
+            "kelly_fraction": kelly,
+            "suggested_stake": stake,
+            "bet_mode": mode,
+            "home_elo": elo["home_elo"],
+            "away_elo": elo["away_elo"],
+            "elo_diff": elo["elo_diff"],
+            "home_xg": round(home_xg, 3),
+            "away_xg": round(away_xg, 3),
+            "draw_probability": round(poisson_probs["p_draw"], 4),
+            "draw_hunter": "DRAW POSSIBLE" if poisson_probs["p_draw"] >= 0.285 else "NO DRAW SIGNAL",
+            "score_exact_alert": "TOP SCORE OK" if score_fields["score_exact_1"] else "",
+            "scorer_prediction": "A recalculer via player_scorers",
+            "over_25": round(poisson_probs["over_25"], 4),
+            "under_25": round(poisson_probs["under_25"], 4),
+            "btts_yes": round(poisson_probs["btts_yes"], 4),
+            "btts_no": round(poisson_probs["btts_no"], 4),
+            "top_scores": str(top_scores),
+            "tennis_engine_score": 0.0,
+            "tennis_form_home": 0.0,
+            "tennis_form_away": 0.0,
+            "tennis_edge": 0.0,
+            "priority": priority,
+            **score_fields,
+        })
+
+    return rows
+
+
+def detect_surface(sport):
+    s = str(sport).lower()
+    if "french" in s or "clay" in s or "roland" in s:
+        return "Clay"
+    if "wimbledon" in s or "grass" in s:
+        return "Grass"
+    if "hard" in s or "us_open" in s or "australian" in s:
+        return "Hard"
+    return ""
+
+
+def build_tennis_model():
+    if not TENNIS_HISTORY_PATH.exists():
+        return {}
+
+    history = pd.read_csv(TENNIS_HISTORY_PATH, low_memory=False)
+    if history.empty:
+        return {}
+
+    if "tourney_date" in history.columns:
+        history["_date"] = pd.to_numeric(history["tourney_date"], errors="coerce")
+        history = history.sort_values("_date")
+
+    players = defaultdict(lambda: {
+        "matches": 0,
+        "wins": 0,
+        "losses": 0,
+        "elo": 1500.0,
+        "recent": deque(maxlen=12),
+        "surface": defaultdict(lambda: {"matches": 0, "wins": 0}),
+        "rank": None,
+        "rank_points": None,
+    })
+
+    def update_rank(player, rank, points):
+        if pd.notna(rank):
+            player["rank"] = safe_float(rank, player["rank"] or 999)
+        if pd.notna(points):
+            player["rank_points"] = safe_float(points, player["rank_points"] or 0)
+
+    for _, match in history.iterrows():
+        winner_name = match.get("winner_name", "")
+        loser_name = match.get("loser_name", "")
+        if not winner_name or not loser_name:
+            continue
+
+        w_key = clean_name(winner_name)
+        l_key = clean_name(loser_name)
+        if not w_key or not l_key:
+            continue
+
+        winner = players[w_key]
+        loser = players[l_key]
+
+        expected_w = 1 / (1 + 10 ** ((loser["elo"] - winner["elo"]) / 400))
+        expected_l = 1 - expected_w
+        k = 26
+        winner["elo"] += k * (1 - expected_w)
+        loser["elo"] += k * (0 - expected_l)
+
+        surface = str(match.get("surface", "") or "")
+        winner["matches"] += 1
+        winner["wins"] += 1
+        winner["recent"].append(1)
+        loser["matches"] += 1
+        loser["losses"] += 1
+        loser["recent"].append(0)
+
+        if surface:
+            winner["surface"][surface]["matches"] += 1
+            winner["surface"][surface]["wins"] += 1
+            loser["surface"][surface]["matches"] += 1
+            loser["surface"][surface]["wins"] += 0
+
+        update_rank(winner, match.get("winner_rank"), match.get("winner_rank_points"))
+        update_rank(loser, match.get("loser_rank"), match.get("loser_rank_points"))
+
+    return players
+
+
+def tennis_stats(players, name):
+    key = clean_name(name)
+    player = players.get(key)
+    if player is None:
+        return {
+            "matches": 0,
+            "elo": 1500.0,
+            "winrate": 0.5,
+            "form": 0.5,
+            "rank": 999,
+            "rank_points": 0,
+            "surface_form": 0.5,
+        }
+    matches = max(player["matches"], 1)
+    recent = list(player["recent"])
+    return {
+        "matches": player["matches"],
+        "elo": player["elo"],
+        "winrate": player["wins"] / matches,
+        "form": sum(recent) / len(recent) if recent else player["wins"] / matches,
+        "rank": player["rank"] if player["rank"] is not None else 999,
+        "rank_points": player["rank_points"] if player["rank_points"] is not None else 0,
+        "surface_form": 0.5,
+    }
+
+
+def tennis_surface_form(players, name, surface):
+    if not surface:
+        return 0.5
+    player = players.get(clean_name(name))
+    if player is None:
+        return 0.5
+    stats = player["surface"].get(surface)
+    if not stats or stats["matches"] <= 0:
+        return 0.5
+    return stats["wins"] / stats["matches"]
+
+
+def tennis_probabilities(row, players):
+    home = row.get("home_team", "")
+    away = row.get("away_team", "")
+    odds = {
+        "home": safe_float(row.get("odds_home")),
+        "away": safe_float(row.get("odds_away")),
+    }
+    book_probs = normalized_probabilities(odds)
+    if len(book_probs) < 2:
+        return None
+
+    surface = detect_surface(row.get("sport", ""))
+    home_stats = tennis_stats(players, home)
+    away_stats = tennis_stats(players, away)
+    home_stats["surface_form"] = tennis_surface_form(players, home, surface)
+    away_stats["surface_form"] = tennis_surface_form(players, away, surface)
+
+    quality = clamp((min(home_stats["matches"], 24) + min(away_stats["matches"], 24)) / 48, 0, 1)
+
+    rank_component = 0.0
+    if home_stats["rank"] and away_stats["rank"]:
+        rank_component = clamp(math.log((away_stats["rank"] + 12) / (home_stats["rank"] + 12)), -1.6, 1.6)
+
+    model_logit = (
+        (home_stats["elo"] - away_stats["elo"]) / 185
+        + (home_stats["form"] - away_stats["form"]) * 1.15
+        + (home_stats["surface_form"] - away_stats["surface_form"]) * 0.55
+        + rank_component * 0.38
+    )
+    model_home = sigmoid(model_logit)
+
+    book_home = book_probs.get("home", 0.5)
+    model_weight = 0.38 + 0.22 * quality
+    final_home = book_home + (model_home - book_home) * model_weight
+    final_home = clamp(final_home, 0.08, 0.88)
+
+    return {
+        "home": final_home,
+        "away": 1 - final_home,
+        "book": book_probs,
+        "quality": quality,
+        "home_stats": home_stats,
+        "away_stats": away_stats,
+    }
+
+
+def tennis_set_scores(probability):
+    straight = clamp(0.46 + max(probability - 0.50, 0) * 0.82, 0.43, 0.80)
+    three_sets = 1 - straight
+    if straight >= three_sets:
+        return "2-0", round(straight * 100, 2), "2-1", round(three_sets * 100, 2)
+    return "2-1", round(three_sets * 100, 2), "2-0", round(straight * 100, 2)
+
+
+def process_tennis_match(row, players):
+    probs = tennis_probabilities(row, players)
+    if probs is None:
+        return []
+
+    home = row.get("home_team", "")
+    away = row.get("away_team", "")
+    sport = row.get("sport", "")
+    date = row.get("commence_time", "")
+
+    rows = []
+    for key, market, selection, bookmaker_odds in [
+        ("home", "Player 1 Win", home, row.get("odds_home")),
+        ("away", "Player 2 Win", away, row.get("odds_away")),
+    ]:
+        bookmaker_odds = safe_float(bookmaker_odds)
+        if bookmaker_odds <= 1:
+            continue
+
+        probability = probs[key]
+        implied = implied_probability(bookmaker_odds)
+        value = probability * bookmaker_odds - 1
+        safety = safety_score(probability, value, bookmaker_odds, probs["quality"])
+        mode = select_bet_mode(probability, value, bookmaker_odds, safety, "tennis")
+        stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
+        if stake <= 0 and mode in RECOMMENDED_MODES:
+            mode = "WATCHLIST"
+
+        score1, score1_proba, score2, score2_proba = tennis_set_scores(probability)
+        engine_score = round(clamp(probability * 70 + probs["quality"] * 20 + max(value, 0) * 85, 0, 100), 2)
+        priority = round(safety * 1.45 + max(value, 0) * 430 + probability * 70, 2)
+
+        rows.append({
+            "date": date,
+            "sport": sport,
+            "category": "tennis",
+            "home_team": home,
+            "away_team": away,
+            "market": market,
+            "selection": selection,
+            "ai_probability": round(probability, 4),
+            "bookmaker_odds": round(bookmaker_odds, 3),
+            "implied_probability": round(implied, 4),
+            "value": round(value, 4),
+            "confidence": confidence_label(probability),
+            "ia_badge": ia_badge(mode),
+            "reliable_only": mode in {"MEGA VALUE", "SAFE PICK", "VALUE BET"},
+            "safety_score": safety,
+            "safety_level": safety_level(mode, safety),
+            "football_trap_signal": "",
+            "learning_adjustment": "BASELINE",
+            "home_recent_form": "",
+            "away_recent_form": "",
+            "home_recent_attack": "",
+            "away_recent_attack": "",
+            "home_recent_defense": "",
+            "away_recent_defense": "",
+            "football_data_quality": "",
+            "decision": "VALUE BET" if mode in RECOMMENDED_MODES and stake > 0 else "NO BET",
+            "bankroll": round(BANKROLL_START, 2),
+            "stake_percent": stake_percent,
+            "kelly_fraction": kelly,
+            "suggested_stake": stake,
+            "bet_mode": mode,
+            "home_elo": round(probs["home_stats"]["elo"], 2),
+            "away_elo": round(probs["away_stats"]["elo"], 2),
+            "elo_diff": round(probs["home_stats"]["elo"] - probs["away_stats"]["elo"], 2),
+            "home_xg": "",
+            "away_xg": "",
+            "draw_probability": "",
+            "draw_hunter": "NO DRAW SPORT",
+            "score_exact_1": score1,
+            "score_exact_1_proba": score1_proba,
+            "score_exact_2": score2,
+            "score_exact_2_proba": score2_proba,
+            "score_exact_3": "",
+            "score_exact_3_proba": "",
+            "score_exact_alert": "SET SCORE ESTIMATION",
+            "scorer_prediction": "Tennis : aucun buteur",
+            "over_25": "",
+            "under_25": "",
+            "btts_yes": "",
+            "btts_no": "",
+            "top_scores": f"{score1} {score1_proba}% | {score2} {score2_proba}%",
+            "tennis_engine_score": engine_score,
+            "tennis_form_home": round(probs["home_stats"]["form"], 3),
+            "tennis_form_away": round(probs["away_stats"]["form"], 3),
+            "tennis_edge": round(value, 4),
+            "priority": priority,
+        })
+
+    return rows
+
+
+def apply_learning_adjustment(predictions):
+    if not LEARNING_PROFILE_PATH.exists() or predictions.empty:
+        return predictions
+
+    try:
+        profile = pd.read_csv(LEARNING_PROFILE_PATH)
+    except Exception:
+        return predictions
+
+    if profile.empty or "ai_recommendation" not in profile.columns:
+        return predictions
+
+    out = predictions.copy()
+    for _, segment in profile.iterrows():
+        recommendation = str(segment.get("ai_recommendation", "")).upper()
+        dimension = str(segment.get("dimension", ""))
+        value = str(segment.get("segment", ""))
+        if recommendation not in {"BOOST", "REDUCE"}:
+            continue
+
+        if dimension == "Sport":
+            mask = out["category"].astype(str) == value
+        elif dimension == "Competition":
+            mask = out["sport"].astype(str) == value
+        elif dimension == "Marche":
+            mask = out["market"].astype(str) == value
+        else:
+            continue
+
+        multiplier = 1.025 if recommendation == "BOOST" else 0.975
+        out.loc[mask, "ai_probability"] = (
+            pd.to_numeric(out.loc[mask, "ai_probability"], errors="coerce").fillna(0) * multiplier
+        ).clip(0.02, 0.90)
+        out.loc[mask, "learning_adjustment"] = recommendation
+
+    out["value"] = (
+        pd.to_numeric(out["ai_probability"], errors="coerce").fillna(0)
+        * pd.to_numeric(out["bookmaker_odds"], errors="coerce").fillna(0)
+        - 1
+    ).round(4)
     return out
 
 
-def show_table(data, height=520, compact=True):
-    if data.empty:
-        st.info("Aucune donnée à afficher.")
-        return
+def finalise_predictions(rows):
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return pd.DataFrame(columns=OUTPUT_COLUMNS)
 
-    st.dataframe(
-        clean_table(data, compact=compact),
-        use_container_width=True,
-        hide_index=True,
-        height=height,
+    df = apply_learning_adjustment(df)
+
+    for col in OUTPUT_COLUMNS:
+        if col not in df.columns:
+            df[col] = ""
+
+    df["last_update"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+    df["priority"] = pd.to_numeric(df["priority"], errors="coerce").fillna(0)
+    df["suggested_stake"] = pd.to_numeric(df["suggested_stake"], errors="coerce").fillna(0)
+    df["value"] = pd.to_numeric(df["value"], errors="coerce").fillna(0)
+    df["ai_probability"] = pd.to_numeric(df["ai_probability"], errors="coerce").fillna(0)
+
+    df = df.sort_values(
+        ["priority", "suggested_stake", "value", "ai_probability"],
+        ascending=[False, False, False, False],
     )
 
+    return df[OUTPUT_COLUMNS]
 
-def plot_bar(data, x, y, title):
-    if data.empty or x not in data.columns or y not in data.columns:
-        st.info("Pas assez de données.")
+
+def main():
+    upcoming = load_upcoming()
+    if upcoming.empty:
+        print("Aucun match/cote dans data/processed/upcoming_odds.csv")
+        PREDICTIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(PREDICTIONS_PATH, index=False)
+        pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(VALUE_BETS_PATH, index=False)
         return
 
-    chart = data.copy()
-    chart[y] = pd.to_numeric(chart[y], errors="coerce").fillna(0)
+    football_history, strengths, ratings = load_football_context()
+    tennis_players = build_tennis_model()
 
-    if PLOTLY_OK:
-        fig = px.bar(chart, x=x, y=y, title=title)
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#f8fafc",
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.bar_chart(chart.set_index(x)[y])
-
-
-def plot_line(data, x, y, title):
-    if data.empty or x not in data.columns or y not in data.columns:
-        st.info("Pas assez de données.")
-        return
-
-    chart = data.copy()
-    chart[y] = pd.to_numeric(chart[y], errors="coerce").fillna(0)
-
-    if PLOTLY_OK:
-        fig = px.line(chart, x=x, y=y, title=title, markers=True)
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#f8fafc",
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.line_chart(chart.set_index(x)[y])
-
-
-def mode_class(mode):
-    m = str(mode).upper()
-    if "RISKY" in m:
-        return "risky-card", "badge-red"
-    if "WATCH" in m:
-        return "watch-card", "badge-yellow"
-    return "pick-card", "badge-green"
-
-
-def render_cards(data, limit=6):
-    if data.empty:
-        st.info("Aucun pari à afficher.")
-        return
-
-    cols = st.columns(3)
-
-    for i, (_, row) in enumerate(data.head(limit).iterrows()):
-        with cols[i % 3]:
-            value = float(row.get("value", 0) or 0) * 100
-            proba = float(row.get("ai_probability", 0) or 0) * 100
-            stake = float(row.get("suggested_stake", 0) or 0)
-            odds = row.get("bookmaker_odds", "")
-            mode = row.get("bet_mode", "")
-            category = str(row.get("category", "")).lower()
-            card_class, badge_class = mode_class(mode)
-            probable_label = "Sets probables" if category == "tennis" else "Score probable"
-            probable_value = row.get("score_exact_1", "")
-            if category == "tennis" and not str(probable_value).strip():
-                probable_value = row.get("tennis_engine_score", "")
-            footer = "Pari conseillé" if stake > 0 and value > 0 else "Analyse seulement : pas de mise conseillée"
-
-            st.markdown(
-                f"""
-                <div class="pro-card {card_class}">
-                    <span class="badge {badge_class}">{mode}</span>
-                    <span class="badge badge-blue">{row.get("market", "")}</span><br><br>
-                    <b>{row.get("home_team", "")} vs {row.get("away_team", "")}</b><br>
-                    <span class="small-muted">{row.get("sport", "")}</span><br><br>
-                    Proba IA : <b>{proba:.1f}%</b><br>
-                    Cote : <b>{odds}</b><br>
-                    Value : <b>{value:.1f}%</b><br>
-                    Mise conseillée : <b>{stake:.2f}€</b><br>
-                    <span class="small-muted">{footer}</span><br>
-                    {probable_label} : <b>{probable_value}</b>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-
-def parse_top_scores(value):
-    if pd.isna(value):
-        return []
-    try:
-        parsed = ast.literal_eval(str(value))
-        result = []
-        for item in parsed:
-            if isinstance(item, (list, tuple)) and len(item) >= 2:
-                result.append((str(item[0]), float(item[1]) * 100))
-        return result[:5]
-    except Exception:
-        return []
-
-
-def football_score_table(data):
     rows = []
-    for _, row in data.iterrows():
-        top_scores = parse_top_scores(row.get("top_scores", ""))
-
-        if not top_scores:
-            for i in [1, 2, 3]:
-                score = row.get(f"score_exact_{i}", "")
-                proba = row.get(f"score_exact_{i}_proba", "")
-                if str(score).strip():
-                    top_scores.append((score, float(proba or 0)))
-
-        best = top_scores[0] if top_scores else ("", 0)
-        second = top_scores[1] if len(top_scores) > 1 else ("", 0)
-        third = top_scores[2] if len(top_scores) > 2 else ("", 0)
-
-        rows.append({
-            "match": f"{row.get('home_team', '')} vs {row.get('away_team', '')}",
-            "marché": row.get("market", ""),
-            "mode": row.get("bet_mode", ""),
-            "score le + probable": best[0],
-            "proba score 1": round(best[1], 2),
-            "alternative 1": second[0],
-            "proba score 2": round(second[1], 2),
-            "alternative 2": third[0],
-            "proba score 3": round(third[1], 2),
-            "draw signal": row.get("draw_hunter", ""),
-            "piège bookmaker": row.get("football_trap_signal", ""),
-            "mise": row.get("suggested_stake", 0),
-        })
-
-    return pd.DataFrame(rows)
-
-
-def tennis_sets_table(data):
-    rows = []
-    for _, row in data.iterrows():
-        p = float(row.get("ai_probability", 0) or 0)
-        score1 = str(row.get("score_exact_1", "2-0") or "2-0")
-        score2 = str(row.get("score_exact_2", "2-1") or "2-1")
-        proba1 = float(row.get("score_exact_1_proba", 0) or 0)
-        proba2 = float(row.get("score_exact_2_proba", 0) or 0)
-
-        # Si ton pipeline fournit déjà les probas, on les garde.
-        # Sinon, on estime simplement selon la probabilité IA.
-        if proba1 <= 0 and proba2 <= 0:
-            if p >= 0.68:
-                proba1 = round(p * 58, 2)
-                proba2 = round(p * 42, 2)
-            else:
-                proba1 = round(p * 48, 2)
-                proba2 = round(p * 52, 2)
-
-        likely_sets = score1 if proba1 >= proba2 else score2
-        likely_sets_proba = max(proba1, proba2)
-
-        rows.append({
-            "match": f"{row.get('home_team', '')} vs {row.get('away_team', '')}",
-            "sélection IA": row.get("selection", ""),
-            "mode": row.get("bet_mode", ""),
-            "nombre de sets probable": likely_sets,
-            "proba set probable": round(likely_sets_proba, 2),
-            "option 2-0": score1,
-            "proba 2-0": round(proba1, 2),
-            "option 2-1": score2,
-            "proba 2-1": round(proba2, 2),
-            "score IA tennis": row.get("tennis_engine_score", 0),
-            "edge tennis": row.get("tennis_edge", 0),
-            "mise": row.get("suggested_stake", 0),
-        })
-
-    return pd.DataFrame(rows)
-
-# ============================================================
-# FILTERS
-# ============================================================
-
-st.sidebar.title("Filtres")
-
-sports = st.sidebar.multiselect(
-    "Compétitions",
-    sorted(df["sport"].dropna().unique()),
-    default=sorted(df["sport"].dropna().unique()),
-)
-
-categories = st.sidebar.multiselect(
-    "Sport",
-    sorted(df["category"].dropna().unique()),
-    default=sorted(df["category"].dropna().unique()),
-)
-
-modes = st.sidebar.multiselect(
-    "Mode IA",
-    sorted(df["bet_mode"].dropna().unique()),
-    default=sorted(df["bet_mode"].dropna().unique()),
-)
-
-only_recommended = st.sidebar.checkbox("Seulement les paris conseillés", value=False)
-search = st.sidebar.text_input("Recherche équipe / joueur")
-min_stake = st.sidebar.slider("Mise minimum", 0.0, 10.0, 0.0, 0.1)
-min_prob = st.sidebar.slider("Probabilité IA minimum", 0.0, 1.0, 0.0, 0.01)
-
-filtered = df[
-    df["sport"].isin(sports)
-    & df["category"].isin(categories)
-    & df["bet_mode"].isin(modes)
-    & (df["suggested_stake"] >= min_stake)
-    & (df["ai_probability"] >= min_prob)
-].copy()
-
-if only_recommended:
-    filtered = filtered[filtered["bet_mode"].isin(RECOMMENDED_MODES)]
-
-if search:
-    s = search.lower()
-    filtered = filtered[
-        filtered.astype(str).apply(lambda r: s in " ".join(r.values).lower(), axis=1)
-    ]
-
-# Fenêtre proche : le dashboard doit montrer les matchs du jour / très proches.
-filtered_today = upcoming_only(filtered, hours=72)
-
-football_df = filtered_today[filtered_today["category"] == "football"].copy()
-tennis_df = filtered_today[filtered_today["category"] == "tennis"].copy()
-recommended = filtered_today[
-    filtered_today["bet_mode"].isin(RECOMMENDED_MODES)
-    & (filtered_today["suggested_stake"] > 0)
-    & (filtered_today["value"] > 0)
-].copy()
-recommended = best_market_per_match(recommended, include_watchlist=False)
-
-# ============================================================
-# REBALANCE DES MISES
-# ============================================================
-
-def rebalance_stake(row):
-    """
-    Affichage bankroll plus cohérent :
-    - RISKY = petite mise max 0.50€
-    - VALUE = moyen
-    - SAFE / MEGA = plus forte mise
-    """
-
-    stake = float(row.get("suggested_stake", 0) or 0)
-    prob = float(row.get("ai_probability", 0) or 0)
-    value = float(row.get("value", 0) or 0)
-    mode = str(row.get("bet_mode", "")).upper()
-
-    if "RISKY" in mode:
-        return min(max(stake, 0.30), 0.50)
-
-    if "VALUE BET" in mode:
-        base = max(stake, 0.70)
-        mult = 1.00 + max(prob - 0.55, 0) * 1.4 + min(max(value, 0), 0.20) * 0.6
-        return min(round(base * mult, 2), 1.60)
-
-    if "SAFE PICK" in mode:
-        base = max(stake, 1.00)
-        mult = 1.25 + max(prob - 0.60, 0) * 1.8 + min(max(value, 0), 0.20) * 0.5
-        return min(round(base * mult, 2), 2.40)
-
-    if "MEGA VALUE" in mode:
-        base = max(stake, 1.50)
-        mult = 1.35 + max(prob - 0.62, 0) * 2.0 + min(max(value, 0), 0.25) * 0.7
-        return min(round(base * mult, 2), 3.00)
-
-    return max(stake, 0.35)
-
-recommended["suggested_stake"] = recommended.apply(
-    rebalance_stake,
-    axis=1
-)
-risky_list = filtered_today[
-    filtered_today["bet_mode"].astype(str).str.upper().str.contains("RISKY")
-].copy()
-watchlist = filtered_today[filtered_today["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
-
-last_update = df["last_update"].iloc[0] if "last_update" in df.columns else "Inconnue"
-telegram_count = 0
-if TELEGRAM_SENT_PATH.exists():
-    try:
-        telegram_count = len(pd.read_csv(TELEGRAM_SENT_PATH))
-    except Exception:
-        telegram_count = 0
-
-# ============================================================
-# HERO / KPI
-# ============================================================
-
-st.markdown(
-    f"""
-    <div class="hero-box">
-        <div class="hero-title">IA Paris Sportifs Ultime</div>
-        <div class="hero-sub">
-            Dashboard propre • Tennis sets probables • Score exact football • Mises conseillées • ROI<br>
-            Dernière actualisation : <b>{last_update}</b> | Alertes Telegram : <b>{telegram_count}</b>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Lignes proches", len(filtered_today))
-c2.metric("Paris conseillés SAFE", len(recommended))
-c3.metric("Football", len(football_df))
-c4.metric("Tennis", len(tennis_df))
-c5.metric("Mise max", f"{filtered_today['suggested_stake'].max() if not filtered_today.empty else 0:.2f}€")
-
-# ============================================================
-# TABS
-# ============================================================
-
-tabs = st.tabs([
-    "Accueil",
-    "⚽ Football",
-    "🎾 Tennis",
-    "Paris conseillés",
-    "Football score exact",
-    "Tennis sets",
-    "Mises / bankroll",
-    "Résultats / ROI",
-    "Toutes les lignes",
-])
-
-with tabs[0]:
-    st.subheader("Meilleurs spots du jour")
-    render_cards(sort_recommendations(recommended), limit=6)
-
-    a, b = st.columns(2)
-    with a:
-        if not recommended.empty:
-            mode_counts = recommended["bet_mode"].value_counts().reset_index()
-            mode_counts.columns = ["mode", "nombre"]
-            plot_bar(mode_counts, "mode", "nombre", "Répartition des paris conseillés")
-    with b:
-        plot_bar(sort_recommendations(filtered).head(20), "home_team", "safety_score", "Top sécurité IA")
-
-    st.subheader("Watchlist intelligente")
-    show_table(sort_recommendations(watchlist).head(30), height=360)
-
-
-with tabs[1]:
-    st.subheader("⚽ Football — matchs proches")
-    st.caption("Uniquement les matchs dans la fenêtre proche, triés par priorité puis sécurité IA.")
-
-    football_reco = best_market_per_match(sort_recommendations(football_df), include_watchlist=True)
-
-    if football_reco.empty:
-        st.info("Aucun match football proche trouvé dans les données actuelles.")
-    else:
-        render_cards(football_reco, limit=9)
-
-        st.subheader("Analyse football")
-        score_df = football_score_table(football_reco)
-        st.dataframe(score_df, use_container_width=True, hide_index=True, height=420)
-
-        show_table(football_reco, height=520)
-
-
-with tabs[2]:
-    st.subheader("🎾 Tennis — matchs proches")
-    st.caption("ATP/WTA proches uniquement. Les gros joueurs et gros tournois sont priorisés.")
-
-    tennis_reco = best_market_per_match(sort_recommendations(tennis_df), include_watchlist=True)
-
-    if tennis_reco.empty:
-        st.info("Aucun match tennis proche trouvé dans les données actuelles.")
-    else:
-        render_cards(tennis_reco, limit=9)
-
-        st.subheader("Analyse tennis")
-        sets_df = tennis_sets_table(tennis_reco)
-        st.dataframe(sets_df, use_container_width=True, hide_index=True, height=420)
-
-        show_table(tennis_reco, height=520)
-
-
-
-with tabs[3]:
-    st.subheader("Paris conseillés avec mise")
-    render_cards(sort_recommendations(recommended), limit=9)
-    show_table(sort_recommendations(recommended), height=620)
-
-with tabs[4]:
-    st.subheader("Football — score exact plus lisible")
-    st.caption("Le score exact reste un marché très difficile. Ici, le dashboard affiche les 3 scores les plus probables + signal piège bookmaker.")
-
-    football_reco = best_market_per_match(sort_recommendations(football_df), include_watchlist=True)
-    score_df = football_score_table(football_reco)
-
-    if score_df.empty:
-        st.info("Aucun match football disponible dans les données actuelles.")
-    else:
-        st.dataframe(score_df, use_container_width=True, hide_index=True, height=520)
-
-        a, b = st.columns(2)
-        with a:
-            plot_bar(score_df.head(20), "match", "proba score 1", "Probabilité du score exact principal")
-        with b:
-            if "suggested_stake" in football_reco.columns:
-                plot_bar(football_reco.head(20), "home_team", "suggested_stake", "Mises conseillées football")
-
-with tabs[5]:
-    st.subheader("Tennis — nombre de sets probable")
-    st.caption("Affiche le score en sets le plus probable : 2-0 ou 2-1 selon les probabilités du pipeline.")
-
-    tennis_reco = best_market_per_match(sort_recommendations(tennis_df), include_watchlist=True)
-    sets_df = tennis_sets_table(tennis_reco)
-
-    if sets_df.empty:
-        st.info("Aucun match tennis disponible.")
-    else:
-        st.dataframe(sets_df, use_container_width=True, hide_index=True, height=620)
-
-        a, b = st.columns(2)
-        with a:
-            plot_bar(sets_df.head(25), "match", "proba set probable", "Probabilité du nombre de sets")
-        with b:
-            plot_bar(tennis_reco.head(25), "home_team", "tennis_engine_score", "Score IA tennis")
-
-with tabs[6]:
-    st.subheader("Mises conseillées / bankroll")
-
-    stake_cols = [
-        "date",
-        "sport",
-        "home_team",
-        "away_team",
-        "selection",
-        "bet_mode",
-        "ai_probability",
-        "bookmaker_odds",
-        "value",
-        "suggested_stake",
-        "stake_percent",
-        "kelly_fraction",
-        "bankroll",
-        "safety_score",
-    ]
-    stake_cols = [c for c in stake_cols if c in recommended.columns]
-
-    if recommended.empty:
-        st.info("Aucune mise conseillée pour le moment.")
-    else:
-        total_stake = recommended["suggested_stake"].sum()
-        avg_stake = recommended["suggested_stake"].mean()
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Mise totale conseillée", f"{total_stake:.2f}€")
-        m2.metric("Mise moyenne", f"{avg_stake:.2f}€")
-        m3.metric("Nombre de tickets", len(recommended))
-        st.dataframe(clean_table(recommended[stake_cols]), use_container_width=True, hide_index=True, height=540)
-
-with tabs[7]:
-    st.subheader("Résultats IA / ROI")
-
-    if tracking.empty:
-        st.warning("Aucun tracking disponible.")
-    else:
-        tr = tracking.copy()
-        if "result" not in tr.columns:
-            tr["result"] = "PENDING"
-
-        tr["result"] = tr["result"].fillna("PENDING").astype(str).str.upper().replace({"": "PENDING", "NAN": "PENDING"})
-        tr["stake"] = pd.to_numeric(tr.get("stake", tr.get("suggested_stake", 0)), errors="coerce").fillna(0)
-        tr["profit"] = pd.to_numeric(tr.get("profit", 0), errors="coerce").fillna(0)
-        tr["bookmaker_odds"] = pd.to_numeric(tr.get("bookmaker_odds", 0), errors="coerce").fillna(0)
-        if "category" not in tr.columns:
-            tr["category"] = tr["sport"].apply(sport_category)
-
-        finished = tr[tr["result"].isin(["WIN", "LOSS"])].copy()
-        pending = tr[tr["result"] == "PENDING"].copy()
-        wins = tr[tr["result"] == "WIN"].copy()
-        losses = tr[tr["result"] == "LOSS"].copy()
-
-        total_staked = finished["stake"].sum() if not finished.empty else 0
-        total_profit = finished["profit"].sum() if not finished.empty else 0
-        roi = total_profit / total_staked if total_staked > 0 else 0
-        winrate = len(wins) / len(finished) if len(finished) else 0
-
-        r1, r2, r3, r4 = st.columns(4)
-        r1.metric("Terminés", len(finished))
-        r2.metric("En attente", len(pending))
-        r3.metric("ROI", f"{roi * 100:.2f}%")
-        r4.metric("Winrate", f"{winrate * 100:.2f}%")
-
-        total_won = wins["profit"].sum() if not wins.empty else 0
-        total_lost = abs(losses["profit"].sum()) if not losses.empty else 0
-
-        if len(finished) < 50:
-            st.info(
-                "Échantillon encore trop faible : il faut idéalement 50 à 100 paris terminés pour juger la fiabilité réelle."
-            )
-
-        r5, r6, r7 = st.columns(3)
-        r5.metric("Misé total", f"{total_staked:.2f}€")
-        r6.metric("Profit net", f"{total_profit:.2f}€")
-        r7.metric("Cote moyenne", f"{finished['bookmaker_odds'].mean() if not finished.empty else 0:.2f}")
-
-        g1, g2 = st.columns(2)
-        g1.metric(
-            "💰 Argent gagné",
-            f"+{total_won:.2f}€"
-        )
-        g2.metric(
-            "📉 Argent perdu",
-            f"-{total_lost:.2f}€"
-        )
-
-        if not wins.empty:
-            st.success(
-                f"Les gains viennent principalement des paris WIN avec bonnes cotes et value positive."
-            )
-
-        if not losses.empty:
-            st.warning(
-                f"Les pertes viennent surtout des paris plus volatils ou des scores exacts difficiles."
-            )
-
-        if not finished.empty:
-            chart = finished.sort_values("date").copy()
-            chart["cumulative_profit"] = chart["profit"].cumsum()
-            chart["bet_number"] = range(1, len(chart) + 1)
-            plot_line(chart, "bet_number", "cumulative_profit", "Courbe profit cumulé")
-
-        result_tabs = st.tabs(["Gagnés", "Perdus", "En attente", "Historique"])
-        with result_tabs[0]:
-            show_table(wins.sort_values("profit", ascending=False), height=460, compact=False)
-        with result_tabs[1]:
-            show_table(losses.sort_values("profit", ascending=True), height=460, compact=False)
-        with result_tabs[2]:
-            show_table(pending.sort_values("date"), height=460, compact=False)
-        with result_tabs[3]:
-            show_table(tr.sort_values("date", ascending=False), height=620, compact=False)
-
-with tabs[8]:
-    st.subheader("Toutes les lignes analysées")
-    show_table(sort_recommendations(filtered_today), height=720)
+    for _, match in upcoming.iterrows():
+        sport = match.get("sport", "")
+        if is_football_sport(sport):
+            rows.extend(process_football_match(match, strengths, ratings))
+        elif is_tennis_sport(sport):
+            rows.extend(process_tennis_match(match, tennis_players))
+
+    predictions = finalise_predictions(rows)
+
+    PREDICTIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    predictions.to_csv(PREDICTIONS_PATH, index=False)
+
+    value_bets = predictions[
+        predictions["bet_mode"].isin(RECOMMENDED_MODES)
+        & (pd.to_numeric(predictions["suggested_stake"], errors="coerce").fillna(0) > 0)
+        & (pd.to_numeric(predictions["value"], errors="coerce").fillna(0) > 0)
+    ].copy()
+    value_bets.to_csv(VALUE_BETS_PATH, index=False)
+
+    print("Predictions creees :", len(predictions))
+    print("Paris avec mise :", len(value_bets))
+    if not value_bets.empty:
+        print(value_bets[["date", "sport", "home_team", "away_team", "market", "selection", "ai_probability", "bookmaker_odds", "value", "suggested_stake", "bet_mode"]].head(20).to_string(index=False))
+
+
+if __name__ == "__main__":
+    main()

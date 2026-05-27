@@ -14,8 +14,10 @@ def poisson(k, lam):
 def football_poisson_probs(
     home_xg,
     away_xg,
-    max_goals=6
+    max_goals=8
 ):
+    home_xg = min(max(float(home_xg or 0), 0.15), 4.5)
+    away_xg = min(max(float(away_xg or 0), 0.15), 4.5)
 
     matrix = np.zeros(
         (max_goals + 1, max_goals + 1)
@@ -29,6 +31,10 @@ def football_poisson_probs(
                 poisson(i, home_xg)
                 * poisson(j, away_xg)
             )
+
+    total_probability = matrix.sum()
+    if total_probability > 0:
+        matrix = matrix / total_probability
 
     p_home = np.tril(matrix, -1).sum()
 

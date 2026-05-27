@@ -5,9 +5,62 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
-import requests
-from dotenv import load_dotenv
-from rapidfuzz import fuzz
+try:
+    import requests
+except Exception:
+    requests = None
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    def load_dotenv(path=None, *args, **kwargs):
+        env_path = Path(path or ".env")
+        if not env_path.exists():
+            return None
+        for line in env_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            os.environ.setdefault(key, value)
+        return True
+
+try:
+    from rapidfuzz import fuzz
+except Exception:
+    from difflib import SequenceMatcher
+
+    class fuzz:
+        @staticmethod
+        def ratio(a, b):
+            return SequenceMatcher(None, str(a), str(b)).ratio() * 100
+
+        @staticmethod
+        def token_sort_ratio(a, b):
+            a = " ".join(sorted(str(a).split()))
+            b = " ".join(sorted(str(b).split()))
+            return fuzz.ratio(a, b)
+
+        @staticmethod
+        def partial_ratio(a, b):
+            a = str(a)
+            b = str(b)
+            if not a or not b:
+                return 0
+            shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+            if shorter in longer:
+                return 100
+            return fuzz.ratio(shorter, longer)
+
+        @staticmethod
+        def WRatio(a, b):
+            return max(
+                fuzz.ratio(a, b),
+                fuzz.token_sort_ratio(a, b),
+                fuzz.partial_ratio(a, b),
+            )
 
 try:
     from sofascore_wrapper import SofaScore
@@ -23,6 +76,7 @@ API_TENNIS_KEY = os.getenv("API_TENNIS_KEY")
 
 TRACK_PATH = Path("tracking_results.csv")
 MANUAL_RESULTS_PATH = Path("manual_results.csv")
+ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
 LEARNING_PATH = Path("data/learning/ai_learning_profile.csv")
 LEARNING_SUMMARY_PATH = Path("data/learning/ai_learning_summary.csv")
 BASE_URL = "https://api.the-odds-api.com/v4"
@@ -311,6 +365,9 @@ def fetch_sofascore_events_for_date(sport, target_date=None):
 
 
 def fetch_api_football_events(target_date):
+    if requests is None:
+        return []
+
     if not FOOTBALL_DATA_TOKEN:
         print("FOOTBALL_DATA_TOKEN manquante.")
         return []
@@ -388,6 +445,9 @@ def fetch_api_football_events(target_date):
 
 
 def fetch_api_tennis_events(target_date):
+    if requests is None:
+        return []
+
     if not API_TENNIS_KEY:
         return []
 
@@ -547,6 +607,9 @@ def resolve_sofascore_result(row, event):
 
 
 def fetch_scores(sport):
+    if requests is None:
+        return []
+
     if not ODDS_API_KEY:
         return []
 
@@ -787,6 +850,67 @@ def calc_profit(row):
     return 0.0
 
 
+def write_finished_archive(tracking):
+    ARCHIVE_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    finished = tracking[tracking["result"].isin(["WIN", "LOSS", "VOID"])].copy()
+
+    if finished.empty:
+        pd.DataFrame().to_csv(ARCHIVE_PATH, index=False)
+        return
+
+    if "resolved_at" not in finished.columns:
+        finished["resolved_at"] = ""
+
+    archive_cols = [
+        "resolved_at",
+        "date",
+        "sport",
+        "category",
+        "home_team",
+        "away_team",
+        "market",
+        "selection",
+        "bet_mode",
+        "ai_probability",
+        "bookmaker_odds",
+        "value",
+        "stake",
+        "result",
+        "profit",
+        "final_winner",
+        "final_score_home",
+        "final_score_away",
+        "status_detail",
+        "score_exact_1",
+        "score_exact_1_proba",
+        "score_exact_2",
+        "score_exact_2_proba",
+        "tennis_engine_score",
+        "tennis_edge",
+    ]
+    archive_cols = [col for col in archive_cols if col in finished.columns]
+
+    finished = finished[archive_cols].copy()
+    def archive_part(col):
+        if col not in finished.columns:
+            return pd.Series([""] * len(finished), index=finished.index)
+        return finished[col].fillna("").astype(str).str.lower()
+
+    finished["_archive_key"] = (
+        archive_part("date") + "|"
+        + archive_part("sport") + "|"
+        + archive_part("home_team") + "|"
+        + archive_part("away_team") + "|"
+        + archive_part("market") + "|"
+        + archive_part("selection")
+    )
+
+    finished = finished.drop_duplicates("_archive_key", keep="last")
+    finished = finished.drop(columns=["_archive_key"])
+    finished.to_csv(ARCHIVE_PATH, index=False)
+
+
 def mode_group(mode):
     mode = str(mode).upper().strip()
 
@@ -921,6 +1045,7 @@ def main():
         "final_score_away",
         "result",
         "selection",
+        "resolved_at",
     ]
 
     for col in text_cols:
@@ -1144,6 +1269,7 @@ def main():
 
             tracking.at[idx, "profit"] = calc_profit(tracking.loc[idx])
             tracking.at[idx, "status_detail"] = status_detail or "RESOLVED"
+            tracking.at[idx, "resolved_at"] = datetime.now(timezone.utc).isoformat()
 
             updated += 1
 
@@ -1158,7 +1284,9 @@ def main():
             )
 
     tracking.to_csv(TRACK_PATH, index=False)
+    write_finished_archive(tracking)
     build_learning_profile(tracking)
+    print("Archive mise a jour :", ARCHIVE_PATH)
 
     print("Résultats mis à jour :", updated)
     print("Résultats manuels utilisés :", manual_updated)

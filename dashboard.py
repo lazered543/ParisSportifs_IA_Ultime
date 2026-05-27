@@ -21,6 +21,7 @@ APP_PASSWORD = "29052007"
 PRED_PATH = Path("data/predictions/predictions_today.csv")
 TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
+ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
 
 # ============================================================
 # STYLE / DESIGN
@@ -216,6 +217,7 @@ def load_csv(path):
 
 df = load_csv(PRED_PATH)
 tracking = load_csv(TRACK_PATH)
+archive = load_csv(ARCHIVE_PATH)
 
 if df.empty:
     st.error("Aucune prédiction trouvée. Lance d'abord le pipeline.")
@@ -277,7 +279,7 @@ df = prepare_data(df)
 
 SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 RISKY_MODES = ["RISKY VALUE"]
-RECOMMENDED_MODES = SAFE_MODES
+RECOMMENDED_MODES = SAFE_MODES + RISKY_MODES
 
 
 def sort_recommendations(data):
@@ -382,7 +384,10 @@ def clean_table(data, compact=True):
         "stake",
         "profit",
         "final_winner",
+        "final_score_home",
+        "final_score_away",
         "status_detail",
+        "resolved_at",
         "bet_mode",
     ]
 
@@ -731,7 +736,7 @@ st.markdown(
 
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Lignes proches", len(filtered_today))
-c2.metric("Paris conseillés SAFE", len(recommended))
+c2.metric("Paris avec mise", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
 c5.metric("Mise max", f"{filtered_today['suggested_stake'].max() if not filtered_today.empty else 0:.2f}€")
@@ -881,7 +886,7 @@ with tabs[6]:
         st.dataframe(clean_table(recommended[stake_cols]), use_container_width=True, hide_index=True, height=540)
 
 with tabs[7]:
-    st.subheader("Résultats IA / ROI")
+    st.subheader("Résultats IA / ROI / Archive")
 
     if tracking.empty:
         st.warning("Aucun tracking disponible.")
@@ -896,11 +901,26 @@ with tabs[7]:
         tr["bookmaker_odds"] = pd.to_numeric(tr.get("bookmaker_odds", 0), errors="coerce").fillna(0)
         if "category" not in tr.columns:
             tr["category"] = tr["sport"].apply(sport_category)
+        if "resolved_at" not in tr.columns:
+            tr["resolved_at"] = ""
 
         finished = tr[tr["result"].isin(["WIN", "LOSS"])].copy()
         pending = tr[tr["result"] == "PENDING"].copy()
         wins = tr[tr["result"] == "WIN"].copy()
         losses = tr[tr["result"] == "LOSS"].copy()
+        archive_view = archive.copy() if not archive.empty else finished.copy()
+        if "resolved_at" not in archive_view.columns:
+            archive_view["resolved_at"] = ""
+        archive_view["_resolved_dt"] = pd.to_datetime(
+            archive_view["resolved_at"].replace("", pd.NA),
+            utc=True,
+            errors="coerce",
+        )
+        finished_week = archive_view[
+            archive_view["_resolved_dt"].isna()
+            | (archive_view["_resolved_dt"] >= pd.Timestamp.utcnow() - pd.Timedelta(days=7))
+        ].drop(columns=["_resolved_dt"], errors="ignore")
+        archive_view = archive_view.drop(columns=["_resolved_dt"], errors="ignore")
 
         total_staked = finished["stake"].sum() if not finished.empty else 0
         total_profit = finished["profit"].sum() if not finished.empty else 0
@@ -947,20 +967,40 @@ with tabs[7]:
             )
 
         if not finished.empty:
+            by_sport = (
+                finished.groupby("category")
+                .agg(
+                    paris=("result", "count"),
+                    wins=("result", lambda x: (x == "WIN").sum()),
+                    pertes=("result", lambda x: (x == "LOSS").sum()),
+                    mise=("stake", "sum"),
+                    profit=("profit", "sum"),
+                )
+                .reset_index()
+            )
+            by_sport["roi"] = by_sport.apply(
+                lambda r: r["profit"] / r["mise"] if r["mise"] > 0 else 0,
+                axis=1,
+            )
+            st.subheader("Topo des paris terminés")
+            st.dataframe(by_sport, use_container_width=True, hide_index=True, height=180)
+
             chart = finished.sort_values("date").copy()
             chart["cumulative_profit"] = chart["profit"].cumsum()
             chart["bet_number"] = range(1, len(chart) + 1)
             plot_line(chart, "bet_number", "cumulative_profit", "Courbe profit cumulé")
 
-        result_tabs = st.tabs(["Gagnés", "Perdus", "En attente", "Historique"])
+        result_tabs = st.tabs(["En attente", "Terminés semaine", "Archive", "Gagnés", "Perdus"])
         with result_tabs[0]:
-            show_table(wins.sort_values("profit", ascending=False), height=460, compact=False)
-        with result_tabs[1]:
-            show_table(losses.sort_values("profit", ascending=True), height=460, compact=False)
-        with result_tabs[2]:
             show_table(pending.sort_values("date"), height=460, compact=False)
+        with result_tabs[1]:
+            show_table(finished_week.sort_values("date", ascending=False), height=520, compact=False)
+        with result_tabs[2]:
+            show_table(archive_view.sort_values("date", ascending=False), height=620, compact=False)
         with result_tabs[3]:
-            show_table(tr.sort_values("date", ascending=False), height=620, compact=False)
+            show_table(wins.sort_values("profit", ascending=False), height=460, compact=False)
+        with result_tabs[4]:
+            show_table(losses.sort_values("profit", ascending=True), height=460, compact=False)
 
 with tabs[8]:
     st.subheader("Toutes les lignes analysées")

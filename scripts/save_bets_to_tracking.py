@@ -57,6 +57,17 @@ cols = [
     "stake_percent",
     "kelly_fraction",
     "bankroll",
+    "confidence",
+    "ia_badge",
+    "score_exact_1",
+    "score_exact_1_proba",
+    "score_exact_2",
+    "score_exact_2_proba",
+    "score_exact_3",
+    "score_exact_3_proba",
+    "tennis_engine_score",
+    "tennis_edge",
+    "priority",
 ]
 
 bets = bets[[c for c in cols if c in bets.columns]].copy()
@@ -71,6 +82,7 @@ for col in [
     "final_score_home",
     "final_score_away",
     "status_detail",
+    "resolved_at",
 ]:
     if col not in bets.columns:
         bets[col] = ""
