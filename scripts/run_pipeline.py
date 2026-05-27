@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import math
 import sys
 import pandas as pd
@@ -38,6 +38,9 @@ def load_or_demo_upcoming():
         df = pd.read_csv(path)
 
         if not df.empty:
+            before = len(df)
+            df = filter_upcoming_window(df)
+            print(f"Matchs proches gardés : {len(df)} / {before}")
             return df
 
     return pd.DataFrame([])
@@ -112,6 +115,99 @@ def normalized_market_probabilities(odds_home, odds_draw, odds_away):
         "Draw": american_to_probability_from_decimal(odds_draw),
         "Away Win": american_to_probability_from_decimal(odds_away),
     }
+
+
+# ============================================================
+# MATCH FILTERING / PRIORITY
+# ============================================================
+
+MAX_HOURS_AHEAD = 72
+PAST_GRACE_HOURS = 4
+
+BIG_PLAYERS = [
+    "djokovic", "alcaraz", "sinner", "nadal", "federer", "medvedev", "zverev",
+    "tsitsipas", "rune", "rublev", "fritz", "ruud", "de minaur", "hurkacz",
+    "swiatek", "sabalenka", "gauff", "rybakina", "pegula", "paolini",
+    "osaka", "raducanu", "andreeva", "jabeur", "ostapenko",
+]
+
+BIG_COMPETITIONS = [
+    "french_open", "roland", "wimbledon", "us_open", "australian_open",
+    "champions_league", "premier_league", "laliga", "serie_a", "bundesliga",
+    "ligue_one", "world_cup",
+]
+
+
+def parse_match_datetime(value):
+    try:
+        if pd.isna(value):
+            return pd.NaT
+
+        return pd.to_datetime(value, utc=True, errors="coerce")
+
+    except Exception:
+        return pd.NaT
+
+
+def priority_score(home_team, away_team, sport):
+    text = f"{home_team} {away_team} {sport}".lower()
+    score = 0
+
+    for player in BIG_PLAYERS:
+        if player in text:
+            score += 120
+
+    for competition in BIG_COMPETITIONS:
+        if competition in text:
+            score += 40
+
+    if "tennis" in text:
+        score += 15
+
+    if "soccer" in text or "football" in text:
+        score += 10
+
+    return score
+
+
+def filter_upcoming_window(df):
+    """
+    Garde uniquement les vrais matchs proches.
+    Objectif : éviter d'afficher des matchs à +1 mois alors que des matchs tennis/foot existent aujourd'hui.
+    """
+    if df.empty or "commence_time" not in df.columns:
+        return df
+
+    out = df.copy()
+    out["_dt"] = out["commence_time"].apply(parse_match_datetime)
+
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(hours=PAST_GRACE_HOURS)
+    end = now + timedelta(hours=MAX_HOURS_AHEAD)
+
+    valid = out["_dt"].notna()
+    near = out[valid & (out["_dt"] >= start) & (out["_dt"] <= end)].copy()
+
+    if near.empty:
+        print("Aucun match dans la fenêtre proche. Vérifie data/processed/upcoming_odds.csv.")
+        return near.drop(columns=["_dt"], errors="ignore")
+
+    near["_priority"] = near.apply(
+        lambda r: priority_score(
+            r.get("home_team", ""),
+            r.get("away_team", ""),
+            r.get("sport", "")
+        ),
+        axis=1,
+    )
+
+    near = near.sort_values(
+        ["_priority", "_dt"],
+        ascending=[False, True]
+    )
+
+    return near.drop(columns=["_dt"], errors="ignore")
+
 
     total = sum(v for v in implied.values() if v > 0)
 
@@ -2368,6 +2464,28 @@ def main():
         rows
     )
 
+    if not out.empty:
+        out["priority"] = out.apply(
+            lambda r: priority_score(
+                r.get("home_team", ""),
+                r.get("away_team", ""),
+                r.get("sport", "")
+            ),
+            axis=1,
+        )
+
+        if "date" in out.columns:
+            out["_dt"] = out["date"].apply(parse_match_datetime)
+            now = datetime.now(timezone.utc)
+            out = out[
+                out["_dt"].isna()
+                | (
+                    (out["_dt"] >= now - timedelta(hours=PAST_GRACE_HOURS))
+                    & (out["_dt"] <= now + timedelta(hours=MAX_HOURS_AHEAD))
+                )
+            ].copy()
+            out = out.drop(columns=["_dt"], errors="ignore")
+
     if out.empty:
         print("Aucune prédiction.")
         return
@@ -2397,9 +2515,12 @@ def main():
 
     out_display["decision_rank"] = out_display["bet_mode"].map(decision_rank).fillna(9)
 
+    if "priority" not in out_display.columns:
+        out_display["priority"] = 0
+
     out_display = out_display.sort_values(
-        ["decision_rank", "safety_score", "value", "ai_probability_num"],
-        ascending=[True, False, False, False]
+        ["priority", "decision_rank", "safety_score", "value", "ai_probability_num"],
+        ascending=[False, True, False, False, False]
     )
 
     out_display = out_display.drop(

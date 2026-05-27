@@ -295,9 +295,12 @@ def sort_recommendations(data):
 
     out = data.copy()
     out["_rank"] = out["bet_mode"].map(rank).fillna(9)
+    if "priority" not in out.columns:
+        out["priority"] = 0
+
     out = out.sort_values(
-        ["_rank", "safety_score", "value", "ai_probability"],
-        ascending=[True, False, False, False],
+        ["priority", "_rank", "safety_score", "value", "ai_probability"],
+        ascending=[False, True, False, False, False],
     )
     return out.drop(columns=["_rank"])
 
@@ -309,6 +312,40 @@ def format_pct(x):
         return f"{float(x) * 100:.2f}%"
     except Exception:
         return ""
+
+def parse_display_datetime(value):
+    try:
+        return pd.to_datetime(value, utc=True, errors="coerce")
+    except Exception:
+        return pd.NaT
+
+
+def upcoming_only(data, hours=72):
+    if data.empty or "date" not in data.columns:
+        return data
+
+    out = data.copy()
+    out["_dt"] = out["date"].apply(parse_display_datetime)
+
+    now = pd.Timestamp.utcnow()
+
+    out = out[
+        out["_dt"].isna()
+        | (
+            (out["_dt"] >= now - pd.Timedelta(hours=4))
+            & (out["_dt"] <= now + pd.Timedelta(hours=hours))
+        )
+    ].copy()
+
+    return out.drop(columns=["_dt"], errors="ignore")
+
+
+def match_display_label(row):
+    sport = str(row.get("category", "")).lower()
+    if sport == "tennis":
+        return f"{row.get('home_team', '')} vs {row.get('away_team', '')}"
+    return f"{row.get('home_team', '')} vs {row.get('away_team', '')}"
+
   
 def clean_table(data, compact=True):
     core_cols = [
@@ -611,11 +648,14 @@ if search:
         filtered.astype(str).apply(lambda r: s in " ".join(r.values).lower(), axis=1)
     ]
 
-football_df = filtered[filtered["category"] == "football"].copy()
-tennis_df = filtered[filtered["category"] == "tennis"].copy()
-recommended = filtered[
-    filtered["bet_mode"].isin(RECOMMENDED_MODES)
-    & (filtered["suggested_stake"] > 0)
+# Fenêtre proche : le dashboard doit montrer les matchs du jour / très proches.
+filtered_today = upcoming_only(filtered, hours=72)
+
+football_df = filtered_today[filtered_today["category"] == "football"].copy()
+tennis_df = filtered_today[filtered_today["category"] == "tennis"].copy()
+recommended = filtered_today[
+    filtered_today["bet_mode"].isin(RECOMMENDED_MODES)
+    & (filtered_today["suggested_stake"] > 0)
 ].copy()
 
 # ============================================================
@@ -659,10 +699,10 @@ recommended["suggested_stake"] = recommended.apply(
     rebalance_stake,
     axis=1
 )
-risky_list = filtered[
-    filtered["bet_mode"].astype(str).str.upper().str.contains("RISKY")
+risky_list = filtered_today[
+    filtered_today["bet_mode"].astype(str).str.upper().str.contains("RISKY")
 ].copy()
-watchlist = filtered[filtered["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
+watchlist = filtered_today[filtered_today["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
 
 last_update = df["last_update"].iloc[0] if "last_update" in df.columns else "Inconnue"
 telegram_count = 0
@@ -690,11 +730,11 @@ st.markdown(
 )
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Lignes analysées", len(filtered))
+c1.metric("Lignes proches", len(filtered_today))
 c2.metric("Paris conseillés SAFE", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
-c5.metric("Mise max", f"{filtered['suggested_stake'].max() if not filtered.empty else 0:.2f}€")
+c5.metric("Mise max", f"{filtered_today['suggested_stake'].max() if not filtered_today.empty else 0:.2f}€")
 
 # ============================================================
 # TABS
@@ -702,6 +742,8 @@ c5.metric("Mise max", f"{filtered['suggested_stake'].max() if not filtered.empty
 
 tabs = st.tabs([
     "Accueil",
+    "⚽ Football",
+    "🎾 Tennis",
     "Paris conseillés",
     "Football score exact",
     "Tennis sets",
@@ -726,12 +768,50 @@ with tabs[0]:
     st.subheader("Watchlist intelligente")
     show_table(sort_recommendations(watchlist).head(30), height=360)
 
+
 with tabs[1]:
+    st.subheader("⚽ Football — matchs proches")
+    st.caption("Uniquement les matchs dans la fenêtre proche, triés par priorité puis sécurité IA.")
+
+    football_reco = sort_recommendations(football_df)
+
+    if football_reco.empty:
+        st.info("Aucun match football proche trouvé dans les données actuelles.")
+    else:
+        render_cards(football_reco, limit=9)
+
+        st.subheader("Analyse football")
+        score_df = football_score_table(football_reco)
+        st.dataframe(score_df, use_container_width=True, hide_index=True, height=420)
+
+        show_table(football_reco, height=520)
+
+
+with tabs[2]:
+    st.subheader("🎾 Tennis — matchs proches")
+    st.caption("ATP/WTA proches uniquement. Les gros joueurs et gros tournois sont priorisés.")
+
+    tennis_reco = sort_recommendations(tennis_df)
+
+    if tennis_reco.empty:
+        st.info("Aucun match tennis proche trouvé dans les données actuelles.")
+    else:
+        render_cards(tennis_reco, limit=9)
+
+        st.subheader("Analyse tennis")
+        sets_df = tennis_sets_table(tennis_reco)
+        st.dataframe(sets_df, use_container_width=True, hide_index=True, height=420)
+
+        show_table(tennis_reco, height=520)
+
+
+
+with tabs[3]:
     st.subheader("Paris conseillés avec mise")
     render_cards(sort_recommendations(recommended), limit=9)
     show_table(sort_recommendations(recommended), height=620)
 
-with tabs[2]:
+with tabs[4]:
     st.subheader("Football — score exact plus lisible")
     st.caption("Le score exact reste un marché très difficile. Ici, le dashboard affiche les 3 scores les plus probables + signal piège bookmaker.")
 
@@ -750,7 +830,7 @@ with tabs[2]:
             if "suggested_stake" in football_reco.columns:
                 plot_bar(football_reco.head(20), "home_team", "suggested_stake", "Mises conseillées football")
 
-with tabs[3]:
+with tabs[5]:
     st.subheader("Tennis — nombre de sets probable")
     st.caption("Affiche le score en sets le plus probable : 2-0 ou 2-1 selon les probabilités du pipeline.")
 
@@ -768,7 +848,7 @@ with tabs[3]:
         with b:
             plot_bar(tennis_reco.head(25), "home_team", "tennis_engine_score", "Score IA tennis")
 
-with tabs[4]:
+with tabs[6]:
     st.subheader("Mises conseillées / bankroll")
 
     stake_cols = [
@@ -800,7 +880,7 @@ with tabs[4]:
         m3.metric("Nombre de tickets", len(recommended))
         st.dataframe(clean_table(recommended[stake_cols]), use_container_width=True, hide_index=True, height=540)
 
-with tabs[5]:
+with tabs[7]:
     st.subheader("Résultats IA / ROI")
 
     if tracking.empty:
@@ -882,6 +962,6 @@ with tabs[5]:
         with result_tabs[3]:
             show_table(tr.sort_values("date", ascending=False), height=620, compact=False)
 
-with tabs[6]:
+with tabs[8]:
     st.subheader("Toutes les lignes analysées")
-    show_table(sort_recommendations(filtered), height=720)
+    show_table(sort_recommendations(filtered_today), height=720)
