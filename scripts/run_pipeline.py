@@ -879,6 +879,99 @@ def safety_level(score, mode, decision, prob=None, value=None):
     return "7 - A EVITER"
 
 
+
+def poisson_pmf(k, lam):
+    lam = max(float(lam), 0.05)
+    return math.exp(-lam) * (lam ** k) / math.factorial(k)
+
+
+def true_poisson_exact_scores(home_xg, away_xg, home_prob=None, draw_prob=None, away_prob=None):
+    """
+    VRAI moteur score exact :
+    - aucun score forcé
+    - calcule chaque score 0-0 à 5-5 avec loi de Poisson
+    - ajuste légèrement selon les probabilités 1N2 du modèle
+    - retourne les scores réellement les plus probables
+    """
+    home_xg = clamp(safe_float(home_xg, 1.35), 0.20, 3.20)
+    away_xg = clamp(safe_float(away_xg, 1.05), 0.20, 3.20)
+
+    home_prob = safe_float(home_prob, 0.0)
+    draw_prob = safe_float(draw_prob, 0.0)
+    away_prob = safe_float(away_prob, 0.0)
+
+    scores = []
+
+    for h in range(0, 6):
+        for a in range(0, 6):
+            p = poisson_pmf(h, home_xg) * poisson_pmf(a, away_xg)
+
+            # Petit ajustement de cohérence 1N2, sans forcer le résultat
+            if h > a and home_prob > 0:
+                p *= 0.85 + home_prob * 0.35
+            elif h == a and draw_prob > 0:
+                p *= 0.85 + draw_prob * 0.45
+            elif a > h and away_prob > 0:
+                p *= 0.85 + away_prob * 0.35
+
+            # Les 5-5 et scores ultra hauts sont rarement le top exact
+            if h + a >= 7:
+                p *= 0.75
+
+            scores.append((f"{h}-{a}", p))
+
+    total = sum(p for _, p in scores)
+
+    if total <= 0:
+        return [("1-1", 0.10), ("1-0", 0.09), ("2-1", 0.08)]
+
+    scores = [(s, p / total) for s, p in scores]
+    scores = sorted(scores, key=lambda x: x[1], reverse=True)
+
+    # Évite les doublons absurdes et garde les 5 meilleurs
+    return [(s, round(float(p), 4)) for s, p in scores[:5]]
+
+
+def market_total_goal_adjustment(odds_home, odds_draw, odds_away, base_home_xg, base_away_xg):
+    """
+    Ajuste le total de buts selon les cotes 1N2 :
+    - nul assez fort => match plus fermé
+    - favori net => domination plus nette
+    - mais sans inventer 3-0 partout
+    """
+    probs = normalized_market_probabilities(odds_home, odds_draw, odds_away)
+
+    p_home = probs.get("Home Win", 0.36)
+    p_draw = probs.get("Draw", 0.28)
+    p_away = probs.get("Away Win", 0.36)
+
+    total = base_home_xg + base_away_xg
+
+    # Le nul élevé indique souvent un match plus serré/fermé.
+    if p_draw >= 0.30:
+        total *= 0.93
+    elif p_draw <= 0.23:
+        total *= 1.06
+
+    dominance = p_home - p_away
+
+    if abs(dominance) < 0.08:
+        # Match équilibré
+        target_home_share = 0.50 + dominance * 0.35
+    else:
+        # Favori, mais pas explosion automatique
+        target_home_share = 0.50 + dominance * 0.42
+
+    target_home_share = clamp(target_home_share, 0.35, 0.68)
+
+    new_home = total * target_home_share
+    new_away = total * (1 - target_home_share)
+
+    return (
+        round(clamp(new_home, 0.25, 2.80), 3),
+        round(clamp(new_away, 0.20, 2.50), 3),
+    )
+
 # ============================================================
 # FOOTBALL ENGINE V2 HELPERS
 # ============================================================
@@ -1067,6 +1160,99 @@ def football_trap_signal(prob, odds, market_prob, value, confidence):
 
     return "OK"
 
+
+def poisson_pmf(k, lam):
+    lam = max(float(lam), 0.05)
+    return math.exp(-lam) * (lam ** k) / math.factorial(k)
+
+
+def true_poisson_exact_scores(home_xg, away_xg, home_prob=None, draw_prob=None, away_prob=None):
+    """
+    VRAI moteur score exact :
+    - aucun score forcé
+    - calcule chaque score 0-0 à 5-5 avec loi de Poisson
+    - ajuste légèrement selon les probabilités 1N2 du modèle
+    - retourne les scores réellement les plus probables
+    """
+    home_xg = clamp(safe_float(home_xg, 1.35), 0.20, 3.20)
+    away_xg = clamp(safe_float(away_xg, 1.05), 0.20, 3.20)
+
+    home_prob = safe_float(home_prob, 0.0)
+    draw_prob = safe_float(draw_prob, 0.0)
+    away_prob = safe_float(away_prob, 0.0)
+
+    scores = []
+
+    for h in range(0, 6):
+        for a in range(0, 6):
+            p = poisson_pmf(h, home_xg) * poisson_pmf(a, away_xg)
+
+            # Petit ajustement de cohérence 1N2, sans forcer le résultat
+            if h > a and home_prob > 0:
+                p *= 0.85 + home_prob * 0.35
+            elif h == a and draw_prob > 0:
+                p *= 0.85 + draw_prob * 0.45
+            elif a > h and away_prob > 0:
+                p *= 0.85 + away_prob * 0.35
+
+            # Les 5-5 et scores ultra hauts sont rarement le top exact
+            if h + a >= 7:
+                p *= 0.75
+
+            scores.append((f"{h}-{a}", p))
+
+    total = sum(p for _, p in scores)
+
+    if total <= 0:
+        return [("1-1", 0.10), ("1-0", 0.09), ("2-1", 0.08)]
+
+    scores = [(s, p / total) for s, p in scores]
+    scores = sorted(scores, key=lambda x: x[1], reverse=True)
+
+    # Évite les doublons absurdes et garde les 5 meilleurs
+    return [(s, round(float(p), 4)) for s, p in scores[:5]]
+
+
+def market_total_goal_adjustment(odds_home, odds_draw, odds_away, base_home_xg, base_away_xg):
+    """
+    Ajuste le total de buts selon les cotes 1N2 :
+    - nul assez fort => match plus fermé
+    - favori net => domination plus nette
+    - mais sans inventer 3-0 partout
+    """
+    probs = normalized_market_probabilities(odds_home, odds_draw, odds_away)
+
+    p_home = probs.get("Home Win", 0.36)
+    p_draw = probs.get("Draw", 0.28)
+    p_away = probs.get("Away Win", 0.36)
+
+    total = base_home_xg + base_away_xg
+
+    # Le nul élevé indique souvent un match plus serré/fermé.
+    if p_draw >= 0.30:
+        total *= 0.93
+    elif p_draw <= 0.23:
+        total *= 1.06
+
+    dominance = p_home - p_away
+
+    if abs(dominance) < 0.08:
+        # Match équilibré
+        target_home_share = 0.50 + dominance * 0.35
+    else:
+        # Favori, mais pas explosion automatique
+        target_home_share = 0.50 + dominance * 0.42
+
+    target_home_share = clamp(target_home_share, 0.35, 0.68)
+
+    new_home = total * target_home_share
+    new_away = total * (1 - target_home_share)
+
+    return (
+        round(clamp(new_home, 0.25, 2.80), 3),
+        round(clamp(new_away, 0.20, 2.50), 3),
+    )
+
 # ============================================================
 # FOOTBALL ENGINE
 # ============================================================
@@ -1239,6 +1425,16 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         data_quality
     )
 
+    # Ajustement propre du total de buts via cotes 1N2.
+    # Ça évite les scores clonés type 3-0 partout.
+    home_xg, away_xg = market_total_goal_adjustment(
+        m.get("odds_home"),
+        m.get("odds_draw"),
+        m.get("odds_away"),
+        home_xg,
+        away_xg,
+    )
+
     features = pd.DataFrame([{
         "home_goals": home_xg,
         "away_goals": away_xg,
@@ -1258,28 +1454,24 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         away_xg
     )
 
-    smart_scores = real_match_simulation_scores(
-        home,
-        away,
+    poisson_scores = true_poisson_exact_scores(
         home_xg,
         away_xg,
         probs["p_home"],
         probs["p_draw"],
         probs["p_away"],
-        elo["elo_diff"],
     )
 
-    # On remplace les scores Poisson trop répétitifs par le moteur intelligent.
-    probs["top_scores"] = smart_scores
+    probs["top_scores"] = poisson_scores
 
-    score_1 = smart_scores[0][0]
-    score_1_proba = round(float(smart_scores[0][1]) * 100, 2)
+    score_1 = poisson_scores[0][0]
+    score_1_proba = round(float(poisson_scores[0][1]) * 100, 2)
 
-    score_2 = smart_scores[1][0]
-    score_2_proba = round(float(smart_scores[1][1]) * 100, 2)
+    score_2 = poisson_scores[1][0]
+    score_2_proba = round(float(poisson_scores[1][1]) * 100, 2)
 
-    score_3 = smart_scores[2][0]
-    score_3_proba = round(float(smart_scores[2][1]) * 100, 2)
+    score_3 = poisson_scores[2][0]
+    score_3_proba = round(float(poisson_scores[2][1]) * 100, 2)
 
     draw_probability = round(float(probs["p_draw"]) * 100, 2)
 
