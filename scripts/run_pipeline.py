@@ -187,118 +187,177 @@ def format_top_scores(top_scores):
     return str(clean)
 
 
-def smart_exact_scores(home_xg, away_xg, home_prob, draw_prob, away_prob, elo_diff):
-    """
-    Génère des scores exacts plus réalistes.
-    Objectif : éviter le 1-0 automatique partout.
 
-    Logique :
-    - xG maison / extérieur
-    - domination du favori
-    - total de buts attendu
-    - probabilité du nul
-    - écart Elo
+def team_variation_seed(home, away):
     """
-    home_xg = safe_float(home_xg, 1.2)
-    away_xg = safe_float(away_xg, 1.0)
-    home_prob = safe_float(home_prob, 0.33)
+    Variation stable par match, pas du hasard pur.
+    Même match = même variation.
+    """
+    raw = f"{home}-{away}".lower()
+    return sum(ord(c) for c in raw) % 100
+
+
+def real_match_simulation_scores(home, away, home_xg, away_xg, home_prob, draw_prob, away_prob, elo_diff):
+    """
+    Simulation score exact plus réaliste :
+    - xG
+    - domination
+    - total buts attendu
+    - draw probability
+    - clean sheet
+    - variation stable par match pour éviter le clonage
+    """
+
+    home_xg = safe_float(home_xg, 1.35)
+    away_xg = safe_float(away_xg, 1.05)
+    home_prob = safe_float(home_prob, 0.40)
     draw_prob = safe_float(draw_prob, 0.28)
-    away_prob = safe_float(away_prob, 0.33)
+    away_prob = safe_float(away_prob, 0.32)
     elo_diff = safe_float(elo_diff, 0)
 
+    seed = team_variation_seed(home, away)
     total_xg = home_xg + away_xg
     dominance = home_prob - away_prob
+
+    # Variation stable : donne un profil différent selon le match
+    variation = (seed % 7) - 3
+    openness = total_xg + variation * 0.06
+
+    home_strength = home_xg + max(elo_diff, 0) / 450
+    away_strength = away_xg + max(-elo_diff, 0) / 450
+
+    clean_sheet_home = clamp(
+        0.38 + (home_strength - away_strength) * 0.16 - max(openness - 2.8, 0) * 0.10,
+        0.12,
+        0.62,
+    )
+
+    clean_sheet_away = clamp(
+        0.30 + (away_strength - home_strength) * 0.14 - max(openness - 2.8, 0) * 0.10,
+        0.08,
+        0.55,
+    )
 
     candidates = []
 
     def add(score, weight):
-        if weight > 0:
-            candidates.append((score, weight))
+        candidates.append((score, max(weight, 0.001)))
 
-    # Match très équilibré
-    if abs(dominance) < 0.08:
-        add("1-1", 0.34 + draw_prob * 0.45)
-        add("1-0", 0.16 + max(home_prob - 0.33, 0) * 0.25)
-        add("0-1", 0.16 + max(away_prob - 0.33, 0) * 0.25)
+    # HOME FAVORITE
+    if dominance > 0.10:
+        fav = dominance + max(elo_diff, 0) / 600
 
-        if total_xg >= 2.65:
-            add("2-2", 0.18)
-            add("2-1", 0.16 + max(home_xg - away_xg, 0) * 0.10)
-            add("1-2", 0.16 + max(away_xg - home_xg, 0) * 0.10)
+        # Favori léger : diversité 1-0 / 2-1 / 1-1
+        if fav < 0.18:
+            add("1-0", 0.25 + clean_sheet_home * 0.12)
+            add("2-1", 0.24 + max(openness - 2.4, 0) * 0.08)
+            add("1-1", 0.20 + draw_prob * 0.20)
+            add("2-0", 0.16 + clean_sheet_home * 0.08)
+
+        # Favori moyen : alterne 2-0 / 2-1 / 3-1 selon profil
+        elif fav < 0.30:
+            if seed % 3 == 0:
+                add("2-1", 0.30)
+                add("2-0", 0.23)
+                add("1-0", 0.18)
+                add("3-1", 0.14)
+            elif seed % 3 == 1:
+                add("2-0", 0.29)
+                add("1-0", 0.21)
+                add("2-1", 0.20)
+                add("3-0", 0.13)
+            else:
+                add("3-1", 0.25 if openness >= 2.65 else 0.14)
+                add("2-1", 0.25)
+                add("2-0", 0.22)
+                add("1-0", 0.13)
+
+        # Gros favori
         else:
-            add("0-0", 0.12 + max(draw_prob - 0.28, 0) * 0.50)
-
-    # Domicile favori
-    elif dominance > 0:
-        fav_strength = dominance + max(elo_diff, 0) / 600
-
-        if fav_strength >= 0.25 or home_xg >= 2.10:
-            add("2-0", 0.30 + fav_strength * 0.25)
-            add("3-0", 0.18 + max(home_xg - 2.0, 0) * 0.12)
-            add("3-1", 0.16 + max(total_xg - 2.7, 0) * 0.10)
-            add("2-1", 0.18)
-        elif fav_strength >= 0.14 or home_xg >= 1.65:
-            add("2-1", 0.30)
+            add("3-0", 0.26)
             add("2-0", 0.25)
-            add("1-0", 0.20)
-            add("1-1", 0.12 + draw_prob * 0.18)
+            add("3-1", 0.20)
+            add("4-1", 0.08 if openness >= 3 else 0.03)
+
+    # AWAY FAVORITE
+    elif dominance < -0.10:
+        fav = abs(dominance) + max(-elo_diff, 0) / 600
+
+        if fav < 0.18:
+            add("0-1", 0.25 + clean_sheet_away * 0.12)
+            add("1-2", 0.24 + max(openness - 2.4, 0) * 0.08)
+            add("1-1", 0.20 + draw_prob * 0.20)
+            add("0-2", 0.16 + clean_sheet_away * 0.08)
+
+        elif fav < 0.30:
+            if seed % 3 == 0:
+                add("1-2", 0.30)
+                add("0-2", 0.23)
+                add("0-1", 0.18)
+                add("1-3", 0.14)
+            elif seed % 3 == 1:
+                add("0-2", 0.29)
+                add("0-1", 0.21)
+                add("1-2", 0.20)
+                add("0-3", 0.13)
+            else:
+                add("1-3", 0.25 if openness >= 2.65 else 0.14)
+                add("1-2", 0.25)
+                add("0-2", 0.22)
+                add("0-1", 0.13)
+
         else:
-            add("1-0", 0.28)
-            add("2-1", 0.24)
-            add("1-1", 0.18)
-            add("2-0", 0.16)
-
-    # Extérieur favori
-    else:
-        fav_strength = abs(dominance) + max(-elo_diff, 0) / 600
-
-        if fav_strength >= 0.25 or away_xg >= 2.10:
-            add("0-2", 0.30 + fav_strength * 0.25)
-            add("0-3", 0.18 + max(away_xg - 2.0, 0) * 0.12)
-            add("1-3", 0.16 + max(total_xg - 2.7, 0) * 0.10)
-            add("1-2", 0.18)
-        elif fav_strength >= 0.14 or away_xg >= 1.65:
-            add("1-2", 0.30)
+            add("0-3", 0.26)
             add("0-2", 0.25)
-            add("0-1", 0.20)
-            add("1-1", 0.12 + draw_prob * 0.18)
+            add("1-3", 0.20)
+            add("1-4", 0.08 if openness >= 3 else 0.03)
+
+    # BALANCED MATCH
+    else:
+        if draw_prob >= 0.30:
+            add("1-1", 0.32)
+            add("0-0", 0.18 if openness < 2.45 else 0.08)
+            add("2-2", 0.15 if openness >= 2.75 else 0.06)
+            add("1-0", 0.14)
+            add("0-1", 0.14)
         else:
-            add("0-1", 0.28)
-            add("1-2", 0.24)
-            add("1-1", 0.18)
-            add("0-2", 0.16)
+            add("2-1", 0.20 + max(home_xg - away_xg, 0) * 0.10)
+            add("1-2", 0.20 + max(away_xg - home_xg, 0) * 0.10)
+            add("1-1", 0.20)
+            add("2-2", 0.12 if openness >= 2.75 else 0.04)
 
-    # Ajustement match ouvert
-    if total_xg >= 3.0:
-        add("2-2", 0.12)
-        if dominance > 0:
-            add("3-2", 0.10)
-        elif dominance < 0:
-            add("2-3", 0.10)
+    # Match très ouvert : ajoute des scores avec buts des deux côtés
+    if openness >= 2.90:
+        if dominance >= 0:
+            add("3-2", 0.09)
+            add("2-2", 0.08)
+        else:
+            add("2-3", 0.09)
+            add("2-2", 0.08)
 
-    # Normalisation en pseudo-probas lisibles
-    total_weight = sum(w for _, w in candidates)
-    if total_weight <= 0:
-        return [("1-1", 0.10), ("1-0", 0.08), ("0-1", 0.08)]
+    # Match fermé : boost scores bas
+    if openness <= 2.15:
+        add("1-0", 0.12 if dominance >= 0 else 0.04)
+        add("0-1", 0.12 if dominance <= 0 else 0.04)
+        add("0-0", 0.08)
+        add("1-1", 0.10)
 
     merged = {}
     for score, weight in candidates:
         merged[score] = merged.get(score, 0) + weight
 
-    ranked = sorted(
-        merged.items(),
-        key=lambda x: x[1],
-        reverse=True
-    )
+    ranked = sorted(merged.items(), key=lambda x: x[1], reverse=True)
 
-    # Les scores exacts sont naturellement faibles : affichage entre 6% et 16%
+    total_weight = sum(w for _, w in ranked)
     result = []
+
     for score, weight in ranked[:5]:
         proba = (weight / total_weight) * 0.42
-        proba = clamp(proba, 0.055, 0.165)
+        proba = clamp(proba, 0.045, 0.17)
         result.append((score, round(proba, 4)))
 
     return result
+
 
 
 
@@ -1199,7 +1258,9 @@ def process_football_match(m, strengths, elo_ratings, ml_model, player_df, bankr
         away_xg
     )
 
-    smart_scores = smart_exact_scores(
+    smart_scores = real_match_simulation_scores(
+        home,
+        away,
         home_xg,
         away_xg,
         probs["p_home"],
