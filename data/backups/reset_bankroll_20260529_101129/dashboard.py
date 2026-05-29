@@ -22,7 +22,6 @@ PRED_PATH = Path("data/predictions/predictions_today.csv")
 TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
 ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
-BANKROLL_STATE_PATH = Path("data/bankroll_state.csv")
 
 # ============================================================
 # STYLE / DESIGN
@@ -219,7 +218,6 @@ def load_csv(path):
 df = load_csv(PRED_PATH)
 tracking = load_csv(TRACK_PATH)
 archive = load_csv(ARCHIVE_PATH)
-bankroll_state = load_csv(BANKROLL_STATE_PATH)
 
 if df.empty:
     st.error("Aucune prédiction trouvée. Lance d'abord le pipeline.")
@@ -274,14 +272,6 @@ def prepare_data(data):
 
 
 df = prepare_data(df)
-
-if not bankroll_state.empty and "current_bankroll" in bankroll_state.columns:
-    current_bankroll_display = float(pd.to_numeric(bankroll_state["current_bankroll"], errors="coerce").fillna(10.0).iloc[0])
-    initial_bankroll_display = float(pd.to_numeric(bankroll_state.get("initial_bankroll", pd.Series([10.0])), errors="coerce").fillna(10.0).iloc[0])
-else:
-    current_bankroll_display = 10.0
-    initial_bankroll_display = 10.0
-
 
 # ============================================================
 # HELPERS AFFICHAGE
@@ -756,7 +746,7 @@ st.markdown(
     <div class="hero-box">
         <div class="hero-title">IA Paris Sportifs Ultime</div>
         <div class="hero-sub">
-            Bankroll réelle 10€ • L’IA joue uniquement avec ses gains • Tennis • Football • ROI<br>
+            Dashboard propre • Tennis sets probables • Score exact football • Mises conseillées • ROI<br>
             Dernière actualisation : <b>{last_update}</b> | Alertes Telegram : <b>{telegram_count}</b>
         </div>
     </div>
@@ -770,10 +760,6 @@ c2.metric("Paris avec mise", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
 c5.metric("Mise max", f"{filtered_today['suggested_stake'].max() if not filtered_today.empty else 0:.2f}€")
-
-b1, b2 = st.columns(2)
-b1.metric("Bankroll IA", f"{current_bankroll_display:.2f}€")
-b2.metric("Capital de départ", f"{initial_bankroll_display:.2f}€")
 
 # ============================================================
 # TABS

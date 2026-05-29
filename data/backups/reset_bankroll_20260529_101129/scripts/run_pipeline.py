@@ -317,7 +317,6 @@ def safety_level(mode, safety):
     return "6 - NO BET"
 
 
-
 def ia_badge(mode):
     badges = {
         "MEGA VALUE": "MEGA VALUE",
@@ -325,48 +324,16 @@ def ia_badge(mode):
         "VALUE BET": "VALUE BET",
         "RISKY VALUE": "RISKY VALUE",
         "WATCHLIST": "WATCHLIST",
-        "NO BET": "NO BET",
     }
-    return badges.get(str(mode), "NO BET")
+    return badges.get(mode, "NO BET")
 
 
-
-def load_current_bankroll(default=10.0):
-    path = Path("data/bankroll_state.csv")
-
-    if not path.exists():
-        return float(default)
-
-    try:
-        state = pd.read_csv(path)
-
-        if state.empty or "current_bankroll" not in state.columns:
-            return float(default)
-
-        bankroll = pd.to_numeric(state["current_bankroll"], errors="coerce").fillna(default).iloc[0]
-        bankroll = float(bankroll)
-
-        return max(bankroll, 0.0)
-
-    except Exception:
-        return float(default)
-
-
-def bankroll_management(probability, odds, mode, bankroll=None):
-    if bankroll is None:
-        bankroll = load_current_bankroll(BANKROLL_START)
-
-    bankroll = max(float(bankroll), 0.0)
-
-    if bankroll <= 0:
-        return 0.0, 0.0, 0.0
-
+def bankroll_management(probability, odds, mode, bankroll=BANKROLL_START):
     if mode not in RECOMMENDED_MODES or odds <= 1:
         return 0.0, 0.0, 0.0
 
     b = odds - 1
     edge = probability * odds - 1
-
     if edge <= 0:
         return 0.0, 0.0, 0.0
 
@@ -379,7 +346,6 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "VALUE BET": 0.18,
         "RISKY VALUE": 0.08,
     }
-
     caps = {
         "MEGA VALUE": 0.030,
         "SAFE PICK": 0.022,
@@ -387,29 +353,13 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "RISKY VALUE": 0.006,
     }
 
-    stake_percent = min(kelly * fractions.get(mode, 0), caps.get(mode, 0))
-
-    if stake_percent <= 0:
-        return 0.0, 0.0, round(kelly, 4)
+    stake_percent = min(kelly * fractions[mode], caps[mode])
+    if stake_percent < 0.0025:
+        return 0.0, round(stake_percent, 4), round(kelly, 4)
 
     stake = bankroll * stake_percent
-
-    # Plancher logique, mais jamais plus que la bankroll disponible
-    if mode == "RISKY VALUE":
-        stake = min(max(stake, 0.10), 0.50)
-    elif mode == "VALUE BET":
-        stake = min(max(stake, 0.20), 1.40)
-    elif mode == "SAFE PICK":
-        stake = min(max(stake, 0.30), 2.20)
-    elif mode == "MEGA VALUE":
-        stake = min(max(stake, 0.50), 3.00)
-
-    stake = min(stake, bankroll)
-
-    if stake <= 0:
-        return 0.0, 0.0, round(kelly, 4)
-
-    return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
+    stake = max(stake, 0.30 if mode == "RISKY VALUE" else 0.50)
+    return round(stake, 2), round(stake_percent, 4), round(kelly, 4)
 
 
 def score_exact_fields(poisson_probs):
@@ -886,40 +836,6 @@ def one_real_bet_per_match(df):
         out.loc[mask, "bet_mode"] = "WATCHLIST"; out.loc[mask, "decision"] = "NO BET"
     return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score"], errors="ignore")
 
-
-def cap_stakes_to_bankroll(df, bankroll):
-    if df.empty:
-        return df
-
-    out = df.copy()
-
-    if "suggested_stake" not in out.columns:
-        return out
-
-    out["suggested_stake"] = pd.to_numeric(out["suggested_stake"], errors="coerce").fillna(0)
-
-    if bankroll <= 0:
-        out["suggested_stake"] = 0
-        if "decision" in out.columns:
-            out["decision"] = "NO BET"
-        if "bet_mode" in out.columns:
-            out["bet_mode"] = out["bet_mode"].replace({
-                "MEGA VALUE": "WATCHLIST",
-                "SAFE PICK": "WATCHLIST",
-                "VALUE BET": "WATCHLIST",
-                "RISKY VALUE": "WATCHLIST",
-            })
-        return out
-
-    total = out["suggested_stake"].sum()
-
-    if total > bankroll:
-        factor = bankroll / total
-        out["suggested_stake"] = (out["suggested_stake"] * factor).round(2)
-
-    return out
-
-
 def finalise_predictions(rows):
     df = pd.DataFrame(rows)
     if df.empty:
@@ -944,9 +860,7 @@ def finalise_predictions(rows):
         ascending=[False, False, False, False],
     )
 
-    df = cap_stakes_to_bankroll(df, load_current_bankroll(BANKROLL_START))
     return df[OUTPUT_COLUMNS]
-
 
 
 def main():

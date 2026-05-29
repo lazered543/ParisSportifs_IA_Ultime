@@ -228,31 +228,32 @@ def market_xg_from_odds(book_probs):
 
 
 def blend_football_probabilities(book_probs, poisson_probs, elo_home_prob, quality):
-    """
-    Mélange stable bookmaker + Poisson + Elo.
-    Sécurité : ne jamais s'éloigner énormément du marché.
-    Exemple : Arsenal 75% contre PSG alors que le marché donne 48% => interdit.
-    """
     draw_anchor = book_probs.get("draw", poisson_probs["p_draw"])
     elo_draw = clamp((poisson_probs["p_draw"] + draw_anchor) / 2, 0.16, 0.34)
     non_draw = max(1 - elo_draw, 0.01)
-    elo_probs = {"home": non_draw * elo_home_prob, "away": non_draw * (1 - elo_home_prob), "draw": elo_draw}
+    elo_probs = {
+        "home": non_draw * elo_home_prob,
+        "away": non_draw * (1 - elo_home_prob),
+        "draw": elo_draw,
+    }
+
     raw = {}
     for key, poisson_key in [("home", "p_home"), ("draw", "p_draw"), ("away", "p_away")]:
-        b = book_probs.get(key, 1 / 3); p = poisson_probs.get(poisson_key, 1 / 3); e = elo_probs.get(key, 1 / 3)
-        raw[key] = 0.62 * b + 0.23 * p + 0.15 * e
+        b = book_probs.get(key, 1 / 3)
+        p = poisson_probs.get(poisson_key, 1 / 3)
+        e = elo_probs.get(key, 1 / 3)
+        raw[key] = 0.48 * b + 0.32 * p + 0.20 * e
+
     total = sum(raw.values())
-    if total <= 0: return {"home": 0.36, "draw": 0.28, "away": 0.36}
     raw = {key: value / total for key, value in raw.items()}
-    quality = clamp(quality, 0, 1)
-    max_gap = 0.08 + 0.06 * quality
-    calibrated = {}
-    for key in ["home", "draw", "away"]:
-        book = book_probs.get(key, raw[key])
-        calibrated[key] = clamp(raw[key], book - max_gap, book + max_gap)
+
+    model_weight = 0.52 + 0.20 * clamp(quality, 0, 1)
+    calibrated = {
+        key: book_probs.get(key, raw[key]) + (raw[key] - book_probs.get(key, raw[key])) * model_weight
+        for key in raw
+    }
     total = sum(calibrated.values())
-    calibrated = {key: value / total for key, value in calibrated.items()}
-    return {key: clamp(value, 0.03, 0.86) for key, value in calibrated.items()}
+    return {key: clamp(value / total, 0.03, 0.86) for key, value in calibrated.items()}
 
 
 def safety_score(probability, value, odds, data_quality, mode_hint=""):
@@ -317,7 +318,6 @@ def safety_level(mode, safety):
     return "6 - NO BET"
 
 
-
 def ia_badge(mode):
     badges = {
         "MEGA VALUE": "MEGA VALUE",
@@ -325,48 +325,16 @@ def ia_badge(mode):
         "VALUE BET": "VALUE BET",
         "RISKY VALUE": "RISKY VALUE",
         "WATCHLIST": "WATCHLIST",
-        "NO BET": "NO BET",
     }
-    return badges.get(str(mode), "NO BET")
+    return badges.get(mode, "NO BET")
 
 
-
-def load_current_bankroll(default=10.0):
-    path = Path("data/bankroll_state.csv")
-
-    if not path.exists():
-        return float(default)
-
-    try:
-        state = pd.read_csv(path)
-
-        if state.empty or "current_bankroll" not in state.columns:
-            return float(default)
-
-        bankroll = pd.to_numeric(state["current_bankroll"], errors="coerce").fillna(default).iloc[0]
-        bankroll = float(bankroll)
-
-        return max(bankroll, 0.0)
-
-    except Exception:
-        return float(default)
-
-
-def bankroll_management(probability, odds, mode, bankroll=None):
-    if bankroll is None:
-        bankroll = load_current_bankroll(BANKROLL_START)
-
-    bankroll = max(float(bankroll), 0.0)
-
-    if bankroll <= 0:
-        return 0.0, 0.0, 0.0
-
+def bankroll_management(probability, odds, mode, bankroll=BANKROLL_START):
     if mode not in RECOMMENDED_MODES or odds <= 1:
         return 0.0, 0.0, 0.0
 
     b = odds - 1
     edge = probability * odds - 1
-
     if edge <= 0:
         return 0.0, 0.0, 0.0
 
@@ -379,7 +347,6 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "VALUE BET": 0.18,
         "RISKY VALUE": 0.08,
     }
-
     caps = {
         "MEGA VALUE": 0.030,
         "SAFE PICK": 0.022,
@@ -387,29 +354,13 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "RISKY VALUE": 0.006,
     }
 
-    stake_percent = min(kelly * fractions.get(mode, 0), caps.get(mode, 0))
-
-    if stake_percent <= 0:
-        return 0.0, 0.0, round(kelly, 4)
+    stake_percent = min(kelly * fractions[mode], caps[mode])
+    if stake_percent < 0.0025:
+        return 0.0, round(stake_percent, 4), round(kelly, 4)
 
     stake = bankroll * stake_percent
-
-    # Plancher logique, mais jamais plus que la bankroll disponible
-    if mode == "RISKY VALUE":
-        stake = min(max(stake, 0.10), 0.50)
-    elif mode == "VALUE BET":
-        stake = min(max(stake, 0.20), 1.40)
-    elif mode == "SAFE PICK":
-        stake = min(max(stake, 0.30), 2.20)
-    elif mode == "MEGA VALUE":
-        stake = min(max(stake, 0.50), 3.00)
-
-    stake = min(stake, bankroll)
-
-    if stake <= 0:
-        return 0.0, 0.0, round(kelly, 4)
-
-    return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
+    stake = max(stake, 0.30 if mode == "RISKY VALUE" else 0.50)
+    return round(stake, 2), round(stake_percent, 4), round(kelly, 4)
 
 
 def score_exact_fields(poisson_probs):
@@ -860,66 +811,6 @@ def apply_learning_adjustment(predictions):
     return out
 
 
-
-def _clean_day(value):
-    dt = pd.to_datetime(value, utc=True, errors="coerce")
-    if pd.isna(dt): return str(value)[:10]
-    return dt.strftime("%Y-%m-%d")
-
-def one_real_bet_per_match(df):
-    if df.empty: return df
-    out = df.copy()
-    out["_match_key"] = out["sport"].astype(str).str.lower()+"|"+out["date"].apply(_clean_day).astype(str)+"|"+out["home_team"].astype(str).str.lower()+"|"+out["away_team"].astype(str).str.lower()
-    for col in ["suggested_stake", "value", "priority", "safety_score", "ai_probability"]:
-        if col not in out.columns: out[col] = 0
-        out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0)
-    out["_is_real_bet"] = out["bet_mode"].isin(RECOMMENDED_MODES) & (out["suggested_stake"] > 0) & (out["value"] > 0)
-    out["_keep_score"] = out["priority"]*10 + out["safety_score"]*6 + out["value"]*350 + out["suggested_stake"]*120 + out["ai_probability"]*40
-    for key, g in out.groupby("_match_key"):
-        real = g[g["_is_real_bet"]]
-        if real.empty:
-            out.loc[g.index, "suggested_stake"] = 0; continue
-        best_idx = real["_keep_score"].idxmax()
-        other = [idx for idx in g.index if idx != best_idx]
-        out.loc[other, "suggested_stake"] = 0
-        mask = out.index.isin(other) & out["bet_mode"].isin(RECOMMENDED_MODES)
-        out.loc[mask, "bet_mode"] = "WATCHLIST"; out.loc[mask, "decision"] = "NO BET"
-    return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score"], errors="ignore")
-
-
-def cap_stakes_to_bankroll(df, bankroll):
-    if df.empty:
-        return df
-
-    out = df.copy()
-
-    if "suggested_stake" not in out.columns:
-        return out
-
-    out["suggested_stake"] = pd.to_numeric(out["suggested_stake"], errors="coerce").fillna(0)
-
-    if bankroll <= 0:
-        out["suggested_stake"] = 0
-        if "decision" in out.columns:
-            out["decision"] = "NO BET"
-        if "bet_mode" in out.columns:
-            out["bet_mode"] = out["bet_mode"].replace({
-                "MEGA VALUE": "WATCHLIST",
-                "SAFE PICK": "WATCHLIST",
-                "VALUE BET": "WATCHLIST",
-                "RISKY VALUE": "WATCHLIST",
-            })
-        return out
-
-    total = out["suggested_stake"].sum()
-
-    if total > bankroll:
-        factor = bankroll / total
-        out["suggested_stake"] = (out["suggested_stake"] * factor).round(2)
-
-    return out
-
-
 def finalise_predictions(rows):
     df = pd.DataFrame(rows)
     if df.empty:
@@ -937,16 +828,12 @@ def finalise_predictions(rows):
     df["value"] = pd.to_numeric(df["value"], errors="coerce").fillna(0)
     df["ai_probability"] = pd.to_numeric(df["ai_probability"], errors="coerce").fillna(0)
 
-    df = one_real_bet_per_match(df)
-
     df = df.sort_values(
         ["priority", "suggested_stake", "value", "ai_probability"],
         ascending=[False, False, False, False],
     )
 
-    df = cap_stakes_to_bankroll(df, load_current_bankroll(BANKROLL_START))
     return df[OUTPUT_COLUMNS]
-
 
 
 def main():

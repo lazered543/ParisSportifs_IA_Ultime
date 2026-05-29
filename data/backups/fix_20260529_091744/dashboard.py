@@ -22,7 +22,6 @@ PRED_PATH = Path("data/predictions/predictions_today.csv")
 TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
 ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
-BANKROLL_STATE_PATH = Path("data/bankroll_state.csv")
 
 # ============================================================
 # STYLE / DESIGN
@@ -219,7 +218,6 @@ def load_csv(path):
 df = load_csv(PRED_PATH)
 tracking = load_csv(TRACK_PATH)
 archive = load_csv(ARCHIVE_PATH)
-bankroll_state = load_csv(BANKROLL_STATE_PATH)
 
 if df.empty:
     st.error("Aucune prédiction trouvée. Lance d'abord le pipeline.")
@@ -275,14 +273,6 @@ def prepare_data(data):
 
 df = prepare_data(df)
 
-if not bankroll_state.empty and "current_bankroll" in bankroll_state.columns:
-    current_bankroll_display = float(pd.to_numeric(bankroll_state["current_bankroll"], errors="coerce").fillna(10.0).iloc[0])
-    initial_bankroll_display = float(pd.to_numeric(bankroll_state.get("initial_bankroll", pd.Series([10.0])), errors="coerce").fillna(10.0).iloc[0])
-else:
-    current_bankroll_display = 10.0
-    initial_bankroll_display = 10.0
-
-
 # ============================================================
 # HELPERS AFFICHAGE
 # ============================================================
@@ -332,21 +322,24 @@ def parse_display_datetime(value):
         return pd.NaT
 
 
-def dashboard_window_hours(sport):
-    sport = str(sport).lower()
-    if "tennis" in sport: return 48
-    if "world_cup" in sport or "international" in sport: return 240
-    if "soccer" in sport or "football" in sport: return 168
-    return 72
-
 def upcoming_only(data, hours=72):
-    if data.empty or "date" not in data.columns: return data
-    out = data.copy(); out["_dt"] = out["date"].apply(parse_display_datetime)
+    if data.empty or "date" not in data.columns:
+        return data
+
+    out = data.copy()
+    out["_dt"] = out["date"].apply(parse_display_datetime)
+
     now = pd.Timestamp.utcnow()
-    out["_max_hours"] = out["sport"].apply(dashboard_window_hours)
-    out["_end"] = out["_max_hours"].apply(lambda h: now + pd.Timedelta(hours=int(h)))
-    out = out[out["_dt"].isna() | ((out["_dt"] >= now - pd.Timedelta(hours=4)) & (out["_dt"] <= out["_end"]))].copy()
-    return out.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
+
+    out = out[
+        out["_dt"].isna()
+        | (
+            (out["_dt"] >= now - pd.Timedelta(hours=4))
+            & (out["_dt"] <= now + pd.Timedelta(hours=hours))
+        )
+    ].copy()
+
+    return out.drop(columns=["_dt"], errors="ignore")
 
 
 def match_display_label(row):
@@ -489,28 +482,6 @@ def mode_class(mode):
         return "watch-card", "badge-yellow"
     return "pick-card", "badge-green"
 
-
-
-def ensure_match_key(data):
-    if data.empty: return data
-    out = data.copy()
-    if "match_key" not in out.columns:
-        out["match_key"] = out["sport"].astype(str).str.lower()+"|"+out["date"].astype(str).str[:10]+"|"+out["home_team"].astype(str).str.lower()+"|"+out["away_team"].astype(str).str.lower()
-    return out
-
-def best_card_rows(data):
-    if data.empty: return data
-    out = ensure_match_key(data).copy()
-    out["_stake"] = pd.to_numeric(out.get("suggested_stake", 0), errors="coerce").fillna(0)
-    out["_value"] = pd.to_numeric(out.get("value", 0), errors="coerce").fillna(-9)
-    out["_safety"] = pd.to_numeric(out.get("safety_score", 0), errors="coerce").fillna(0)
-    out["_prob"] = pd.to_numeric(out.get("ai_probability", 0), errors="coerce").fillna(0)
-    out["_priority"] = pd.to_numeric(out.get("priority", 0), errors="coerce").fillna(0)
-    out = out[out["bet_mode"].isin(RECOMMENDED_MODES) & (out["_stake"] > 0) & (out["_value"] > 0)].copy()
-    if out.empty: return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority"], errors="ignore")
-    out["_card_score"] = out["_priority"]*1000 + out["_stake"]*100 + out["_value"]*100 + out["_safety"] + out["_prob"]*10
-    out = out.sort_values("_card_score", ascending=False).drop_duplicates("match_key", keep="first")
-    return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority", "_card_score"], errors="ignore")
 
 def render_cards(data, limit=6):
     if data.empty:
@@ -733,7 +704,6 @@ recommended["suggested_stake"] = recommended.apply(
     rebalance_stake,
     axis=1
 )
-recommended = best_card_rows(recommended)
 risky_list = filtered_today[
     filtered_today["bet_mode"].astype(str).str.upper().str.contains("RISKY")
 ].copy()
@@ -756,7 +726,7 @@ st.markdown(
     <div class="hero-box">
         <div class="hero-title">IA Paris Sportifs Ultime</div>
         <div class="hero-sub">
-            Bankroll réelle 10€ • L’IA joue uniquement avec ses gains • Tennis • Football • ROI<br>
+            Dashboard propre • Tennis sets probables • Score exact football • Mises conseillées • ROI<br>
             Dernière actualisation : <b>{last_update}</b> | Alertes Telegram : <b>{telegram_count}</b>
         </div>
     </div>
@@ -770,10 +740,6 @@ c2.metric("Paris avec mise", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
 c5.metric("Mise max", f"{filtered_today['suggested_stake'].max() if not filtered_today.empty else 0:.2f}€")
-
-b1, b2 = st.columns(2)
-b1.metric("Bankroll IA", f"{current_bankroll_display:.2f}€")
-b2.metric("Capital de départ", f"{initial_bankroll_display:.2f}€")
 
 # ============================================================
 # TABS
@@ -812,8 +778,7 @@ with tabs[1]:
     st.subheader("⚽ Football — matchs proches")
     st.caption("Uniquement les matchs dans la fenêtre proche, triés par priorité puis sécurité IA.")
 
-    football_reco = best_card_rows(sort_recommendations(football_df))
-    football_analysis = sort_recommendations(football_df)
+    football_reco = sort_recommendations(football_df)
 
     if football_reco.empty:
         st.info("Aucun match football proche trouvé dans les données actuelles.")
@@ -821,18 +786,17 @@ with tabs[1]:
         render_cards(football_reco, limit=9)
 
         st.subheader("Analyse football")
-        score_df = football_score_table(football_analysis)
+        score_df = football_score_table(football_reco)
         st.dataframe(score_df, use_container_width=True, hide_index=True, height=420)
 
-        show_table(football_analysis, height=520)
+        show_table(football_reco, height=520)
 
 
 with tabs[2]:
     st.subheader("🎾 Tennis — matchs proches")
     st.caption("ATP/WTA proches uniquement. Les gros joueurs et gros tournois sont priorisés.")
 
-    tennis_reco = best_card_rows(sort_recommendations(tennis_df))
-    tennis_analysis = sort_recommendations(tennis_df)
+    tennis_reco = sort_recommendations(tennis_df)
 
     if tennis_reco.empty:
         st.info("Aucun match tennis proche trouvé dans les données actuelles.")
@@ -840,10 +804,10 @@ with tabs[2]:
         render_cards(tennis_reco, limit=9)
 
         st.subheader("Analyse tennis")
-        sets_df = tennis_sets_table(tennis_analysis)
+        sets_df = tennis_sets_table(tennis_reco)
         st.dataframe(sets_df, use_container_width=True, hide_index=True, height=420)
 
-        show_table(tennis_analysis, height=520)
+        show_table(tennis_reco, height=520)
 
 
 
@@ -856,9 +820,8 @@ with tabs[4]:
     st.subheader("Football — score exact plus lisible")
     st.caption("Le score exact reste un marché très difficile. Ici, le dashboard affiche les 3 scores les plus probables + signal piège bookmaker.")
 
-    football_reco = best_card_rows(sort_recommendations(football_df))
-    football_analysis = sort_recommendations(football_df)
-    score_df = football_score_table(football_analysis)
+    football_reco = sort_recommendations(football_df)
+    score_df = football_score_table(football_reco)
 
     if score_df.empty:
         st.info("Aucun match football disponible dans les données actuelles.")
@@ -876,9 +839,8 @@ with tabs[5]:
     st.subheader("Tennis — nombre de sets probable")
     st.caption("Affiche le score en sets le plus probable : 2-0 ou 2-1 selon les probabilités du pipeline.")
 
-    tennis_reco = best_card_rows(sort_recommendations(tennis_df))
-    tennis_analysis = sort_recommendations(tennis_df)
-    sets_df = tennis_sets_table(tennis_analysis)
+    tennis_reco = sort_recommendations(tennis_df)
+    sets_df = tennis_sets_table(tennis_reco)
 
     if sets_df.empty:
         st.info("Aucun match tennis disponible.")
