@@ -82,6 +82,7 @@ def main():
     for col in ["priority","safety_score","value","stake","suggested_stake","ai_probability"]:
         if col not in final.columns: final[col] = 0
         final[col] = pd.to_numeric(final[col], errors="coerce").fillna(0)
+    final["suggested_stake"] = final["stake"].where(final["stake"] > 0, final["suggested_stake"])
     final["_resolved_rank"] = final.get("result", "PENDING").astype(str).str.upper().isin(["WIN","LOSS","VOID"]).astype(int)
     final["_score_keep"] = final["_resolved_rank"]*100000 + final["priority"]*10 + final["safety_score"]*6 + final["value"]*350 + final["stake"].fillna(final["suggested_stake"])*120 + final["ai_probability"]*40
     final = final.sort_values(["_match_key","_score_keep"], ascending=[True,False]).drop_duplicates("_match_key", keep="first")

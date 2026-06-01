@@ -26,6 +26,7 @@ TENNIS_HISTORY_PATH = Path("data/processed/tennis_history_all.csv")
 PREDICTIONS_PATH = Path("data/predictions/predictions_today.csv")
 VALUE_BETS_PATH = Path("data/predictions/value_bets_today.csv")
 LEARNING_PROFILE_PATH = Path("data/learning/ai_learning_profile.csv")
+LEARNING_SUMMARY_PATH = Path("data/learning/ai_learning_summary.csv")
 
 OUTPUT_COLUMNS = [
     "last_update",
@@ -952,47 +953,196 @@ def process_tennis_match(row, players):
     return rows
 
 
-def apply_learning_adjustment(predictions):
-    if not LEARNING_PROFILE_PATH.exists() or predictions.empty:
-        return predictions
+def normalise_label(value):
+    text = str(value or "").strip().lower()
+    text = unicodedata.normalize("NFD", text)
+    text = text.encode("ascii", "ignore").decode("utf-8")
+    text = re.sub(r"[^a-z0-9 ]", " ", text)
+    return " ".join(text.split())
+
+
+def prediction_mode_group(mode):
+    text = str(mode or "").upper()
+    if "MEGA" in text:
+        return "ELITE"
+    if "SAFE" in text:
+        return "SAFE"
+    if "VALUE" in text:
+        return "MEDIUM"
+    if "RISKY" in text:
+        return "RISKY"
+    return "OTHER"
+
+
+def learning_segment_mask(predictions, dimension, segment):
+    dim = normalise_label(dimension)
+    target = str(segment or "")
+
+    if dim == "sport":
+        return predictions["category"].astype(str).str.lower() == target.lower()
+    if dim == "competition":
+        return predictions["sport"].astype(str).str.lower() == target.lower()
+    if dim in {"marche", "market"}:
+        return predictions["market"].astype(str).str.lower() == target.lower()
+    if dim == "mode de pari":
+        return predictions["bet_mode"].apply(prediction_mode_group).astype(str) == target
+
+    return pd.Series(False, index=predictions.index)
+
+
+def learning_multiplier(segment):
+    recommendation = str(segment.get("ai_recommendation", "")).upper()
+    if recommendation not in {"BOOST", "REDUCE"}:
+        return 1.0, ""
+
+    bets = safe_float(segment.get("bets", 0))
+    if bets < 3:
+        return 1.0, ""
+
+    roi = safe_float(segment.get("roi", 0))
+    winrate = safe_float(segment.get("winrate", 0.5))
+    evidence = clamp(bets / 20, 0.25, 1.0)
+
+    if recommendation == "BOOST":
+        strength = clamp(0.015 + max(roi, 0) * 0.12 + max(winrate - 0.55, 0) * 0.10, 0.015, 0.07)
+        return 1 + strength * evidence, "BOOST"
+
+    strength = clamp(0.025 + max(-roi, 0) * 0.14 + max(0.50 - winrate, 0) * 0.12, 0.025, 0.10)
+    return 1 - strength * evidence, "REDUCE"
+
+
+def append_learning_tag(series, tag):
+    def add_tag(value):
+        current = str(value or "").strip()
+        if current in {"", "nan", "None", "BASELINE"}:
+            return tag
+        if tag in current.split("|"):
+            return current
+        return f"{current}|{tag}"
+
+    return series.apply(add_tag)
+
+
+def apply_global_learning_guard(predictions):
+    if not LEARNING_SUMMARY_PATH.exists() or predictions.empty:
+        return predictions, False
 
     try:
-        profile = pd.read_csv(LEARNING_PROFILE_PATH)
+        summary = pd.read_csv(LEARNING_SUMMARY_PATH)
     except Exception:
-        return predictions
+        return predictions, False
 
-    if profile.empty or "ai_recommendation" not in profile.columns:
+    if summary.empty:
+        return predictions, False
+
+    row = summary.iloc[0]
+    finished = safe_float(row.get("finished_bets", 0))
+    if finished < 15:
+        return predictions, False
+
+    roi = safe_float(row.get("roi", 0))
+    winrate = safe_float(row.get("winrate", 0.5))
+    multiplier = 1.0
+    tag = ""
+
+    if roi < -0.05 or winrate < 0.48:
+        multiplier = 0.96
+        tag = "GLOBAL_REDUCE"
+    elif roi > 0.08 and winrate > 0.55:
+        multiplier = 1.015
+        tag = "GLOBAL_BOOST"
+
+    if multiplier == 1.0:
+        return predictions, False
+
+    out = predictions.copy()
+    out["_learning_multiplier"] *= multiplier
+    out["learning_adjustment"] = append_learning_tag(out["learning_adjustment"], tag)
+    return out, True
+
+
+def refresh_predictions_after_learning(predictions):
+    out = predictions.copy()
+    bankroll = load_current_bankroll(BANKROLL_START)
+
+    for idx, row in out.iterrows():
+        probability = safe_float(row.get("ai_probability"))
+        odds = safe_float(row.get("bookmaker_odds"))
+        value = probability * odds - 1 if odds > 0 else -1
+
+        quality = safe_float(row.get("football_data_quality"), 0)
+        if quality <= 0:
+            tennis_score = safe_float(row.get("tennis_engine_score"), 70)
+            quality = clamp(tennis_score / 100, 0.45, 0.95)
+
+        market = row.get("market", "")
+        category = row.get("category", "")
+        safety = safety_score(probability, value, odds, quality, market)
+        mode = select_bet_mode(probability, value, odds, safety, category)
+        stake, stake_percent, kelly = bankroll_management(probability, odds, mode, bankroll=bankroll)
+
+        if stake <= 0 and mode in RECOMMENDED_MODES:
+            mode = "WATCHLIST"
+            stake, stake_percent, kelly = 0.0, 0.0, 0.0
+
+        out.at[idx, "value"] = round(value, 4)
+        out.at[idx, "confidence"] = confidence_label(probability)
+        out.at[idx, "ia_badge"] = ia_badge(mode)
+        out.at[idx, "reliable_only"] = mode in RECOMMENDED_MODES
+        out.at[idx, "safety_score"] = safety
+        out.at[idx, "safety_level"] = safety_level(mode, safety)
+        out.at[idx, "decision"] = "VALUE BET" if mode in RECOMMENDED_MODES and stake > 0 else "NO BET"
+        out.at[idx, "bankroll"] = round(bankroll, 2)
+        out.at[idx, "stake_percent"] = stake_percent
+        out.at[idx, "kelly_fraction"] = kelly
+        out.at[idx, "suggested_stake"] = stake
+        out.at[idx, "bet_mode"] = mode
+        out.at[idx, "priority"] = round(safety * 1.48 + max(value, 0) * 430 + probability * 70, 2)
+
+    return out
+
+
+def apply_learning_adjustment(predictions):
+    if predictions.empty:
         return predictions
 
     out = predictions.copy()
-    for _, segment in profile.iterrows():
-        recommendation = str(segment.get("ai_recommendation", "")).upper()
-        dimension = str(segment.get("dimension", ""))
-        value = str(segment.get("segment", ""))
-        if recommendation not in {"BOOST", "REDUCE"}:
-            continue
+    out["_learning_multiplier"] = 1.0
 
-        if dimension == "Sport":
-            mask = out["category"].astype(str) == value
-        elif dimension == "Competition":
-            mask = out["sport"].astype(str) == value
-        elif dimension == "Marche":
-            mask = out["market"].astype(str) == value
-        else:
-            continue
+    learned = False
 
-        multiplier = 1.025 if recommendation == "BOOST" else 0.975
-        out.loc[mask, "ai_probability"] = (
-            pd.to_numeric(out.loc[mask, "ai_probability"], errors="coerce").fillna(0) * multiplier
-        ).clip(0.02, 0.90)
-        out.loc[mask, "learning_adjustment"] = recommendation
+    if LEARNING_PROFILE_PATH.exists():
+        try:
+            profile = pd.read_csv(LEARNING_PROFILE_PATH)
+        except Exception:
+            profile = pd.DataFrame()
 
-    out["value"] = (
+        if not profile.empty and "ai_recommendation" in profile.columns:
+            for _, segment in profile.iterrows():
+                multiplier, tag = learning_multiplier(segment)
+                if multiplier == 1.0:
+                    continue
+
+                mask = learning_segment_mask(out, segment.get("dimension", ""), segment.get("segment", ""))
+                if not mask.any():
+                    continue
+
+                out.loc[mask, "_learning_multiplier"] *= multiplier
+                out.loc[mask, "learning_adjustment"] = append_learning_tag(out.loc[mask, "learning_adjustment"], tag)
+                learned = True
+
+    out, guarded = apply_global_learning_guard(out)
+    learned = learned or guarded
+
+    if not learned:
+        return out.drop(columns=["_learning_multiplier"], errors="ignore")
+
+    out["ai_probability"] = (
         pd.to_numeric(out["ai_probability"], errors="coerce").fillna(0)
-        * pd.to_numeric(out["bookmaker_odds"], errors="coerce").fillna(0)
-        - 1
-    ).round(4)
-    return out
+        * pd.to_numeric(out["_learning_multiplier"], errors="coerce").fillna(1)
+    ).clip(0.02, 0.90)
+    out = refresh_predictions_after_learning(out)
+    return out.drop(columns=["_learning_multiplier"], errors="ignore")
 
 
 
@@ -1032,7 +1182,7 @@ def one_real_bet_per_match(df, max_bets=10):
         out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
         & (out["suggested_stake"] > 0)
         & (out["value"] > 0)
-        & (out["ai_probability"] >= 0.60)
+        & (out["ai_probability"] >= 0.58)
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
     )
@@ -1064,7 +1214,7 @@ def one_real_bet_per_match(df, max_bets=10):
         out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
         & (out["suggested_stake"] > 0)
         & (out["value"] > 0)
-        & (out["ai_probability"] >= 0.60)
+        & (out["ai_probability"] >= 0.58)
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
     ].sort_values("_keep_score", ascending=False)
@@ -1138,7 +1288,7 @@ def cap_stakes_to_bankroll(df, bankroll):
 def force_daily_best_bet(df):
     """
     Si aucune mise ne sort, on force le meilleur spot VALABLE :
-    - proba >= 60%
+    - proba >= 58%
     - cote >= 1.10
     - value positive
     Ça évite un dashboard vide, sans jouer n'importe quoi.
@@ -1161,7 +1311,7 @@ def force_daily_best_bet(df):
         return out
 
     candidates = out[
-        (out["ai_probability"] >= 0.60)
+        (out["ai_probability"] >= 0.58)
         & (out["bookmaker_odds"] >= 1.10)
         & (out["value"] > 0)
     ].copy()
@@ -1181,9 +1331,9 @@ def force_daily_best_bet(df):
     val = float(out.loc[best_idx, "value"])
     odds = float(out.loc[best_idx, "bookmaker_odds"])
 
-    if prob >= 0.72 and val >= 0.04 and odds <= 2.20:
+    if prob >= 0.70 and val >= 0.03 and odds <= 2.20:
         mode = "MEGA VALUE"
-    elif prob >= 0.65 and val >= 0.02 and odds <= 1.90:
+    elif prob >= 0.63 and val >= 0.01 and odds <= 1.90:
         mode = "SAFE PICK"
     else:
         mode = "VALUE BET"
