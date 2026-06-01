@@ -21,7 +21,7 @@ def _is_in_window(sport, commence_time):
     if pd.isna(dt): return True
     now = pd.Timestamp.now(tz="UTC")
     sport_l = str(sport).lower()
-    days = 2 if "tennis" in sport_l else 10 if ("world_cup" in sport_l or "international" in sport_l) else 7 if ("soccer" in sport_l or "football" in sport_l) else 3
+    days = 3 if "tennis" in sport_l else 10 if ("world_cup" in sport_l or "international" in sport_l) else 7 if ("soccer" in sport_l or "football" in sport_l) else 3
     return (dt >= now - pd.Timedelta(hours=6)) and (dt <= now + pd.Timedelta(days=days))
 
 def get_available_sports():
