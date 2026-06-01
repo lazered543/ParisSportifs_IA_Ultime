@@ -280,7 +280,9 @@ def safety_score(probability, value, odds, data_quality, mode_hint=""):
 def select_bet_mode(probability, value, odds, safety, category):
     """
     Mode équilibré demandé :
-    - aucun pari joué sous 60%
+    - VALUE BET dès 58% avec value >= 3%
+    - SAFE PICK dès 63% avec value >= 1%
+    - MEGA VALUE dès 70% avec value >= 3%
     - aucune cote jouée sous 1.10
     - pas de RISKY VALUE en vraie mise
     - l'IA garde quand même une watchlist pour l'analyse
@@ -294,20 +296,20 @@ def select_bet_mode(probability, value, odds, safety, category):
         return "WATCHLIST"
 
     if odds <= 1 or value <= 0:
-        if probability >= 0.60 and odds >= 1.10:
+        if probability >= 0.58 and odds >= 1.10:
             return "WATCHLIST"
         return "NO BET"
 
-    if probability < 0.60:
+    if probability < 0.58:
         return "WATCHLIST" if value > 0 else "NO BET"
 
-    if probability >= 0.72 and value >= 0.04 and 1.10 <= odds <= 2.20:
+    if probability >= 0.70 and value >= 0.03 and 1.10 <= odds <= 2.20:
         return "MEGA VALUE"
 
-    if probability >= 0.65 and value >= 0.02 and 1.10 <= odds <= 1.90:
+    if probability >= 0.63 and value >= 0.01 and 1.10 <= odds <= 1.90:
         return "SAFE PICK"
 
-    if probability >= 0.60 and value >= 0.05 and 1.10 <= odds <= 3.00:
+    if probability >= 0.58 and value >= 0.03 and 1.10 <= odds <= 3.00:
         return "VALUE BET"
 
     return "WATCHLIST"
@@ -419,9 +421,9 @@ def bankroll_management(probability, odds, mode, bankroll=None):
 
     # Planchers qui évoluent aussi, mais doucement.
     floors = {
-        "MEGA VALUE": min(3.00 * growth_factor, 8.00),
-        "SAFE PICK": min(2.00 * growth_factor, 5.00),
-        "VALUE BET": min(1.00 * growth_factor, 3.00),
+        "MEGA VALUE": min(1.50 * growth_factor, 8.00),
+        "SAFE PICK": min(1.00 * growth_factor, 5.00),
+        "VALUE BET": min(0.50 * growth_factor, 3.00),
     }
 
     stake_percent = min(kelly * fractions.get(mode, 0), caps_pct.get(mode, 0))
@@ -1085,8 +1087,7 @@ def one_real_bet_per_match(df, max_bets=10):
 def cap_stakes_to_bankroll(df, bankroll):
     """
     Protection de balance :
-    - petit capital : max 40% exposé / jour
-    - si la balance monte : jusqu'à 55% max / jour
+    - max 30% exposé / jour
     - jamais plus de 25% sur un seul pari
     """
     if df.empty:
@@ -1112,8 +1113,7 @@ def cap_stakes_to_bankroll(df, bankroll):
             })
         return out
 
-    growth = clamp(bankroll / BANKROLL_START, 1.0, 6.0)
-    max_daily_exposure = bankroll * clamp(0.40 + (growth - 1) * 0.03, 0.40, 0.55)
+    max_daily_exposure = bankroll * 0.30
     max_single_bet = bankroll * 0.25
 
     out["suggested_stake"] = out["suggested_stake"].clip(lower=0, upper=max_single_bet)

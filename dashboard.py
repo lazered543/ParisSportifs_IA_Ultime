@@ -298,7 +298,7 @@ if next_goal_display > previous_goal_display:
 progress_display = max(0.0, min(100.0, progress_display))
 
 max_single_bet_display = current_bankroll_display * 0.25
-max_daily_exposure_display = current_bankroll_display * min(0.55, max(0.40, 0.40 + (current_bankroll_display / max(initial_bankroll_display, 0.01) - 1) * 0.03))
+max_daily_exposure_display = current_bankroll_display * 0.30
 
 
 # ============================================================
