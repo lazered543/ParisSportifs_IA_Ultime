@@ -487,7 +487,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
 
 
-def score_exact_fields(poisson_probs):
+def score_exact_fields(poisson_probs, confidence_factor=1.0):
     top_scores = poisson_probs.get("top_scores", [])
     fields = {}
     for idx in range(3):
@@ -495,8 +495,31 @@ def score_exact_fields(poisson_probs):
         if idx < len(top_scores):
             score, probability = top_scores[idx]
         fields[f"score_exact_{idx + 1}"] = score
-        fields[f"score_exact_{idx + 1}_proba"] = round(probability * 100, 2)
+        fields[f"score_exact_{idx + 1}_proba"] = round(probability * confidence_factor * 100, 2)
     return fields
+
+
+def score_exact_confidence_factor(odds_source, quality, poisson_probs):
+    top_scores = poisson_probs.get("top_scores", [])
+    quality = clamp(safe_float(quality), 0, 1)
+    if not top_scores:
+        return 0.0
+
+    first = safe_float(top_scores[0][1])
+    second = safe_float(top_scores[1][1]) if len(top_scores) > 1 else 0
+    separation = clamp((first - second) * 8, 0, 0.10)
+
+    if not is_live_odds_source(odds_source):
+        return clamp(0.52 + quality * 0.08 + separation, 0.50, 0.64)
+
+    return clamp(0.68 + quality * 0.12 + separation, 0.66, 0.84)
+
+
+def scale_top_scores(top_scores, confidence_factor):
+    return [
+        (score, round(safe_float(probability) * confidence_factor, 4))
+        for score, probability in top_scores
+    ]
 
 
 def football_trap_signal(market, probability, book_prob, value, odds, draw_probability):
@@ -653,8 +676,9 @@ def process_football_match(row, strengths, ratings):
     if total_three_way > 0:
         ai_probs = {k: v / total_three_way for k, v in ai_probs.items()}
 
-    score_fields = score_exact_fields(poisson_probs)
-    top_scores = [(score, round(prob, 4)) for score, prob in poisson_probs.get("top_scores", [])]
+    score_confidence = score_exact_confidence_factor(odds_source, quality, poisson_probs)
+    score_fields = score_exact_fields(poisson_probs, score_confidence)
+    top_scores = scale_top_scores(poisson_probs.get("top_scores", []), score_confidence)
 
     rows = []
     for key, market, selection, bookmaker_odds in [
@@ -725,7 +749,13 @@ def process_football_match(row, strengths, ratings):
             "away_xg": round(away_xg, 3),
             "draw_probability": round(poisson_probs["p_draw"], 4),
             "draw_hunter": "DRAW POSSIBLE" if poisson_probs["p_draw"] >= 0.285 else "NO DRAW SIGNAL",
-            "score_exact_alert": "TOP SCORE OK" if score_fields["score_exact_1"] else "",
+            "score_exact_alert": (
+                "SCORE INDICATIF - SOURCE FALLBACK"
+                if not is_live_odds_source(odds_source)
+                else "SCORE CALIBRE - PROBA PRUDENTE"
+                if score_fields["score_exact_1"]
+                else ""
+            ),
             "scorer_prediction": "A recalculer via player_scorers",
             "over_25": round(poisson_probs["over_25"], 4),
             "under_25": round(poisson_probs["under_25"], 4),

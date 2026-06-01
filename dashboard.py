@@ -598,6 +598,13 @@ def parse_top_scores(value):
 
 
 def football_score_table(data):
+    if data.empty:
+        return pd.DataFrame()
+
+    data = ensure_match_key(data).copy()
+    data["_priority"] = pd.to_numeric(data.get("priority", 0), errors="coerce").fillna(0)
+    data = data.sort_values("_priority", ascending=False).drop_duplicates("match_key", keep="first")
+
     rows = []
     for _, row in data.iterrows():
         top_scores = parse_top_scores(row.get("top_scores", ""))
@@ -625,6 +632,8 @@ def football_score_table(data):
             "proba score 3": round(third[1], 2),
             "draw signal": row.get("draw_hunter", ""),
             "piège bookmaker": row.get("football_trap_signal", ""),
+            "source": row.get("odds_source", ""),
+            "alerte": row.get("score_exact_alert", ""),
             "mise": row.get("suggested_stake", 0),
         })
 
