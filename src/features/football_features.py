@@ -29,16 +29,26 @@ def build_team_strength(history_df):
 
     for team, matches in team_matches.groupby("team", sort=False):
         recent = matches.tail(8)
+        home_recent = matches[matches["is_home"] == 1].tail(6)
+        away_recent = matches[matches["is_home"] == 0].tail(6)
 
         avg_goals_scored = recent["goals_for"].mean()
         avg_goals_conceded = recent["goals_against"].mean()
         form_points = recent["points"].sum() / max(len(recent) * 3, 1)
+        home_form = home_recent["points"].sum() / max(len(home_recent) * 3, 1) if not home_recent.empty else form_points
+        away_form = away_recent["points"].sum() / max(len(away_recent) * 3, 1) if not away_recent.empty else form_points
 
         teams.append({
             "team": team,
             "attack": round(max(0.2, avg_goals_scored), 2),
             "defense": round(max(0.2, avg_goals_conceded), 2),
             "form": round(form_points, 2),
+            "home_attack": round(max(0.2, home_recent["goals_for"].mean()), 2) if not home_recent.empty else round(max(0.2, avg_goals_scored), 2),
+            "away_attack": round(max(0.2, away_recent["goals_for"].mean()), 2) if not away_recent.empty else round(max(0.2, avg_goals_scored), 2),
+            "home_defense": round(max(0.2, home_recent["goals_against"].mean()), 2) if not home_recent.empty else round(max(0.2, avg_goals_conceded), 2),
+            "away_defense": round(max(0.2, away_recent["goals_against"].mean()), 2) if not away_recent.empty else round(max(0.2, avg_goals_conceded), 2),
+            "home_form": round(home_form, 2),
+            "away_form": round(away_form, 2),
             "matches": int(len(matches)),
         })
 
@@ -62,6 +72,9 @@ def estimate_xg(home_team, away_team, strengths):
         home_attack = home_data.iloc[0]["attack"]
         home_defense = home_data.iloc[0]["defense"]
         home_form = home_data.iloc[0]["form"]
+        home_attack = 0.60 * home_attack + 0.40 * home_data.iloc[0].get("home_attack", home_attack)
+        home_defense = 0.60 * home_defense + 0.40 * home_data.iloc[0].get("home_defense", home_defense)
+        home_form = 0.60 * home_form + 0.40 * home_data.iloc[0].get("home_form", home_form)
 
     if away_data.empty:
         away_attack = 1.15
@@ -71,6 +84,9 @@ def estimate_xg(home_team, away_team, strengths):
         away_attack = away_data.iloc[0]["attack"]
         away_defense = away_data.iloc[0]["defense"]
         away_form = away_data.iloc[0]["form"]
+        away_attack = 0.60 * away_attack + 0.40 * away_data.iloc[0].get("away_attack", away_attack)
+        away_defense = 0.60 * away_defense + 0.40 * away_data.iloc[0].get("away_defense", away_defense)
+        away_form = 0.60 * away_form + 0.40 * away_data.iloc[0].get("away_form", away_form)
 
     form_gap = home_form - away_form
 

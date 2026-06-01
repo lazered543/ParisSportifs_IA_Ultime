@@ -23,6 +23,8 @@ TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
 ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
 BANKROLL_STATE_PATH = Path("data/bankroll_state.csv")
+BACKTEST_SUMMARY_PATH = Path("data/learning/backtest_summary.csv")
+CALIBRATION_PATH = Path("data/learning/probability_calibration.csv")
 
 # ============================================================
 # STYLE / DESIGN
@@ -220,6 +222,8 @@ df = load_csv(PRED_PATH)
 tracking = load_csv(TRACK_PATH)
 archive = load_csv(ARCHIVE_PATH)
 bankroll_state = load_csv(BANKROLL_STATE_PATH)
+backtest_summary = load_csv(BACKTEST_SUMMARY_PATH)
+calibration = load_csv(CALIBRATION_PATH)
 
 if df.empty:
     st.error("Aucune prédiction trouvée. Lance d'abord le pipeline.")
@@ -378,6 +382,7 @@ def clean_table(data, compact=True):
     core_cols = [
         "date",
         "sport",
+        "odds_source",
         "category",
         "home_team",
         "away_team",
@@ -399,6 +404,9 @@ def clean_table(data, compact=True):
         "tennis_engine_score",
         "tennis_edge",
         "football_trap_signal",
+        "learning_adjustment",
+        "calibration_adjustment",
+        "decision_reason",
         "confidence",
         "ia_badge",
         "decision",
@@ -544,6 +552,8 @@ def render_cards(data, limit=6):
             stake = float(row.get("suggested_stake", 0) or 0)
             odds = row.get("bookmaker_odds", "")
             mode = row.get("bet_mode", "")
+            source = row.get("odds_source", "")
+            reason = row.get("decision_reason", "")
             card_class, badge_class = mode_class(mode)
 
             st.markdown(
@@ -555,10 +565,11 @@ def render_cards(data, limit=6):
                     <span class="small-muted">{row.get("sport", "")}</span><br><br>
                     Proba IA : <b>{proba:.1f}%</b><br>
                     Cote : <b>{odds}</b><br>
+                    Source : <b>{source}</b><br>
                     Value : <b>{value:.1f}%</b><br>
                     Mise conseillée : <b>{stake:.2f}€</b><br>
                     <span class="small-muted">
-                    Balance évolutive : les mises sûres augmentent quand l'IA gagne.
+                    {reason}
                     </span><br>
                     Score / Set probable : <b>{row.get("score_exact_1", "")}</b>
                 </div>
@@ -785,6 +796,7 @@ tabs = st.tabs([
     "Tennis sets",
     "Mises / bankroll",
     "Résultats / ROI",
+    "Backtest IA",
     "Toutes les lignes",
 ])
 
@@ -902,6 +914,7 @@ with tabs[6]:
     stake_cols = [
         "date",
         "sport",
+        "odds_source",
         "home_team",
         "away_team",
         "selection",
@@ -914,6 +927,8 @@ with tabs[6]:
         "kelly_fraction",
         "bankroll",
         "safety_score",
+        "calibration_adjustment",
+        "decision_reason",
     ]
     stake_cols = [c for c in stake_cols if c in recommended.columns]
 
@@ -1046,5 +1061,21 @@ with tabs[7]:
             show_table(losses.sort_values("profit", ascending=True), height=460, compact=False)
 
 with tabs[8]:
+    st.subheader("Backtest, calibration et auto-apprentissage")
+
+    if backtest_summary.empty and calibration.empty:
+        st.info("Aucun backtest disponible pour le moment. Lance le pipeline automatique pour générer la calibration.")
+    else:
+        if not backtest_summary.empty:
+            bt = backtest_summary.copy()
+            st.markdown("**Segments testés**")
+            show_table(bt.sort_values("bets", ascending=False) if "bets" in bt.columns else bt, height=360, compact=False)
+
+        if not calibration.empty:
+            cal = calibration.copy()
+            st.markdown("**Calibration des probabilités**")
+            show_table(cal.sort_values("bets", ascending=False) if "bets" in cal.columns else cal, height=420, compact=False)
+
+with tabs[9]:
     st.subheader("Toutes les lignes analysées")
     show_table(sort_recommendations(filtered_today), height=720)

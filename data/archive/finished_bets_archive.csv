@@ -1,1 +1,1 @@
-resolved_at,date,sport,category,home_team,away_team,market,selection,bet_mode,ai_probability,bookmaker_odds,value,stake,result,profit,final_winner,final_score_home,final_score_away,status_detail
+resolved_at,date,sport,category,home_team,away_team,market,selection,odds_source,bet_mode,ai_probability,bookmaker_odds,value,stake,result,profit,final_winner,final_score_home,final_score_away,status_detail

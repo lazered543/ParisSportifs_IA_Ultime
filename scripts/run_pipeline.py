@@ -27,12 +27,14 @@ PREDICTIONS_PATH = Path("data/predictions/predictions_today.csv")
 VALUE_BETS_PATH = Path("data/predictions/value_bets_today.csv")
 LEARNING_PROFILE_PATH = Path("data/learning/ai_learning_profile.csv")
 LEARNING_SUMMARY_PATH = Path("data/learning/ai_learning_summary.csv")
+CALIBRATION_PATH = Path("data/learning/probability_calibration.csv")
 
 OUTPUT_COLUMNS = [
     "last_update",
     "bet_mode",
     "date",
     "sport",
+    "odds_source",
     "category",
     "home_team",
     "away_team",
@@ -49,6 +51,8 @@ OUTPUT_COLUMNS = [
     "safety_level",
     "football_trap_signal",
     "learning_adjustment",
+    "calibration_adjustment",
+    "decision_reason",
     "home_recent_form",
     "away_recent_form",
     "home_recent_attack",
@@ -464,11 +468,61 @@ def football_trap_signal(market, probability, book_prob, value, odds, draw_proba
     return "OK"
 
 
+def is_live_odds_source(source):
+    source = str(source or "").strip().lower()
+    return source not in {"offline-fallback", "fallback", "manual-fallback", ""}
+
+
+def source_label(source):
+    source = str(source or "").strip()
+    return source if source else "unknown"
+
+
+def probability_bucket(probability):
+    probability = safe_float(probability)
+    lower = int(clamp(math.floor(probability * 100 / 5) * 5, 0, 95))
+    upper = lower + 5
+    return f"{lower:02d}-{upper:02d}"
+
+
+def build_decision_reason(row):
+    source = source_label(row.get("odds_source", ""))
+    probability = safe_float(row.get("ai_probability"))
+    value = safe_float(row.get("value"))
+    odds = safe_float(row.get("bookmaker_odds"))
+    mode = str(row.get("bet_mode", ""))
+    learning = str(row.get("learning_adjustment", "BASELINE"))
+    calibration = str(row.get("calibration_adjustment", "BASELINE"))
+    trap = str(row.get("football_trap_signal", ""))
+
+    reasons = []
+    if not is_live_odds_source(source):
+        reasons.append("Analyse seulement: cote fallback non live")
+    if odds < 1.10:
+        reasons.append("Cote trop basse")
+    if value <= 0:
+        reasons.append("Value negative ou nulle")
+    else:
+        reasons.append(f"Value positive {value * 100:.1f}%")
+    reasons.append(f"Proba IA {probability * 100:.1f}%")
+    if mode in RECOMMENDED_MODES:
+        reasons.append(f"Mode {mode}")
+    if trap and trap not in {"", "OK"}:
+        reasons.append(trap)
+    if learning not in {"", "BASELINE", "nan"}:
+        reasons.append(f"Learning {learning}")
+    if calibration not in {"", "BASELINE", "nan"}:
+        reasons.append(f"Calibration {calibration}")
+    reasons.append(f"Source {source}")
+    return " | ".join(reasons)
+
+
 def process_football_match(row, strengths, ratings):
     home = row.get("home_team", "")
     away = row.get("away_team", "")
     sport = row.get("sport", "")
     date = row.get("commence_time", "")
+    odds_source = source_label(row.get("source", "unknown"))
 
     odds = {
         "home": safe_float(row.get("odds_home")),
@@ -488,6 +542,11 @@ def process_football_match(row, strengths, ratings):
 
     home_xg = model_home_xg * quality + market_home_xg * (1 - quality)
     away_xg = model_away_xg * quality + market_away_xg * (1 - quality)
+
+    home_home_form = team_metric(strengths, home, "home_form", team_metric(strengths, home, "form", 0.50))
+    away_away_form = team_metric(strengths, away, "away_form", team_metric(strengths, away, "form", 0.50))
+    home_context_edge = clamp((home_home_form - away_away_form) * 0.045, -0.025, 0.025)
+
     poisson_probs = football_poisson_probs(home_xg, away_xg, max_goals=8)
 
     elo = get_match_elo(home, away, ratings)
@@ -497,6 +556,12 @@ def process_football_match(row, strengths, ratings):
         elo_home_prob = 1 / (1 + 10 ** (-safe_float(elo["elo_diff"]) / 400))
 
     ai_probs = blend_football_probabilities(book_probs, poisson_probs, elo_home_prob, quality)
+    ai_probs["home"] = clamp(ai_probs.get("home", 0) + home_context_edge, 0.02, 0.90)
+    ai_probs["away"] = clamp(ai_probs.get("away", 0) - home_context_edge, 0.02, 0.90)
+    total_three_way = ai_probs.get("home", 0) + ai_probs.get("draw", 0) + ai_probs.get("away", 0)
+    if total_three_way > 0:
+        ai_probs = {k: v / total_three_way for k, v in ai_probs.items()}
+
     score_fields = score_exact_fields(poisson_probs)
     top_scores = [(score, round(prob, 4)) for score, prob in poisson_probs.get("top_scores", [])]
 
@@ -515,6 +580,8 @@ def process_football_match(row, strengths, ratings):
         value = probability * bookmaker_odds - 1
         safety = safety_score(probability, value, bookmaker_odds, quality, market)
         mode = select_bet_mode(probability, value, bookmaker_odds, safety, "football")
+        if not is_live_odds_source(odds_source):
+            mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
@@ -525,6 +592,7 @@ def process_football_match(row, strengths, ratings):
         rows.append({
             "date": date,
             "sport": sport,
+            "odds_source": odds_source,
             "category": "football",
             "home_team": home,
             "away_team": away,
@@ -541,6 +609,8 @@ def process_football_match(row, strengths, ratings):
             "safety_level": safety_level(mode, safety),
             "football_trap_signal": football_trap_signal(market, probability, book_probs.get(key, implied), value, bookmaker_odds, poisson_probs["p_draw"]),
             "learning_adjustment": "BASELINE",
+            "calibration_adjustment": "BASELINE",
+            "decision_reason": "",
             "home_recent_form": round(team_metric(strengths, home, "form", 0.50), 3),
             "away_recent_form": round(team_metric(strengths, away, "form", 0.50), 3),
             "home_recent_attack": round(team_metric(strengths, home, "attack", 1.20), 3),
@@ -575,6 +645,8 @@ def process_football_match(row, strengths, ratings):
             "priority": priority,
             **score_fields,
         })
+
+        rows[-1]["decision_reason"] = build_decision_reason(rows[-1])
 
     return rows
 
@@ -861,6 +933,7 @@ def process_tennis_match(row, players):
     away = row.get("away_team", "")
     sport = row.get("sport", "")
     date = row.get("commence_time", "")
+    odds_source = source_label(row.get("source", "unknown"))
 
     rows = []
     for key, market, selection, bookmaker_odds in [
@@ -876,6 +949,8 @@ def process_tennis_match(row, players):
         value = probability * bookmaker_odds - 1
         safety = safety_score(probability, value, bookmaker_odds, probs["quality"])
         mode = select_bet_mode(probability, value, bookmaker_odds, safety, "tennis")
+        if not is_live_odds_source(odds_source):
+            mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
@@ -894,6 +969,7 @@ def process_tennis_match(row, players):
         rows.append({
             "date": date,
             "sport": sport,
+            "odds_source": odds_source,
             "category": "tennis",
             "home_team": home,
             "away_team": away,
@@ -910,6 +986,8 @@ def process_tennis_match(row, players):
             "safety_level": safety_level(mode, safety),
             "football_trap_signal": "",
             "learning_adjustment": "BASELINE",
+            "calibration_adjustment": "BASELINE",
+            "decision_reason": "",
             "home_recent_form": "",
             "away_recent_form": "",
             "home_recent_attack": "",
@@ -949,6 +1027,8 @@ def process_tennis_match(row, players):
             "tennis_edge": round(value, 4),
             "priority": priority,
         })
+
+        rows[-1]["decision_reason"] = build_decision_reason(rows[-1])
 
     return rows
 
@@ -1061,6 +1141,67 @@ def apply_global_learning_guard(predictions):
     return out, True
 
 
+def calibration_key(row):
+    return (
+        str(row.get("category", "")).lower(),
+        str(row.get("market", "")).lower(),
+        probability_bucket(row.get("ai_probability", 0)),
+    )
+
+
+def apply_probability_calibration(predictions):
+    if not CALIBRATION_PATH.exists() or predictions.empty:
+        return predictions
+
+    try:
+        calibration = pd.read_csv(CALIBRATION_PATH)
+    except Exception:
+        return predictions
+
+    required = {"category", "market", "probability_bucket", "bets", "additive_adjustment"}
+    if calibration.empty or not required.issubset(set(calibration.columns)):
+        return predictions
+
+    usable = calibration.copy()
+    usable["bets"] = pd.to_numeric(usable["bets"], errors="coerce").fillna(0)
+    usable["additive_adjustment"] = pd.to_numeric(usable["additive_adjustment"], errors="coerce").fillna(0)
+    usable = usable[usable["bets"] >= 12]
+    if usable.empty:
+        return predictions
+
+    table = {}
+    category_table = {}
+    for _, row in usable.iterrows():
+        cat = str(row.get("category", "")).lower()
+        market = str(row.get("market", "")).lower()
+        bucket = str(row.get("probability_bucket", ""))
+        adjustment = clamp(safe_float(row.get("additive_adjustment")), -0.06, 0.04)
+        label = f"{adjustment:+.1%} ({int(row.get('bets', 0))} obs)"
+        if market == "__all__":
+            category_table[(cat, bucket)] = (adjustment, label)
+        else:
+            table[(cat, market, bucket)] = (adjustment, label)
+
+    out = predictions.copy()
+    out["calibration_adjustment"] = out.get("calibration_adjustment", "BASELINE")
+
+    for idx, row in out.iterrows():
+        cat, market, bucket = calibration_key(row)
+        found = table.get((cat, market, bucket)) or category_table.get((cat, bucket))
+        if not found:
+            continue
+
+        adjustment, label = found
+        probability = safe_float(row.get("ai_probability"))
+        out.at[idx, "ai_probability"] = round(clamp(probability + adjustment, 0.02, 0.90), 4)
+        out.at[idx, "calibration_adjustment"] = label
+
+    if (out["calibration_adjustment"].astype(str) != "BASELINE").any():
+        out = refresh_predictions_after_learning(out)
+
+    return out
+
+
 def refresh_predictions_after_learning(predictions):
     out = predictions.copy()
     bankroll = load_current_bankroll(BANKROLL_START)
@@ -1079,6 +1220,8 @@ def refresh_predictions_after_learning(predictions):
         category = row.get("category", "")
         safety = safety_score(probability, value, odds, quality, market)
         mode = select_bet_mode(probability, value, odds, safety, category)
+        if not is_live_odds_source(row.get("odds_source", "")):
+            mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, odds, mode, bankroll=bankroll)
 
         if stake <= 0 and mode in RECOMMENDED_MODES:
@@ -1098,6 +1241,7 @@ def refresh_predictions_after_learning(predictions):
         out.at[idx, "suggested_stake"] = stake
         out.at[idx, "bet_mode"] = mode
         out.at[idx, "priority"] = round(safety * 1.48 + max(value, 0) * 430 + probability * 70, 2)
+        out.at[idx, "decision_reason"] = build_decision_reason(out.loc[idx])
 
     return out
 
@@ -1185,6 +1329,7 @@ def one_real_bet_per_match(df, max_bets=10):
         & (out["ai_probability"] >= 0.58)
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
+        & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     )
 
     out["_keep_score"] = (
@@ -1217,6 +1362,7 @@ def one_real_bet_per_match(df, max_bets=10):
         & (out["ai_probability"] >= 0.58)
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
+        & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     ].sort_values("_keep_score", ascending=False)
 
     keep_indices = set(real_after.head(max_bets).index)
@@ -1314,6 +1460,7 @@ def force_daily_best_bet(df):
         (out["ai_probability"] >= 0.58)
         & (out["bookmaker_odds"] >= 1.10)
         & (out["value"] > 0)
+        & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     ].copy()
 
     if candidates.empty:
@@ -1355,6 +1502,7 @@ def finalise_predictions(rows):
     if df.empty:
         return pd.DataFrame(columns=OUTPUT_COLUMNS)
 
+    df = apply_probability_calibration(df)
     df = apply_learning_adjustment(df)
 
     for col in OUTPUT_COLUMNS:
@@ -1376,6 +1524,7 @@ def finalise_predictions(rows):
     )
 
     df = cap_stakes_to_bankroll(df, load_current_bankroll(BANKROLL_START))
+    df["decision_reason"] = df.apply(build_decision_reason, axis=1)
     return df[OUTPUT_COLUMNS]
 
 

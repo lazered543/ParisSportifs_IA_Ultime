@@ -871,6 +871,7 @@ def write_finished_archive(tracking):
         "away_team",
         "market",
         "selection",
+        "odds_source",
         "bet_mode",
         "ai_probability",
         "bookmaker_odds",
@@ -888,6 +889,9 @@ def write_finished_archive(tracking):
         "score_exact_2_proba",
         "tennis_engine_score",
         "tennis_edge",
+        "learning_adjustment",
+        "calibration_adjustment",
+        "decision_reason",
     ]
     archive_cols = [col for col in archive_cols if col in finished.columns]
 
@@ -960,6 +964,7 @@ def build_learning_profile(tracking):
         ("category", "Sport"),
         ("sport", "Compétition"),
         ("market", "Marché"),
+        ("odds_source", "Source cote"),
     ]
 
     for col, label in dimensions:

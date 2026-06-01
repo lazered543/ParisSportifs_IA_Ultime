@@ -48,14 +48,16 @@ def reset_bankroll():
 def reset_tracking():
     tracking_cols = [
         "date", "sport", "category", "home_team", "away_team", "market", "selection",
+        "odds_source",
         "ai_probability", "bookmaker_odds", "value", "safety_score", "safety_level",
         "stake", "bet_mode", "stake_percent", "kelly_fraction", "bankroll",
-        "confidence", "ia_badge", "result", "profit", "final_winner",
+        "confidence", "ia_badge", "learning_adjustment", "calibration_adjustment",
+        "decision_reason", "result", "profit", "final_winner",
         "final_score_home", "final_score_away", "status_detail", "resolved_at",
     ]
     archive_cols = [
         "resolved_at", "date", "sport", "category", "home_team", "away_team",
-        "market", "selection", "bet_mode", "ai_probability", "bookmaker_odds",
+        "market", "selection", "odds_source", "bet_mode", "ai_probability", "bookmaker_odds",
         "value", "stake", "result", "profit", "final_winner",
         "final_score_home", "final_score_away", "status_detail",
     ]

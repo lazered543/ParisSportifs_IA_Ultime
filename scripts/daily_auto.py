@@ -5,16 +5,13 @@ import time
 def run_command(cmd):
     print(f"\nLancement : {cmd}\n")
 
-    result = subprocess.run(
-        cmd,
-        shell=True
-    )
+    result = subprocess.run(cmd, shell=True)
 
     if result.returncode != 0:
         print(f"Erreur sur : {cmd}")
         return False
 
-    print(f"Terminé : {cmd}")
+    print(f"Termine : {cmd}")
     return True
 
 
@@ -28,14 +25,16 @@ time.sleep(2)
 run_command("python scripts/update_player_scorers.py")
 time.sleep(2)
 
+run_command("python scripts/update_results_auto.py")
+time.sleep(2)
+
+run_command("python scripts/backtest_learning.py")
+time.sleep(2)
+
 run_command("python scripts/run_pipeline.py")
 time.sleep(2)
 
 run_command("python scripts/save_bets_to_tracking.py")
-time.sleep(2)
-
-# ✅ AJOUT IMPORTANT
-run_command("python scripts/update_results_auto.py")
 time.sleep(2)
 
 run_command("python scripts/send_telegram_alerts.py")
@@ -45,9 +44,9 @@ print("\n==============================")
 print("SYSTEME TERMINE")
 print("==============================\n")
 
-print("- Dashboard Streamlit prêt")
-print("- tracking_results.csv mis à jour")
-print("- value_bets_today.csv mis à jour")
-print("- Résultats WIN / LOSS mis à jour")
-print("- ROI recalculé automatiquement")
-print("- Alertes Telegram envoyées si VALUE BETS disponibles")
+print("- Dashboard Streamlit pret")
+print("- Resultats anciens mis a jour")
+print("- Backtest et calibration mis a jour")
+print("- tracking_results.csv mis a jour")
+print("- value_bets_today.csv mis a jour")
+print("- Alertes Telegram envoyees si VALUE BETS disponibles")

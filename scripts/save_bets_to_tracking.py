@@ -61,7 +61,7 @@ def main():
     bets = bets[(bets["suggested_stake"] > 0) & (bets["value"] > 0)].copy()
     if bets.empty:
         print("Aucun pari recommandé après filtrage."); return
-    cols = ["date","sport","category","home_team","away_team","market","selection","ai_probability","bookmaker_odds","value","safety_score","safety_level","suggested_stake","bet_mode","stake_percent","kelly_fraction","bankroll","confidence","ia_badge","score_exact_1","score_exact_1_proba","score_exact_2","score_exact_2_proba","score_exact_3","score_exact_3_proba","tennis_engine_score","tennis_edge","priority"]
+    cols = ["date","sport","odds_source","category","home_team","away_team","market","selection","ai_probability","bookmaker_odds","value","safety_score","safety_level","suggested_stake","bet_mode","stake_percent","kelly_fraction","bankroll","confidence","ia_badge","learning_adjustment","calibration_adjustment","decision_reason","score_exact_1","score_exact_1_proba","score_exact_2","score_exact_2_proba","score_exact_3","score_exact_3_proba","tennis_engine_score","tennis_edge","priority"]
     bets = bets[[c for c in cols if c in bets.columns]].copy().rename(columns={"suggested_stake":"stake"})
     bets["result"], bets["profit"] = "PENDING", 0
     for col in ["final_winner","final_score_home","final_score_away","status_detail","resolved_at"]:
