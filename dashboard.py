@@ -282,6 +282,24 @@ else:
     current_bankroll_display = 10.0
     initial_bankroll_display = 10.0
 
+profit_net_display = current_bankroll_display - initial_bankroll_display
+roi_display = (profit_net_display / initial_bankroll_display * 100) if initial_bankroll_display > 0 else 0.0
+
+# Objectifs de progression visibles dans le dashboard
+GOALS = [20, 50, 100, 500, 1000]
+next_goal_display = next((g for g in GOALS if current_bankroll_display < g), GOALS[-1])
+previous_goal_display = initial_bankroll_display
+for goal in GOALS:
+    if current_bankroll_display >= goal:
+        previous_goal_display = goal
+progress_display = 100.0
+if next_goal_display > previous_goal_display:
+    progress_display = ((current_bankroll_display - previous_goal_display) / (next_goal_display - previous_goal_display)) * 100
+progress_display = max(0.0, min(100.0, progress_display))
+
+max_single_bet_display = current_bankroll_display * 0.25
+max_daily_exposure_display = current_bankroll_display * min(0.55, max(0.40, 0.40 + (current_bankroll_display / max(initial_bankroll_display, 0.01) - 1) * 0.03))
+
 
 # ============================================================
 # HELPERS AFFICHAGE
@@ -289,7 +307,7 @@ else:
 
 SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
 RISKY_MODES = ["RISKY VALUE"]
-RECOMMENDED_MODES = SAFE_MODES + RISKY_MODES
+RECOMMENDED_MODES = SAFE_MODES
 
 
 def sort_recommendations(data):
@@ -540,7 +558,7 @@ def render_cards(data, limit=6):
                     Value : <b>{value:.1f}%</b><br>
                     Mise conseillée : <b>{stake:.2f}€</b><br>
                     <span class="small-muted">
-                    Plus le pari est SAFE + rentable, plus la mise augmente.
+                    Balance évolutive : les mises sûres augmentent quand l'IA gagne.
                     </span><br>
                     Score / Set probable : <b>{row.get("score_exact_1", "")}</b>
                 </div>
@@ -697,37 +715,8 @@ recommended = filtered_today[
 # ============================================================
 
 def rebalance_stake(row):
-    """
-    Affichage bankroll plus cohérent :
-    - RISKY = petite mise max 0.50€
-    - VALUE = moyen
-    - SAFE / MEGA = plus forte mise
-    """
-
-    stake = float(row.get("suggested_stake", 0) or 0)
-    prob = float(row.get("ai_probability", 0) or 0)
-    value = float(row.get("value", 0) or 0)
-    mode = str(row.get("bet_mode", "")).upper()
-
-    if "RISKY" in mode:
-        return min(max(stake, 0.30), 0.50)
-
-    if "VALUE BET" in mode:
-        base = max(stake, 0.70)
-        mult = 1.00 + max(prob - 0.55, 0) * 1.4 + min(max(value, 0), 0.20) * 0.6
-        return min(round(base * mult, 2), 1.60)
-
-    if "SAFE PICK" in mode:
-        base = max(stake, 1.00)
-        mult = 1.25 + max(prob - 0.60, 0) * 1.8 + min(max(value, 0), 0.20) * 0.5
-        return min(round(base * mult, 2), 2.40)
-
-    if "MEGA VALUE" in mode:
-        base = max(stake, 1.50)
-        mult = 1.35 + max(prob - 0.62, 0) * 2.0 + min(max(value, 0), 0.25) * 0.7
-        return min(round(base * mult, 2), 3.00)
-
-    return max(stake, 0.35)
+    # LEVEL MAX : le dashboard n'augmente plus les mises calculées par le pipeline.
+    return float(row.get("suggested_stake", 0) or 0)
 
 recommended["suggested_stake"] = recommended.apply(
     rebalance_stake,
@@ -756,7 +745,7 @@ st.markdown(
     <div class="hero-box">
         <div class="hero-title">IA Paris Sportifs Ultime</div>
         <div class="hero-sub">
-            Bankroll réelle 10€ • L’IA joue uniquement avec ses gains • Tennis • Football • ROI<br>
+            Balance évolutive • Départ 10€ • Les mises montent avec les gains • Scores auto<br>
             Dernière actualisation : <b>{last_update}</b> | Alertes Telegram : <b>{telegram_count}</b>
         </div>
     </div>
@@ -771,9 +760,17 @@ c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
 c5.metric("Mise max", f"{filtered_today['suggested_stake'].max() if not filtered_today.empty else 0:.2f}€")
 
-b1, b2 = st.columns(2)
-b1.metric("Bankroll IA", f"{current_bankroll_display:.2f}€")
+b1, b2, b3, b4 = st.columns(4)
+b1.metric("Balance actuelle", f"{current_bankroll_display:.2f}€")
 b2.metric("Capital de départ", f"{initial_bankroll_display:.2f}€")
+b3.metric("Profit net", f"{profit_net_display:+.2f}€")
+b4.metric("ROI balance", f"{roi_display:+.1f}%")
+
+st.progress(progress_display / 100)
+st.caption(
+    f"Objectif suivant : {next_goal_display:.0f}€ | Progression : {progress_display:.1f}% | "
+    f"Mise max par pari : {max_single_bet_display:.2f}€ | Exposition max jour : {max_daily_exposure_display:.2f}€"
+)
 
 # ============================================================
 # TABS
@@ -893,6 +890,14 @@ with tabs[5]:
 
 with tabs[6]:
     st.subheader("Mises conseillées / bankroll")
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Balance actuelle", f"{current_bankroll_display:.2f}€")
+    k2.metric("Profit net", f"{profit_net_display:+.2f}€")
+    k3.metric("Objectif suivant", f"{next_goal_display:.0f}€")
+    k4.metric("Exposition max jour", f"{max_daily_exposure_display:.2f}€")
+    st.progress(progress_display / 100)
+    st.caption(f"Progression vers {next_goal_display:.0f}€ : {progress_display:.1f}%")
 
     stake_cols = [
         "date",

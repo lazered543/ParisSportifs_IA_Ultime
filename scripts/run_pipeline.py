@@ -16,7 +16,9 @@ sys.path.insert(0, str(ROOT))
 from src.features.football_features import build_team_strength, estimate_xg
 from src.models.elo import build_elo_ratings, get_match_elo
 from src.models.poisson import football_poisson_probs
-from src.utils.config import BANKROLL_START
+from src.utils.config import BANKROLL_START as CONFIG_BANKROLL_START
+
+BANKROLL_START = 10.0
 
 UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
 FOOTBALL_HISTORY_PATH = Path("data/processed/football_history_all.csv")
@@ -85,7 +87,7 @@ OUTPUT_COLUMNS = [
     "priority",
 ]
 
-RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET", "RISKY VALUE"}
+RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET"}
 
 
 def safe_float(value, default=0.0):
@@ -156,13 +158,13 @@ def normalized_probabilities(items):
 
 
 def confidence_label(probability):
-    if probability >= 0.74:
+    if probability >= 0.78:
         return "Elite"
-    if probability >= 0.64:
+    if probability >= 0.68:
         return "Forte"
-    if probability >= 0.56:
+    if probability >= 0.58:
         return "Moyenne"
-    if probability >= 0.49:
+    if probability >= 0.50:
         return "Faible"
     return "A EVITER"
 
@@ -276,31 +278,39 @@ def safety_score(probability, value, odds, data_quality, mode_hint=""):
 
 
 def select_bet_mode(probability, value, odds, safety, category):
+    """
+    Mode équilibré demandé :
+    - aucun pari joué sous 60%
+    - aucune cote jouée sous 1.10
+    - pas de RISKY VALUE en vraie mise
+    - l'IA garde quand même une watchlist pour l'analyse
+    """
+    odds = safe_float(odds)
+    probability = safe_float(probability)
+    value = safe_float(value)
+    safety = safe_float(safety)
+
+    if odds < 1.10:
+        return "WATCHLIST"
+
     if odds <= 1 or value <= 0:
-        if probability >= 0.55 and value > -0.035:
+        if probability >= 0.60 and odds >= 1.10:
             return "WATCHLIST"
         return "NO BET"
 
-    if value >= 0.095 and probability >= 0.62 and safety >= 72 and odds <= 3.20:
+    if probability < 0.60:
+        return "WATCHLIST" if value > 0 else "NO BET"
+
+    if probability >= 0.72 and value >= 0.04 and 1.10 <= odds <= 2.20:
         return "MEGA VALUE"
 
-    if probability >= 0.64 and value >= 0.003 and 1.25 <= odds <= 1.95 and safety >= 61:
+    if probability >= 0.65 and value >= 0.02 and 1.10 <= odds <= 1.90:
         return "SAFE PICK"
 
-    min_value = 0.018 if category == "tennis" else 0.024
-    if value >= min_value and probability >= 0.52 and safety >= 50 and odds <= 3.85:
+    if probability >= 0.60 and value >= 0.05 and 1.10 <= odds <= 3.00:
         return "VALUE BET"
 
-    if category == "football" and value >= 0.05 and probability >= 0.20 and safety >= 32 and odds <= 5.50:
-        return "RISKY VALUE"
-
-    if value >= 0.006 and probability >= 0.47 and odds <= 5.20 and safety >= 40:
-        return "RISKY VALUE"
-
-    if value > -0.025 and probability >= 0.50:
-        return "WATCHLIST"
-
-    return "NO BET"
+    return "WATCHLIST"
 
 
 def safety_level(mode, safety):
@@ -353,61 +363,76 @@ def load_current_bankroll(default=10.0):
 
 
 def bankroll_management(probability, odds, mode, bankroll=None):
+    """
+    Bankroll évolutive :
+    - départ 10€
+    - si l'IA gagne, la balance augmente
+    - les mises sûres augmentent avec la balance
+    - si l'IA perd, les mises baissent automatiquement
+
+    Plafonds par type de pari :
+    - MEGA VALUE : jusqu'à 25% de la balance, plafonné à 15€
+    - SAFE PICK : jusqu'à 15% de la balance, plafonné à 10€
+    - VALUE BET : jusqu'à 8% de la balance, plafonné à 5€
+    """
     if bankroll is None:
         bankroll = load_current_bankroll(BANKROLL_START)
 
     bankroll = max(float(bankroll), 0.0)
+    odds = safe_float(odds)
+    probability = safe_float(probability)
 
-    if bankroll <= 0:
+    if bankroll <= 0 or odds <= 1:
         return 0.0, 0.0, 0.0
 
-    if mode not in RECOMMENDED_MODES or odds <= 1:
+    if mode not in {"MEGA VALUE", "SAFE PICK", "VALUE BET"}:
         return 0.0, 0.0, 0.0
 
-    b = odds - 1
     edge = probability * odds - 1
-
     if edge <= 0:
         return 0.0, 0.0, 0.0
 
+    b = odds - 1
     kelly = max(0.0, ((b * probability) - (1 - probability)) / b)
-    kelly = min(kelly, 0.18)
+    kelly = min(kelly, 0.22)
+
+    # Plus la balance est haute, plus l'IA peut monter progressivement.
+    growth_factor = clamp(bankroll / BANKROLL_START, 1.0, 6.0)
 
     fractions = {
-        "MEGA VALUE": 0.34,
-        "SAFE PICK": 0.26,
-        "VALUE BET": 0.18,
-        "RISKY VALUE": 0.08,
+        "MEGA VALUE": 0.55,
+        "SAFE PICK": 0.42,
+        "VALUE BET": 0.28,
     }
 
-    caps = {
-        "MEGA VALUE": 0.030,
-        "SAFE PICK": 0.022,
-        "VALUE BET": 0.016,
-        "RISKY VALUE": 0.006,
+    caps_pct = {
+        "MEGA VALUE": 0.25,
+        "SAFE PICK": 0.15,
+        "VALUE BET": 0.08,
     }
 
-    stake_percent = min(kelly * fractions.get(mode, 0), caps.get(mode, 0))
+    caps_abs = {
+        "MEGA VALUE": 15.00,
+        "SAFE PICK": 10.00,
+        "VALUE BET": 5.00,
+    }
 
-    if stake_percent <= 0:
-        return 0.0, 0.0, round(kelly, 4)
+    # Planchers qui évoluent aussi, mais doucement.
+    floors = {
+        "MEGA VALUE": min(3.00 * growth_factor, 8.00),
+        "SAFE PICK": min(2.00 * growth_factor, 5.00),
+        "VALUE BET": min(1.00 * growth_factor, 3.00),
+    }
 
+    stake_percent = min(kelly * fractions.get(mode, 0), caps_pct.get(mode, 0))
     stake = bankroll * stake_percent
 
-    # Plancher logique, mais jamais plus que la bankroll disponible
-    if mode == "RISKY VALUE":
-        stake = min(max(stake, 0.10), 0.50)
-    elif mode == "VALUE BET":
-        stake = min(max(stake, 0.20), 1.40)
-    elif mode == "SAFE PICK":
-        stake = min(max(stake, 0.30), 2.20)
-    elif mode == "MEGA VALUE":
-        stake = min(max(stake, 0.50), 3.00)
+    # Si le pari est classé MEGA/SAFE/VALUE, il a une mise visible.
+    stake = max(stake, floors.get(mode, 0.0))
+    stake = min(stake, bankroll * caps_pct.get(mode, 0.01), caps_abs.get(mode, bankroll), bankroll)
 
-    stake = min(stake, bankroll)
-
-    if stake <= 0:
-        return 0.0, 0.0, round(kelly, 4)
+    if stake < 0.10:
+        return 0.0, round(stake_percent, 4), round(kelly, 4)
 
     return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
 
@@ -521,7 +546,7 @@ def process_football_match(row, strengths, ratings):
             "away_recent_defense": round(team_metric(strengths, away, "defense", 1.20), 3),
             "football_data_quality": round(quality, 3),
             "decision": "VALUE BET" if mode in RECOMMENDED_MODES and stake > 0 else "NO BET",
-            "bankroll": round(BANKROLL_START, 2),
+            "bankroll": round(load_current_bankroll(BANKROLL_START), 2),
             "stake_percent": stake_percent,
             "kelly_fraction": kelly,
             "suggested_stake": stake,
@@ -669,6 +694,41 @@ def tennis_surface_form(players, name, surface):
     return stats["wins"] / stats["matches"]
 
 
+
+def calibrate_tennis_vs_market(model_home, book_home, quality, home_stats, away_stats):
+    """
+    Calibration tennis LEVEL MAX.
+    Le bookmaker reste l'ancre principale. L'IA ne peut s'écarter fortement
+    que si elle possède beaucoup de données propres.
+    """
+    quality = clamp(quality, 0, 1)
+
+    home_matches = safe_float(home_stats.get("matches", 0))
+    away_matches = safe_float(away_stats.get("matches", 0))
+    data_depth = clamp((home_matches + away_matches) / 100, 0, 1)
+
+    model_weight = 0.12 + 0.22 * data_depth + 0.08 * quality
+    model_weight = clamp(model_weight, 0.12, 0.38)
+
+    blended = book_home + (model_home - book_home) * model_weight
+
+    max_gap = 0.035 + 0.045 * data_depth
+
+    if book_home >= 0.70:
+        max_gap = min(max_gap, 0.030)
+
+    if book_home <= 0.40:
+        max_gap = min(max_gap, 0.040)
+
+    calibrated = clamp(blended, book_home - max_gap, book_home + max_gap)
+
+    # Les 80% doivent rester rares et justifiés par le marché.
+    if calibrated > 0.78 and book_home < 0.74:
+        calibrated = 0.78
+
+    return clamp(calibrated, 0.14, 0.82)
+
+
 def tennis_probabilities(row, players):
     home = row.get("home_team", "")
     away = row.get("away_team", "")
@@ -701,9 +761,13 @@ def tennis_probabilities(row, players):
     model_home = sigmoid(model_logit)
 
     book_home = book_probs.get("home", 0.5)
-    model_weight = 0.38 + 0.22 * quality
-    final_home = book_home + (model_home - book_home) * model_weight
-    final_home = clamp(final_home, 0.08, 0.88)
+    final_home = calibrate_tennis_vs_market(
+        model_home,
+        book_home,
+        quality,
+        home_stats,
+        away_stats,
+    )
 
     return {
         "home": final_home,
@@ -715,11 +779,73 @@ def tennis_probabilities(row, players):
     }
 
 
-def tennis_set_scores(probability):
-    straight = clamp(0.46 + max(probability - 0.50, 0) * 0.82, 0.43, 0.80)
+def tennis_set_scores(probability, selected_stats=None, opponent_stats=None, quality=0.5):
+    """
+    Estimation des sets basée sur :
+    - probabilité IA
+    - forme récente
+    - forme sur surface
+    - écart ELO
+    - écart de classement
+    - qualité des données
+
+    Ce n'est pas un score exact garanti, mais une estimation automatique plus logique
+    que l'ancien 2-0 répété partout.
+    """
+    probability = clamp(probability, 0.01, 0.99)
+    selected_stats = selected_stats or {}
+    opponent_stats = opponent_stats or {}
+
+    selected_form = safe_float(selected_stats.get("form", 0.5), 0.5)
+    opponent_form = safe_float(opponent_stats.get("form", 0.5), 0.5)
+    selected_surface = safe_float(selected_stats.get("surface_form", 0.5), 0.5)
+    opponent_surface = safe_float(opponent_stats.get("surface_form", 0.5), 0.5)
+    selected_elo = safe_float(selected_stats.get("elo", 1500), 1500)
+    opponent_elo = safe_float(opponent_stats.get("elo", 1500), 1500)
+    selected_rank = safe_float(selected_stats.get("rank", 999), 999)
+    opponent_rank = safe_float(opponent_stats.get("rank", 999), 999)
+
+    form_gap = selected_form - opponent_form
+    surface_gap = selected_surface - opponent_surface
+    elo_gap = clamp((selected_elo - opponent_elo) / 400, -1, 1)
+    rank_gap = clamp((opponent_rank - selected_rank) / 250, -1, 1)
+    prob_gap = probability - 0.50
+
+    domination_score = (
+        prob_gap * 1.35
+        + form_gap * 0.42
+        + surface_gap * 0.28
+        + elo_gap * 0.30
+        + rank_gap * 0.18
+        + clamp(quality, 0, 1) * 0.08
+    )
+
+    # Plus le match est serré, plus 2-1 devient probable.
+    if domination_score >= 0.36:
+        straight = 0.66
+    elif domination_score >= 0.26:
+        straight = 0.60
+    elif domination_score >= 0.17:
+        straight = 0.55
+    elif domination_score >= 0.08:
+        straight = 0.48
+    else:
+        straight = 0.40
+
+    # Ajustement : si la forme récente est mauvaise, on baisse le 2-0.
+    if selected_form < 0.50:
+        straight -= 0.06
+    if opponent_form > 0.58:
+        straight -= 0.05
+    if selected_surface < opponent_surface:
+        straight -= 0.04
+
+    straight = clamp(straight, 0.34, 0.70)
     three_sets = 1 - straight
+
     if straight >= three_sets:
         return "2-0", round(straight * 100, 2), "2-1", round(three_sets * 100, 2)
+
     return "2-1", round(three_sets * 100, 2), "2-0", round(straight * 100, 2)
 
 
@@ -751,7 +877,14 @@ def process_tennis_match(row, players):
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
 
-        score1, score1_proba, score2, score2_proba = tennis_set_scores(probability)
+        selected_stats = probs["home_stats"] if key == "home" else probs["away_stats"]
+        opponent_stats = probs["away_stats"] if key == "home" else probs["home_stats"]
+        score1, score1_proba, score2, score2_proba = tennis_set_scores(
+            probability,
+            selected_stats,
+            opponent_stats,
+            probs["quality"],
+        )
         engine_score = round(clamp(probability * 70 + probs["quality"] * 20 + max(value, 0) * 85, 0, 100), 2)
         priority = round(safety * 1.45 + max(value, 0) * 430 + probability * 70, 2)
 
@@ -782,7 +915,7 @@ def process_tennis_match(row, players):
             "away_recent_defense": "",
             "football_data_quality": "",
             "decision": "VALUE BET" if mode in RECOMMENDED_MODES and stake > 0 else "NO BET",
-            "bankroll": round(BANKROLL_START, 2),
+            "bankroll": round(load_current_bankroll(BANKROLL_START), 2),
             "stake_percent": stake_percent,
             "kelly_fraction": kelly,
             "suggested_stake": stake,
@@ -866,28 +999,96 @@ def _clean_day(value):
     if pd.isna(dt): return str(value)[:10]
     return dt.strftime("%Y-%m-%d")
 
-def one_real_bet_per_match(df):
-    if df.empty: return df
+def one_real_bet_per_match(df, max_bets=10):
+    """
+    LEVEL MAX :
+    - 1 seul vrai pari par match
+    - max 5 paris avec mise
+    - priorité aux probabilités élevées et cotes raisonnables
+    """
+    if df.empty:
+        return df
+
     out = df.copy()
-    out["_match_key"] = out["sport"].astype(str).str.lower()+"|"+out["date"].apply(_clean_day).astype(str)+"|"+out["home_team"].astype(str).str.lower()+"|"+out["away_team"].astype(str).str.lower()
-    for col in ["suggested_stake", "value", "priority", "safety_score", "ai_probability"]:
-        if col not in out.columns: out[col] = 0
+
+    out["_match_key"] = (
+        out["sport"].astype(str).str.lower()
+        + "|"
+        + out["date"].apply(_clean_day).astype(str)
+        + "|"
+        + out["home_team"].astype(str).str.lower()
+        + "|"
+        + out["away_team"].astype(str).str.lower()
+    )
+
+    for col in ["suggested_stake", "value", "priority", "safety_score", "ai_probability", "bookmaker_odds"]:
+        if col not in out.columns:
+            out[col] = 0
         out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0)
-    out["_is_real_bet"] = out["bet_mode"].isin(RECOMMENDED_MODES) & (out["suggested_stake"] > 0) & (out["value"] > 0)
-    out["_keep_score"] = out["priority"]*10 + out["safety_score"]*6 + out["value"]*350 + out["suggested_stake"]*120 + out["ai_probability"]*40
+
+    out["_is_real_bet"] = (
+        out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
+        & (out["suggested_stake"] > 0)
+        & (out["value"] > 0)
+        & (out["ai_probability"] >= 0.60)
+        & (out["bookmaker_odds"] >= 1.10)
+        & (out["bookmaker_odds"] <= 3.00)
+    )
+
+    out["_keep_score"] = (
+        out["ai_probability"] * 520
+        + out["safety_score"] * 5
+        + out["value"].clip(lower=0, upper=0.16) * 180
+        - out["bookmaker_odds"] * 12
+        + out["priority"] * 2
+    )
+
     for key, g in out.groupby("_match_key"):
         real = g[g["_is_real_bet"]]
+
         if real.empty:
-            out.loc[g.index, "suggested_stake"] = 0; continue
+            out.loc[g.index, "suggested_stake"] = 0
+            continue
+
         best_idx = real["_keep_score"].idxmax()
         other = [idx for idx in g.index if idx != best_idx]
+
         out.loc[other, "suggested_stake"] = 0
         mask = out.index.isin(other) & out["bet_mode"].isin(RECOMMENDED_MODES)
-        out.loc[mask, "bet_mode"] = "WATCHLIST"; out.loc[mask, "decision"] = "NO BET"
+        out.loc[mask, "bet_mode"] = "WATCHLIST"
+        out.loc[mask, "decision"] = "NO BET"
+
+    real_after = out[
+        out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
+        & (out["suggested_stake"] > 0)
+        & (out["value"] > 0)
+        & (out["ai_probability"] >= 0.60)
+        & (out["bookmaker_odds"] >= 1.10)
+        & (out["bookmaker_odds"] <= 3.00)
+    ].sort_values("_keep_score", ascending=False)
+
+    keep_indices = set(real_after.head(max_bets).index)
+
+    cut_mask = (
+        out["bet_mode"].isin(RECOMMENDED_MODES)
+        & (out["suggested_stake"] > 0)
+        & (~out.index.isin(keep_indices))
+    )
+
+    out.loc[cut_mask, "suggested_stake"] = 0
+    out.loc[cut_mask, "bet_mode"] = "WATCHLIST"
+    out.loc[cut_mask, "decision"] = "NO BET"
+
     return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score"], errors="ignore")
 
 
 def cap_stakes_to_bankroll(df, bankroll):
+    """
+    Protection de balance :
+    - petit capital : max 40% exposé / jour
+    - si la balance monte : jusqu'à 55% max / jour
+    - jamais plus de 25% sur un seul pari
+    """
     if df.empty:
         return df
 
@@ -911,11 +1112,90 @@ def cap_stakes_to_bankroll(df, bankroll):
             })
         return out
 
-    total = out["suggested_stake"].sum()
+    growth = clamp(bankroll / BANKROLL_START, 1.0, 6.0)
+    max_daily_exposure = bankroll * clamp(0.40 + (growth - 1) * 0.03, 0.40, 0.55)
+    max_single_bet = bankroll * 0.25
 
-    if total > bankroll:
-        factor = bankroll / total
+    out["suggested_stake"] = out["suggested_stake"].clip(lower=0, upper=max_single_bet)
+
+    total = out["suggested_stake"].sum()
+    if total > max_daily_exposure:
+        factor = max_daily_exposure / total
         out["suggested_stake"] = (out["suggested_stake"] * factor).round(2)
+
+    small = out["suggested_stake"] < 0.10
+    out.loc[small, "suggested_stake"] = 0
+
+    if "bet_mode" in out.columns:
+        mask = small & out["bet_mode"].isin(RECOMMENDED_MODES)
+        out.loc[mask, "bet_mode"] = "WATCHLIST"
+        if "decision" in out.columns:
+            out.loc[mask, "decision"] = "NO BET"
+
+    return out
+
+
+def force_daily_best_bet(df):
+    """
+    Si aucune mise ne sort, on force le meilleur spot VALABLE :
+    - proba >= 60%
+    - cote >= 1.10
+    - value positive
+    Ça évite un dashboard vide, sans jouer n'importe quoi.
+    """
+    if df.empty:
+        return df
+
+    out = df.copy()
+    for col in ["suggested_stake", "ai_probability", "bookmaker_odds", "value", "safety_score", "priority"]:
+        if col not in out.columns:
+            out[col] = 0
+        out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0)
+
+    current_real = out[
+        out["bet_mode"].isin(RECOMMENDED_MODES)
+        & (out["suggested_stake"] > 0)
+        & (out["value"] > 0)
+    ]
+    if not current_real.empty:
+        return out
+
+    candidates = out[
+        (out["ai_probability"] >= 0.60)
+        & (out["bookmaker_odds"] >= 1.10)
+        & (out["value"] > 0)
+    ].copy()
+
+    if candidates.empty:
+        return out
+
+    candidates["_force_score"] = (
+        candidates["ai_probability"] * 500
+        + candidates["safety_score"] * 4
+        + candidates["value"].clip(lower=0, upper=0.20) * 200
+        - candidates["bookmaker_odds"] * 8
+        + candidates["priority"] * 2
+    )
+    best_idx = candidates["_force_score"].idxmax()
+    prob = float(out.loc[best_idx, "ai_probability"])
+    val = float(out.loc[best_idx, "value"])
+    odds = float(out.loc[best_idx, "bookmaker_odds"])
+
+    if prob >= 0.72 and val >= 0.04 and odds <= 2.20:
+        mode = "MEGA VALUE"
+    elif prob >= 0.65 and val >= 0.02 and odds <= 1.90:
+        mode = "SAFE PICK"
+    else:
+        mode = "VALUE BET"
+
+    stake, stake_percent, kelly = bankroll_management(prob, odds, mode)
+    out.loc[best_idx, "bet_mode"] = mode
+    out.loc[best_idx, "decision"] = "VALUE BET"
+    out.loc[best_idx, "ia_badge"] = ia_badge(mode)
+    out.loc[best_idx, "safety_level"] = safety_level(mode, out.loc[best_idx, "safety_score"])
+    out.loc[best_idx, "suggested_stake"] = stake
+    out.loc[best_idx, "stake_percent"] = stake_percent
+    out.loc[best_idx, "kelly_fraction"] = kelly
 
     return out
 
@@ -938,6 +1218,7 @@ def finalise_predictions(rows):
     df["ai_probability"] = pd.to_numeric(df["ai_probability"], errors="coerce").fillna(0)
 
     df = one_real_bet_per_match(df)
+    df = force_daily_best_bet(df)
 
     df = df.sort_values(
         ["priority", "suggested_stake", "value", "ai_probability"],
