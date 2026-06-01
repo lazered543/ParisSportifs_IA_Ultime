@@ -28,6 +28,7 @@ VALUE_BETS_PATH = Path("data/predictions/value_bets_today.csv")
 LEARNING_PROFILE_PATH = Path("data/learning/ai_learning_profile.csv")
 LEARNING_SUMMARY_PATH = Path("data/learning/ai_learning_summary.csv")
 CALIBRATION_PATH = Path("data/learning/probability_calibration.csv")
+THRESHOLD_PROFILE_PATH = Path("data/learning/threshold_optimizer.csv")
 
 OUTPUT_COLUMNS = [
     "last_update",
@@ -52,6 +53,9 @@ OUTPUT_COLUMNS = [
     "football_trap_signal",
     "learning_adjustment",
     "calibration_adjustment",
+    "threshold_profile",
+    "decision_status",
+    "refusal_reason",
     "decision_reason",
     "home_recent_form",
     "away_recent_form",
@@ -93,6 +97,15 @@ OUTPUT_COLUMNS = [
 ]
 
 RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET"}
+DEFAULT_THRESHOLDS = {
+    "mega_probability": 0.70,
+    "mega_value": 0.03,
+    "safe_probability": 0.63,
+    "safe_value": 0.01,
+    "value_probability": 0.58,
+    "value_value": 0.03,
+}
+_THRESHOLD_CACHE = None
 
 
 def safe_float(value, default=0.0):
@@ -172,6 +185,35 @@ def confidence_label(probability):
     if probability >= 0.50:
         return "Faible"
     return "A EVITER"
+
+
+def load_threshold_profiles():
+    global _THRESHOLD_CACHE
+    if _THRESHOLD_CACHE is not None:
+        return _THRESHOLD_CACHE
+
+    profiles = {"default": DEFAULT_THRESHOLDS.copy()}
+    if THRESHOLD_PROFILE_PATH.exists():
+        try:
+            df = pd.read_csv(THRESHOLD_PROFILE_PATH)
+            for _, row in df.iterrows():
+                category = str(row.get("category", "default")).strip().lower() or "default"
+                profile = DEFAULT_THRESHOLDS.copy()
+                for key in DEFAULT_THRESHOLDS:
+                    if key in row and pd.notna(row.get(key)):
+                        profile[key] = safe_float(row.get(key), DEFAULT_THRESHOLDS[key])
+                profiles[category] = profile
+        except Exception:
+            pass
+
+    _THRESHOLD_CACHE = profiles
+    return profiles
+
+
+def threshold_profile(category):
+    profiles = load_threshold_profiles()
+    category = str(category or "").strip().lower()
+    return profiles.get(category, profiles.get("default", DEFAULT_THRESHOLDS))
 
 
 def load_upcoming():
@@ -296,25 +338,26 @@ def select_bet_mode(probability, value, odds, safety, category):
     probability = safe_float(probability)
     value = safe_float(value)
     safety = safe_float(safety)
+    thresholds = threshold_profile(category)
 
     if odds < 1.10:
         return "WATCHLIST"
 
     if odds <= 1 or value <= 0:
-        if probability >= 0.58 and odds >= 1.10:
+        if probability >= thresholds["value_probability"] and odds >= 1.10:
             return "WATCHLIST"
         return "NO BET"
 
-    if probability < 0.58:
+    if probability < thresholds["value_probability"]:
         return "WATCHLIST" if value > 0 else "NO BET"
 
-    if probability >= 0.70 and value >= 0.03 and 1.10 <= odds <= 2.20:
+    if probability >= thresholds["mega_probability"] and value >= thresholds["mega_value"] and 1.10 <= odds <= 2.20:
         return "MEGA VALUE"
 
-    if probability >= 0.63 and value >= 0.01 and 1.10 <= odds <= 1.90:
+    if probability >= thresholds["safe_probability"] and value >= thresholds["safe_value"] and 1.10 <= odds <= 1.90:
         return "SAFE PICK"
 
-    if probability >= 0.58 and value >= 0.03 and 1.10 <= odds <= 3.00:
+    if probability >= thresholds["value_probability"] and value >= thresholds["value_value"] and 1.10 <= odds <= 3.00:
         return "VALUE BET"
 
     return "WATCHLIST"
@@ -517,6 +560,54 @@ def build_decision_reason(row):
     return " | ".join(reasons)
 
 
+def refusal_reason(row):
+    mode = str(row.get("bet_mode", ""))
+    stake = safe_float(row.get("suggested_stake", 0))
+    probability = safe_float(row.get("ai_probability", 0))
+    value = safe_float(row.get("value", 0))
+    odds = safe_float(row.get("bookmaker_odds", 0))
+    source = row.get("odds_source", "")
+    category = str(row.get("category", "")).lower()
+    thresholds = threshold_profile(category)
+
+    if mode in RECOMMENDED_MODES and stake > 0:
+        return "ok"
+    if not is_live_odds_source(source):
+        return "source fallback"
+    if odds <= 1:
+        return "cote absente"
+    if odds < 1.10:
+        return "cote trop basse"
+    if odds > 3.00:
+        return "cote trop haute"
+    if value <= 0:
+        return "value negative"
+    if probability < thresholds["value_probability"]:
+        return "proba trop basse"
+    if mode == "WATCHLIST":
+        return "watchlist prudente"
+    return "mise zero"
+
+
+def decision_status(row):
+    mode = str(row.get("bet_mode", ""))
+    stake = safe_float(row.get("suggested_stake", 0))
+    if mode in RECOMMENDED_MODES and stake > 0:
+        return "JOUABLE"
+    if mode == "WATCHLIST":
+        return "WATCHLIST"
+    return "REFUSE"
+
+
+def threshold_profile_label(category):
+    thresholds = threshold_profile(category)
+    return (
+        f"MEGA {thresholds['mega_probability']:.0%}/{thresholds['mega_value']:.0%} | "
+        f"SAFE {thresholds['safe_probability']:.0%}/{thresholds['safe_value']:.0%} | "
+        f"VALUE {thresholds['value_probability']:.0%}/{thresholds['value_value']:.0%}"
+    )
+
+
 def process_football_match(row, strengths, ratings):
     home = row.get("home_team", "")
     away = row.get("away_team", "")
@@ -610,6 +701,9 @@ def process_football_match(row, strengths, ratings):
             "football_trap_signal": football_trap_signal(market, probability, book_probs.get(key, implied), value, bookmaker_odds, poisson_probs["p_draw"]),
             "learning_adjustment": "BASELINE",
             "calibration_adjustment": "BASELINE",
+            "threshold_profile": threshold_profile_label("football"),
+            "decision_status": "",
+            "refusal_reason": "",
             "decision_reason": "",
             "home_recent_form": round(team_metric(strengths, home, "form", 0.50), 3),
             "away_recent_form": round(team_metric(strengths, away, "form", 0.50), 3),
@@ -987,6 +1081,9 @@ def process_tennis_match(row, players):
             "football_trap_signal": "",
             "learning_adjustment": "BASELINE",
             "calibration_adjustment": "BASELINE",
+            "threshold_profile": threshold_profile_label("tennis"),
+            "decision_status": "",
+            "refusal_reason": "",
             "decision_reason": "",
             "home_recent_form": "",
             "away_recent_form": "",
@@ -1187,6 +1284,8 @@ def apply_probability_calibration(predictions):
 
     for idx, row in out.iterrows():
         cat, market, bucket = calibration_key(row)
+        if cat == "tennis":
+            continue
         found = table.get((cat, market, bucket)) or category_table.get((cat, bucket))
         if not found:
             continue
@@ -1241,6 +1340,9 @@ def refresh_predictions_after_learning(predictions):
         out.at[idx, "suggested_stake"] = stake
         out.at[idx, "bet_mode"] = mode
         out.at[idx, "priority"] = round(safety * 1.48 + max(value, 0) * 430 + probability * 70, 2)
+        out.at[idx, "threshold_profile"] = threshold_profile_label(category)
+        out.at[idx, "decision_status"] = decision_status(out.loc[idx])
+        out.at[idx, "refusal_reason"] = refusal_reason(out.loc[idx])
         out.at[idx, "decision_reason"] = build_decision_reason(out.loc[idx])
 
     return out
@@ -1321,12 +1423,16 @@ def one_real_bet_per_match(df, max_bets=10):
         if col not in out.columns:
             out[col] = 0
         out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0)
+    out["_min_probability"] = out.apply(
+        lambda row: threshold_profile(row.get("category", ""))["value_probability"],
+        axis=1,
+    )
 
     out["_is_real_bet"] = (
         out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
         & (out["suggested_stake"] > 0)
         & (out["value"] > 0)
-        & (out["ai_probability"] >= 0.58)
+        & (out["ai_probability"] >= out["_min_probability"])
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
@@ -1359,7 +1465,7 @@ def one_real_bet_per_match(df, max_bets=10):
         out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
         & (out["suggested_stake"] > 0)
         & (out["value"] > 0)
-        & (out["ai_probability"] >= 0.58)
+        & (out["ai_probability"] >= out["_min_probability"])
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
@@ -1377,7 +1483,7 @@ def one_real_bet_per_match(df, max_bets=10):
     out.loc[cut_mask, "bet_mode"] = "WATCHLIST"
     out.loc[cut_mask, "decision"] = "NO BET"
 
-    return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score"], errors="ignore")
+    return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score", "_min_probability"], errors="ignore")
 
 
 def cap_stakes_to_bankroll(df, bankroll):
@@ -1447,6 +1553,10 @@ def force_daily_best_bet(df):
         if col not in out.columns:
             out[col] = 0
         out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0)
+    out["_min_probability"] = out.apply(
+        lambda row: threshold_profile(row.get("category", ""))["value_probability"],
+        axis=1,
+    )
 
     current_real = out[
         out["bet_mode"].isin(RECOMMENDED_MODES)
@@ -1454,17 +1564,17 @@ def force_daily_best_bet(df):
         & (out["value"] > 0)
     ]
     if not current_real.empty:
-        return out
+        return out.drop(columns=["_min_probability"], errors="ignore")
 
     candidates = out[
-        (out["ai_probability"] >= 0.58)
+        (out["ai_probability"] >= out["_min_probability"])
         & (out["bookmaker_odds"] >= 1.10)
         & (out["value"] > 0)
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     ].copy()
 
     if candidates.empty:
-        return out
+        return out.drop(columns=["_min_probability"], errors="ignore")
 
     candidates["_force_score"] = (
         candidates["ai_probability"] * 500
@@ -1478,11 +1588,8 @@ def force_daily_best_bet(df):
     val = float(out.loc[best_idx, "value"])
     odds = float(out.loc[best_idx, "bookmaker_odds"])
 
-    if prob >= 0.70 and val >= 0.03 and odds <= 2.20:
-        mode = "MEGA VALUE"
-    elif prob >= 0.63 and val >= 0.01 and odds <= 1.90:
-        mode = "SAFE PICK"
-    else:
+    mode = select_bet_mode(prob, val, odds, out.loc[best_idx, "safety_score"], out.loc[best_idx].get("category", ""))
+    if mode not in RECOMMENDED_MODES:
         mode = "VALUE BET"
 
     stake, stake_percent, kelly = bankroll_management(prob, odds, mode)
@@ -1494,7 +1601,7 @@ def force_daily_best_bet(df):
     out.loc[best_idx, "stake_percent"] = stake_percent
     out.loc[best_idx, "kelly_fraction"] = kelly
 
-    return out
+    return out.drop(columns=["_min_probability"], errors="ignore")
 
 
 def finalise_predictions(rows):
@@ -1524,6 +1631,9 @@ def finalise_predictions(rows):
     )
 
     df = cap_stakes_to_bankroll(df, load_current_bankroll(BANKROLL_START))
+    df["threshold_profile"] = df["category"].apply(threshold_profile_label)
+    df["decision_status"] = df.apply(decision_status, axis=1)
+    df["refusal_reason"] = df.apply(refusal_reason, axis=1)
     df["decision_reason"] = df.apply(build_decision_reason, axis=1)
     return df[OUTPUT_COLUMNS]
 

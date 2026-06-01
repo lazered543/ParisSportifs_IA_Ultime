@@ -25,6 +25,7 @@ ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
 BANKROLL_STATE_PATH = Path("data/bankroll_state.csv")
 BACKTEST_SUMMARY_PATH = Path("data/learning/backtest_summary.csv")
 CALIBRATION_PATH = Path("data/learning/probability_calibration.csv")
+THRESHOLD_PROFILE_PATH = Path("data/learning/threshold_optimizer.csv")
 
 # ============================================================
 # STYLE / DESIGN
@@ -224,6 +225,7 @@ archive = load_csv(ARCHIVE_PATH)
 bankroll_state = load_csv(BANKROLL_STATE_PATH)
 backtest_summary = load_csv(BACKTEST_SUMMARY_PATH)
 calibration = load_csv(CALIBRATION_PATH)
+threshold_profiles = load_csv(THRESHOLD_PROFILE_PATH)
 
 if df.empty:
     st.error("Aucune prédiction trouvée. Lance d'abord le pipeline.")
@@ -388,6 +390,8 @@ def clean_table(data, compact=True):
         "away_team",
         "market",
         "selection",
+        "decision_status",
+        "refusal_reason",
         "bet_mode",
         "safety_level",
         "safety_score",
@@ -406,6 +410,7 @@ def clean_table(data, compact=True):
         "football_trap_signal",
         "learning_adjustment",
         "calibration_adjustment",
+        "threshold_profile",
         "decision_reason",
         "confidence",
         "ia_badge",
@@ -1063,9 +1068,13 @@ with tabs[7]:
 with tabs[8]:
     st.subheader("Backtest, calibration et auto-apprentissage")
 
-    if backtest_summary.empty and calibration.empty:
+    if backtest_summary.empty and calibration.empty and threshold_profiles.empty:
         st.info("Aucun backtest disponible pour le moment. Lance le pipeline automatique pour générer la calibration.")
     else:
+        if not threshold_profiles.empty:
+            st.markdown("**Seuils optimisés**")
+            show_table(threshold_profiles, height=180, compact=False)
+
         if not backtest_summary.empty:
             bt = backtest_summary.copy()
             st.markdown("**Segments testés**")

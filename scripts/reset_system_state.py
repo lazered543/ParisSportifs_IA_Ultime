@@ -52,7 +52,8 @@ def reset_tracking():
         "ai_probability", "bookmaker_odds", "value", "safety_score", "safety_level",
         "stake", "bet_mode", "stake_percent", "kelly_fraction", "bankroll",
         "confidence", "ia_badge", "learning_adjustment", "calibration_adjustment",
-        "decision_reason", "result", "profit", "final_winner",
+        "threshold_profile", "decision_status", "refusal_reason", "decision_reason",
+        "result", "profit", "final_winner",
         "final_score_home", "final_score_away", "status_detail", "resolved_at",
     ]
     archive_cols = [
@@ -67,6 +68,7 @@ def reset_tracking():
     write_csv(ROOT / "data" / "learning" / "ai_learning_profile.csv")
     write_csv(ROOT / "data" / "learning" / "ai_learning_summary.csv")
     write_csv(ROOT / "data" / "learning" / "ai_auto_learning_segments.csv")
+    write_csv(ROOT / "data" / "learning" / "threshold_optimizer.csv")
     write_csv(ROOT / "data" / "telegram_sent.csv")
 
 

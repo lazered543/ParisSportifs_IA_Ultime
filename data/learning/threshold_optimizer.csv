@@ -1,0 +1,3 @@
+category,mega_probability,mega_value,safe_probability,safe_value,value_probability,value_value,backtest_bets,backtest_roi,backtest_winrate,score
+tennis,0.74,0.03,0.67,0.01,0.62,0.03,350,,0.7428571428571429,0.8010925000000001
+football,0.7,0.03,0.63,0.01,0.58,0.03,0,,,0.0

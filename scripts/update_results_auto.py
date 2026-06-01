@@ -799,6 +799,8 @@ def evaluate_bet(row, winner):
         return "PENDING"
 
     winner_clean = safe_str(winner)
+    if any(token in winner_clean for token in ["void", "cancel", "postpon", "walkover", "abandon", "retired"]):
+        return "VOID"
 
     if market == "home win":
         return "WIN" if names_match(winner_clean, home) else "LOSS"
@@ -891,6 +893,9 @@ def write_finished_archive(tracking):
         "tennis_edge",
         "learning_adjustment",
         "calibration_adjustment",
+        "threshold_profile",
+        "decision_status",
+        "refusal_reason",
         "decision_reason",
     ]
     archive_cols = [col for col in archive_cols if col in finished.columns]
