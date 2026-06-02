@@ -1,85 +1,86 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
 americanfootball_cfl,2026-06-04T23:30:00Z,Hamilton Tiger-Cats,Montreal Alouettes,2.15,,1.79,the-odds-api
 americanfootball_cfl,2026-06-06T01:00:00Z,Calgary Stampeders,Winnipeg Blue Bombers,2.05,,1.82,the-odds-api
-americanfootball_cfl,2026-06-06T23:00:00Z,Ottawa Redblacks,Edmonton Elks,1.53,,2.6,the-odds-api
+americanfootball_cfl,2026-06-06T23:00:00Z,Ottawa Redblacks,Edmonton Elks,1.62,,2.4,the-odds-api
 soccer_brazil_serie_b,2026-06-05T23:00:00Z,Operario PR,Juventude,2.25,3.0,3.95,the-odds-api
-soccer_brazil_serie_b,2026-06-06T14:00:00Z,Criciuma,Londrina,1.67,3.6,5.3,the-odds-api
-soccer_brazil_serie_b,2026-06-07T19:00:00Z,Clube de Regatas Brasil,São Bernardo,1.75,3.6,4.75,the-odds-api
+soccer_brazil_serie_b,2026-06-06T14:00:00Z,Criciuma,Londrina,1.67,3.6,5.5,the-odds-api
+soccer_brazil_serie_b,2026-06-07T19:00:00Z,Clube de Regatas Brasil,São Bernardo,1.75,3.6,4.8,the-odds-api
 soccer_brazil_serie_b,2026-06-08T23:00:00Z,América Mineiro,Atletico Goianiense,2.45,3.1,3.3,the-odds-api
-soccer_brazil_serie_b,2026-06-08T23:00:00Z,Vila Nova,Botafogo,2.05,3.2,4.0,the-odds-api
-soccer_brazil_serie_b,2026-06-09T22:00:00Z,Nautico PE,Fortaleza,2.3,3.0,3.1,the-odds-api
+soccer_brazil_serie_b,2026-06-08T23:00:00Z,Vila Nova,Botafogo,2.0,3.05,4.7,the-odds-api
+soccer_brazil_serie_b,2026-06-09T22:00:00Z,Nautico PE,Fortaleza,2.3,3.15,3.35,the-odds-api
+soccer_brazil_serie_b,2026-06-09T22:00:00Z,Ponte Preta,Cuiabá,2.8,2.85,2.75,the-odds-api
 soccer_brazil_serie_b,2026-06-11T00:00:00Z,Sport Recife,Athletic Club (MG),1.75,3.3,4.8,the-odds-api
-soccer_fifa_world_cup,2026-06-11T19:00:00Z,Mexico,South Africa,1.5,4.7,8.8,the-odds-api
+soccer_fifa_world_cup,2026-06-11T19:00:00Z,Mexico,South Africa,1.5,4.7,9.0,the-odds-api
 soccer_fifa_world_cup,2026-06-12T02:00:00Z,South Korea,Czech Republic,2.78,3.2,2.98,the-odds-api
-soccer_fifa_world_cup,2026-06-12T19:00:00Z,Canada,Bosnia & Herzegovina,1.88,3.75,4.7,the-odds-api
-soccer_fifa_world_cup,2026-06-13T01:00:00Z,USA,Paraguay,2.06,3.5,4.1,the-odds-api
+soccer_fifa_world_cup,2026-06-12T19:00:00Z,Canada,Bosnia & Herzegovina,1.89,3.75,4.8,the-odds-api
+soccer_fifa_world_cup,2026-06-13T01:00:00Z,USA,Paraguay,2.06,3.5,4.2,the-odds-api
 soccer_fifa_world_cup,2026-06-13T19:00:00Z,Qatar,Switzerland,15.0,6.8,1.26,the-odds-api
-soccer_fifa_world_cup,2026-06-13T22:00:00Z,Brazil,Morocco,1.66,4.1,6.2,the-odds-api
-soccer_fifa_world_cup,2026-06-14T01:00:00Z,Haiti,Scotland,8.0,5.1,1.46,the-odds-api
-soccer_fifa_world_cup,2026-06-14T04:00:00Z,Australia,Turkey,5.1,3.75,1.83,the-odds-api
-soccer_fifa_world_cup,2026-06-14T17:00:00Z,Germany,Curaçao,1.06,25.0,67.0,the-odds-api
-soccer_fifa_world_cup,2026-06-14T20:00:00Z,Netherlands,Japan,2.04,3.8,4.0,the-odds-api
+soccer_fifa_world_cup,2026-06-13T22:00:00Z,Brazil,Morocco,1.65,4.1,6.2,the-odds-api
+soccer_fifa_world_cup,2026-06-14T01:00:00Z,Haiti,Scotland,8.0,5.0,1.47,the-odds-api
+soccer_fifa_world_cup,2026-06-14T04:00:00Z,Australia,Turkey,5.2,3.8,1.82,the-odds-api
+soccer_fifa_world_cup,2026-06-14T17:00:00Z,Germany,Curaçao,1.06,23.0,61.0,the-odds-api
+soccer_fifa_world_cup,2026-06-14T20:00:00Z,Netherlands,Japan,2.02,3.75,4.0,the-odds-api
 soccer_fifa_world_cup,2026-06-14T23:00:00Z,Ivory Coast,Ecuador,3.9,3.0,2.44,the-odds-api
-soccer_fifa_world_cup,2026-06-15T02:00:00Z,Sweden,Tunisia,2.02,3.5,4.4,the-odds-api
-soccer_fifa_world_cup,2026-06-15T16:00:00Z,Spain,Cape Verde,1.13,12.0,30.03,the-odds-api
+soccer_fifa_world_cup,2026-06-15T02:00:00Z,Sweden,Tunisia,2.02,3.45,4.5,the-odds-api
+soccer_fifa_world_cup,2026-06-15T16:00:00Z,Spain,Cape Verde,1.12,12.5,32.0,the-odds-api
 soccer_fifa_world_cup,2026-06-15T19:00:00Z,Belgium,Egypt,1.68,4.2,5.7,the-odds-api
-soccer_fifa_world_cup,2026-06-15T22:00:00Z,Saudi Arabia,Uruguay,7.8,4.6,1.52,the-odds-api
-soccer_fifa_world_cup,2026-06-16T01:00:00Z,Iran,New Zealand,1.93,3.6,4.7,the-odds-api
+soccer_fifa_world_cup,2026-06-15T22:00:00Z,Saudi Arabia,Uruguay,7.8,4.6,1.51,the-odds-api
+soccer_fifa_world_cup,2026-06-16T01:00:00Z,Iran,New Zealand,2.0,3.55,4.4,the-odds-api
 soccer_fifa_world_cup,2026-06-16T19:00:00Z,France,Senegal,1.46,5.0,8.2,the-odds-api
-soccer_fifa_world_cup,2026-06-16T22:00:00Z,Iraq,Norway,15.0,7.4,1.25,the-odds-api
-soccer_fifa_world_cup,2026-06-17T01:00:00Z,Argentina,Algeria,1.42,4.9,9.6,the-odds-api
+soccer_fifa_world_cup,2026-06-16T22:00:00Z,Iraq,Norway,15.0,7.4,1.24,the-odds-api
+soccer_fifa_world_cup,2026-06-17T01:00:00Z,Argentina,Algeria,1.42,4.9,10.0,the-odds-api
 soccer_fifa_world_cup,2026-06-17T04:00:00Z,Austria,Jordan,1.35,5.9,10.0,the-odds-api
 soccer_fifa_world_cup,2026-06-17T17:00:00Z,Portugal,DR Congo,1.29,6.6,13.5,the-odds-api
-soccer_fifa_world_cup,2026-06-17T20:00:00Z,England,Croatia,1.77,4.0,5.1,the-odds-api
-soccer_fifa_world_cup,2026-06-17T23:00:00Z,Ghana,Panama,2.1,3.75,3.85,the-odds-api
-soccer_fifa_world_cup,2026-06-18T02:00:00Z,Uzbekistan,Colombia,9.2,4.9,1.44,the-odds-api
-soccer_fifa_world_cup,2026-06-18T16:00:00Z,Czech Republic,South Africa,2.1,3.4,4.3,the-odds-api
-soccer_fifa_world_cup,2026-06-18T19:00:00Z,Switzerland,Bosnia & Herzegovina,1.63,4.1,6.2,the-odds-api
+soccer_fifa_world_cup,2026-06-17T20:00:00Z,England,Croatia,1.79,3.95,5.2,the-odds-api
+soccer_fifa_world_cup,2026-06-17T23:00:00Z,Ghana,Panama,2.1,3.6,3.9,the-odds-api
+soccer_fifa_world_cup,2026-06-18T02:00:00Z,Uzbekistan,Colombia,9.4,4.9,1.43,the-odds-api
+soccer_fifa_world_cup,2026-06-18T16:00:00Z,Czech Republic,South Africa,2.1,3.4,4.1,the-odds-api
+soccer_fifa_world_cup,2026-06-18T19:00:00Z,Switzerland,Bosnia & Herzegovina,1.63,4.1,6.0,the-odds-api
 soccer_fifa_world_cup,2026-06-18T22:00:00Z,Canada,Qatar,1.35,5.5,10.5,the-odds-api
-soccer_fifa_world_cup,2026-06-19T01:00:00Z,Mexico,South Korea,1.9,3.5,4.6,the-odds-api
-soccer_fifa_world_cup,2026-06-19T19:00:00Z,USA,Australia,1.79,3.9,5.0,the-odds-api
-soccer_fifa_world_cup,2026-06-19T22:00:00Z,Scotland,Morocco,4.2,3.3,2.1,the-odds-api
-soccer_fifa_world_cup,2026-06-20T01:00:00Z,Brazil,Haiti,1.08,17.0,51.0,the-odds-api
+soccer_fifa_world_cup,2026-06-19T01:00:00Z,Mexico,South Korea,1.88,3.5,4.6,the-odds-api
+soccer_fifa_world_cup,2026-06-19T19:00:00Z,USA,Australia,1.79,4.0,5.0,the-odds-api
+soccer_fifa_world_cup,2026-06-19T22:00:00Z,Scotland,Morocco,4.4,3.35,2.1,the-odds-api
+soccer_fifa_world_cup,2026-06-20T01:00:00Z,Brazil,Haiti,1.07,16.5,51.0,the-odds-api
 soccer_fifa_world_cup,2026-06-20T03:00:00Z,Turkey,Paraguay,2.3,3.25,3.45,the-odds-api
-soccer_fifa_world_cup,2026-06-20T17:00:00Z,Netherlands,Sweden,1.72,4.1,5.5,the-odds-api
-soccer_fifa_world_cup,2026-06-20T20:00:00Z,Germany,Ivory Coast,1.55,4.5,6.2,the-odds-api
-soccer_fifa_world_cup,2026-06-21T00:00:00Z,Ecuador,Curaçao,1.29,6.4,12.5,the-odds-api
-soccer_fifa_world_cup,2026-06-21T04:00:00Z,Tunisia,Japan,5.2,3.5,1.85,the-odds-api
-soccer_fifa_world_cup,2026-06-21T16:00:00Z,Spain,Saudi Arabia,1.13,10.0,30.03,the-odds-api
-soccer_fifa_world_cup,2026-06-21T19:00:00Z,Belgium,Iran,1.44,5.1,8.4,the-odds-api
-soccer_fifa_world_cup,2026-06-21T22:00:00Z,Uruguay,Cape Verde,1.51,4.5,8.0,the-odds-api
-soccer_fifa_world_cup,2026-06-22T01:00:00Z,New Zealand,Egypt,5.5,3.7,1.75,the-odds-api
+soccer_fifa_world_cup,2026-06-20T17:00:00Z,Netherlands,Sweden,1.73,4.1,5.2,the-odds-api
+soccer_fifa_world_cup,2026-06-20T20:00:00Z,Germany,Ivory Coast,1.56,4.5,6.4,the-odds-api
+soccer_fifa_world_cup,2026-06-21T00:00:00Z,Ecuador,Curaçao,1.27,6.4,13.0,the-odds-api
+soccer_fifa_world_cup,2026-06-21T04:00:00Z,Tunisia,Japan,5.1,3.5,1.85,the-odds-api
+soccer_fifa_world_cup,2026-06-21T16:00:00Z,Spain,Saudi Arabia,1.13,9.8,29.0,the-odds-api
+soccer_fifa_world_cup,2026-06-21T19:00:00Z,Belgium,Iran,1.44,5.0,8.4,the-odds-api
+soccer_fifa_world_cup,2026-06-21T22:00:00Z,Uruguay,Cape Verde,1.51,4.6,8.0,the-odds-api
+soccer_fifa_world_cup,2026-06-22T01:00:00Z,New Zealand,Egypt,5.5,3.7,1.76,the-odds-api
 soccer_fifa_world_cup,2026-06-22T17:00:00Z,Argentina,Austria,1.66,4.0,5.7,the-odds-api
-soccer_fifa_world_cup,2026-06-22T21:00:00Z,France,Iraq,1.13,11.0,32.05,the-odds-api
-soccer_fifa_world_cup,2026-06-23T00:00:00Z,Norway,Senegal,2.2,3.6,3.6,the-odds-api
+soccer_fifa_world_cup,2026-06-22T21:00:00Z,France,Iraq,1.13,11.0,30.03,the-odds-api
+soccer_fifa_world_cup,2026-06-23T00:00:00Z,Norway,Senegal,2.18,3.65,3.6,the-odds-api
 soccer_fifa_world_cup,2026-06-23T03:00:00Z,Jordan,Algeria,5.7,3.9,1.69,the-odds-api
 soccer_fifa_world_cup,2026-06-23T17:00:00Z,Portugal,Uzbekistan,1.26,6.5,14.5,the-odds-api
-soccer_fifa_world_cup,2026-06-23T20:00:00Z,England,Ghana,1.35,5.8,10.0,the-odds-api
-soccer_fifa_world_cup,2026-06-23T23:00:00Z,Panama,Croatia,7.2,4.2,1.53,the-odds-api
-soccer_fifa_world_cup,2026-06-24T02:00:00Z,Colombia,DR Congo,1.5,4.3,8.4,the-odds-api
+soccer_fifa_world_cup,2026-06-23T20:00:00Z,England,Ghana,1.36,5.7,10.0,the-odds-api
+soccer_fifa_world_cup,2026-06-23T23:00:00Z,Panama,Croatia,7.6,4.3,1.53,the-odds-api
+soccer_fifa_world_cup,2026-06-24T02:00:00Z,Colombia,DR Congo,1.5,4.4,8.8,the-odds-api
 soccer_fifa_world_cup,2026-06-24T19:00:00Z,Bosnia & Herzegovina,Qatar,1.6,4.0,6.4,the-odds-api
 soccer_fifa_world_cup,2026-06-24T19:00:00Z,Switzerland,Canada,2.2,3.4,3.8,the-odds-api
 soccer_fifa_world_cup,2026-06-24T22:00:00Z,Morocco,Haiti,1.25,6.25,13.5,the-odds-api
-soccer_fifa_world_cup,2026-06-24T22:00:00Z,Scotland,Brazil,8.5,5.0,1.41,the-odds-api
-soccer_fifa_world_cup,2026-06-25T01:00:00Z,Czech Republic,Mexico,3.9,3.4,2.0,the-odds-api
+soccer_fifa_world_cup,2026-06-24T22:00:00Z,Scotland,Brazil,8.5,5.0,1.42,the-odds-api
+soccer_fifa_world_cup,2026-06-25T01:00:00Z,Czech Republic,Mexico,4.75,3.5,1.91,the-odds-api
 soccer_fifa_world_cup,2026-06-25T01:00:00Z,South Africa,South Korea,3.8,3.4,2.08,the-odds-api
 soccer_fifa_world_cup,2026-06-25T20:00:00Z,Curaçao,Ivory Coast,11.0,5.5,1.33,the-odds-api
 soccer_fifa_world_cup,2026-06-25T20:00:00Z,Ecuador,Germany,5.0,3.9,1.67,the-odds-api
-soccer_fifa_world_cup,2026-06-25T23:00:00Z,Japan,Sweden,2.1,3.4,3.6,the-odds-api
-soccer_fifa_world_cup,2026-06-25T23:00:00Z,Tunisia,Netherlands,7.0,4.2,1.53,the-odds-api
+soccer_fifa_world_cup,2026-06-25T23:00:00Z,Japan,Sweden,2.16,3.4,3.6,the-odds-api
+soccer_fifa_world_cup,2026-06-25T23:00:00Z,Tunisia,Netherlands,7.2,4.2,1.53,the-odds-api
 soccer_fifa_world_cup,2026-06-26T02:00:00Z,Paraguay,Australia,2.2,3.3,3.5,the-odds-api
 soccer_fifa_world_cup,2026-06-26T02:00:00Z,Turkey,USA,2.75,3.4,2.5,the-odds-api
-soccer_fifa_world_cup,2026-06-26T19:00:00Z,Norway,France,4.4,3.6,1.83,the-odds-api
-soccer_fifa_world_cup,2026-06-26T19:00:00Z,Senegal,Iraq,1.45,4.5,8.0,the-odds-api
-soccer_fifa_world_cup,2026-06-27T00:00:00Z,Cape Verde,Saudi Arabia,2.63,3.45,2.8,the-odds-api
-soccer_fifa_world_cup,2026-06-27T00:00:00Z,Uruguay,Spain,5.7,3.9,1.65,the-odds-api
+soccer_fifa_world_cup,2026-06-26T19:00:00Z,Norway,France,4.5,3.6,1.86,the-odds-api
+soccer_fifa_world_cup,2026-06-26T19:00:00Z,Senegal,Iraq,1.44,4.5,8.2,the-odds-api
+soccer_fifa_world_cup,2026-06-27T00:00:00Z,Cape Verde,Saudi Arabia,2.64,3.45,2.82,the-odds-api
+soccer_fifa_world_cup,2026-06-27T00:00:00Z,Uruguay,Spain,5.5,3.9,1.65,the-odds-api
 soccer_fifa_world_cup,2026-06-27T03:00:00Z,Egypt,Iran,2.4,3.1,3.6,the-odds-api
 soccer_fifa_world_cup,2026-06-27T03:00:00Z,New Zealand,Belgium,12.0,6.0,1.29,the-odds-api
-soccer_fifa_world_cup,2026-06-27T21:00:00Z,Croatia,Ghana,1.75,3.6,5.2,the-odds-api
-soccer_fifa_world_cup,2026-06-27T21:00:00Z,Panama,England,13.0,6.5,1.25,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,3.45,3.4,2.15,the-odds-api
+soccer_fifa_world_cup,2026-06-27T21:00:00Z,Croatia,Ghana,1.75,3.6,5.5,the-odds-api
+soccer_fifa_world_cup,2026-06-27T21:00:00Z,Panama,England,13.5,6.5,1.25,the-odds-api
+soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,3.4,3.4,2.2,the-odds-api
 soccer_fifa_world_cup,2026-06-27T23:30:00Z,DR Congo,Uzbekistan,2.6,3.2,2.88,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,3.5,3.3,2.3,the-odds-api
+soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,3.5,3.25,2.3,the-odds-api
 soccer_fifa_world_cup,2026-06-28T02:00:00Z,Jordan,Argentina,19.0,7.5,1.2,the-odds-api
 soccer_japan_j_league,2026-06-06T05:00:00Z,FC Tokyo,Cerezo Osaka,1.85,3.6,3.8,the-odds-api
 soccer_japan_j_league,2026-06-06T05:00:00Z,JEF United Chiba,Avispa Fukuoka,2.88,3.0,2.6,the-odds-api
@@ -91,12 +92,17 @@ soccer_japan_j_league,2026-06-06T07:00:00Z,Urawa Red Diamonds,Fagiano Okayama,1.
 soccer_japan_j_league,2026-06-06T08:00:00Z,Yokohama F Marinos,Shimizu S Pulse,2.3,3.25,3.0,the-odds-api
 soccer_japan_j_league,2026-06-06T09:00:00Z,Kashiwa Reysol,Kyoto Purple Sanga,1.95,3.5,3.6,the-odds-api
 soccer_japan_j_league,2026-06-06T10:00:00Z,Kawasaki Frontale,Hiroshima Sanfrecce FC,3.25,3.75,2.0,the-odds-api
-soccer_spain_segunda_division,2026-06-06T19:00:00Z,CD Castellón,Almería,1.83,4.0,4.0,the-odds-api
-soccer_spain_segunda_division,2026-06-07T19:00:00Z,Las Palmas,Málaga,2.02,3.5,3.7,the-odds-api
-tennis_atp_french_open,2026-06-02T13:00:00Z,Rafael Jodar,Alexander Zverev,4.5,,1.3,the-odds-api
-tennis_atp_french_open,2026-06-02T18:15:00Z,Jakub Mensik,Joao Fonseca,2.96,,1.5,the-odds-api
-tennis_atp_french_open,2026-06-03T11:20:00Z,Felix Auger-Aliassime,Flavio Cobolli,2.0,,1.98,the-odds-api
-tennis_atp_french_open,2026-06-03T18:15:00Z,Matteo Berrettini,Matteo Arnaldi,1.61,,2.64,the-odds-api
-tennis_wta_french_open,2026-06-02T10:25:00Z,Elina Svitolina,Marta Kostyuk,2.44,,2.0,the-odds-api
-tennis_wta_french_open,2026-06-03T09:00:00Z,Anna Kalinskaya,Maja Chwalinska,2.0,,2.05,the-odds-api
-tennis_wta_french_open,2026-06-03T10:10:00Z,Aryna Sabalenka,Diana Shnaider,1.15,,7.2,the-odds-api
+soccer_spain_segunda_division,2026-06-06T19:00:00Z,CD Castellón,Almería,1.83,4.2,4.3,the-odds-api
+soccer_spain_segunda_division,2026-06-07T19:00:00Z,Las Palmas,Málaga,2.08,3.5,3.85,the-odds-api
+soccer_spain_segunda_division,2026-06-09T19:00:00Z,Almería,CD Castellón,2.06,3.7,3.05,the-odds-api
+soccer_sweden_superettan,2026-06-09T17:00:00Z,IK Brage,Ljungskile SK,2.52,3.5,2.88,the-odds-api
+soccer_sweden_superettan,2026-06-09T17:00:00Z,IK Oddevold,IFK Norrkoping,2.7,3.5,2.44,the-odds-api
+soccer_sweden_superettan,2026-06-09T17:00:00Z,Nordic United FC,Östersunds FK,2.32,3.35,2.85,the-odds-api
+soccer_sweden_superettan,2026-06-09T17:00:00Z,Sandvikens IF,Falkenbergs FF,2.38,3.5,2.8,the-odds-api
+soccer_sweden_superettan,2026-06-09T17:00:00Z,Östers IF,IFK Värnamo,2.23,3.6,3.25,the-odds-api
+tennis_atp_french_open,2026-06-03T11:20:00Z,Felix Auger-Aliassime,Flavio Cobolli,2.06,,1.93,the-odds-api
+tennis_atp_french_open,2026-06-03T18:15:00Z,Matteo Berrettini,Matteo Arnaldi,1.59,,2.72,the-odds-api
+tennis_atp_french_open,2026-06-05T12:30:00Z,Jakub Mensik,Alexander Zverev,3.95,,1.25,the-odds-api
+tennis_wta_french_open,2026-06-03T09:00:00Z,Anna Kalinskaya,Maja Chwalinska,1.91,,2.1,the-odds-api
+tennis_wta_french_open,2026-06-03T10:10:00Z,Aryna Sabalenka,Diana Shnaider,1.14,,7.8,the-odds-api
+tennis_wta_french_open,2026-06-04T13:00:00Z,Marta Kostyuk,Mirra Andreeva,1.81,,2.2,the-odds-api
