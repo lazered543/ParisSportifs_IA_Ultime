@@ -19,10 +19,10 @@ from src.models.poisson import football_poisson_probs
 from src.utils.config import BANKROLL_START as CONFIG_BANKROLL_START
 
 BANKROLL_START = 10.0
-MIN_ABSOLUTE_STAKE = 0.20
-MAX_ABSOLUTE_STAKE = 3.00
-MAX_DAILY_EXPOSURE_RATE = 0.30
-MAX_SINGLE_BET_RATE = 0.30
+MIN_ABSOLUTE_STAKE = 1.00
+MAX_ABSOLUTE_STAKE = 5.00
+MAX_DAILY_EXPOSURE_RATE = 0.50
+MAX_SINGLE_BET_RATE = 0.50
 
 UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
 FOOTBALL_HISTORY_PATH = Path("data/processed/football_history_all.csv")
@@ -480,9 +480,9 @@ def bankroll_management(probability, odds, mode, bankroll=None):
 
     # Planchers qui évoluent aussi, mais doucement.
     floors = {
-        "MEGA VALUE": min(1.80 * growth_factor, MAX_ABSOLUTE_STAKE),
-        "SAFE PICK": min(1.20 * growth_factor, MAX_ABSOLUTE_STAKE),
-        "VALUE BET": min(0.60 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "MEGA VALUE": min(3.00 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "SAFE PICK": min(2.00 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "VALUE BET": min(1.00 * growth_factor, MAX_ABSOLUTE_STAKE),
     }
 
     stake_percent = min(kelly * fractions.get(mode, 0), caps_pct.get(mode, 0))

@@ -315,8 +315,8 @@ if next_goal_display > previous_goal_display:
     progress_display = ((current_bankroll_display - previous_goal_display) / (next_goal_display - previous_goal_display)) * 100
 progress_display = max(0.0, min(100.0, progress_display))
 
-max_single_bet_display = min(current_bankroll_display * 0.30, 3.00)
-max_daily_exposure_display = current_bankroll_display * 0.30
+max_single_bet_display = min(current_bankroll_display * 0.50, 5.00)
+max_daily_exposure_display = current_bankroll_display * 0.50
 
 
 # ============================================================
@@ -686,11 +686,11 @@ def machine_stake(mode, bankroll):
     bankroll = max(to_float(bankroll, 10.0), 0.0)
     growth_factor = max(1.0, min(bankroll / 10.0, 6.0))
     floors = {
-        "MEGA VALUE": min(1.80 * growth_factor, 3.00),
-        "SAFE PICK": min(1.20 * growth_factor, 3.00),
-        "VALUE BET": min(0.60 * growth_factor, 3.00),
+        "MEGA VALUE": min(3.00 * growth_factor, 5.00),
+        "SAFE PICK": min(2.00 * growth_factor, 5.00),
+        "VALUE BET": min(1.00 * growth_factor, 5.00),
     }
-    return round(min(floors.get(mode, 0.0), bankroll * 0.30, 3.00, bankroll), 2)
+    return round(min(floors.get(mode, 0.0), bankroll * 0.50, 5.00, bankroll), 2)
 
 
 def find_machine_match_rows(data, category, first_name, second_name):
