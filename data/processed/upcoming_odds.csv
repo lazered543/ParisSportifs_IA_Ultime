@@ -34,10 +34,10 @@ soccer_fifa_world_cup,2026-06-14T20:00:00Z,Netherlands,Japan,2.04,3.8,3.9,the-od
 soccer_fifa_world_cup,2026-06-14T23:00:00Z,Ivory Coast,Ecuador,3.9,3.0,2.44,the-odds-api
 soccer_fifa_world_cup,2026-06-15T02:00:00Z,Sweden,Tunisia,2.02,3.45,4.5,the-odds-api
 soccer_fifa_world_cup,2026-06-15T16:00:00Z,Spain,Cape Verde,1.12,12.5,30.0,the-odds-api
-soccer_fifa_world_cup,2026-06-15T19:00:00Z,Belgium,Egypt,1.7,4.2,5.7,the-odds-api
+soccer_fifa_world_cup,2026-06-15T19:00:00Z,Belgium,Egypt,1.68,4.2,5.7,the-odds-api
 soccer_fifa_world_cup,2026-06-15T22:00:00Z,Saudi Arabia,Uruguay,8.0,4.6,1.51,the-odds-api
 soccer_fifa_world_cup,2026-06-16T01:00:00Z,Iran,New Zealand,2.0,3.55,4.5,the-odds-api
-soccer_fifa_world_cup,2026-06-16T19:00:00Z,France,Senegal,1.45,5.0,8.2,the-odds-api
+soccer_fifa_world_cup,2026-06-16T19:00:00Z,France,Senegal,1.46,5.0,8.2,the-odds-api
 soccer_fifa_world_cup,2026-06-16T22:00:00Z,Iraq,Norway,15.5,7.4,1.24,the-odds-api
 soccer_fifa_world_cup,2026-06-17T01:00:00Z,Argentina,Algeria,1.41,4.9,10.0,the-odds-api
 soccer_fifa_world_cup,2026-06-17T04:00:00Z,Austria,Jordan,1.35,5.9,10.0,the-odds-api
@@ -116,8 +116,8 @@ soccer_sweden_superettan,2026-06-09T17:00:00Z,IK Oddevold,IFK Norrkoping,2.7,3.5
 soccer_sweden_superettan,2026-06-09T17:00:00Z,Nordic United FC,Östersunds FK,2.32,3.5,2.85,the-odds-api
 soccer_sweden_superettan,2026-06-09T17:00:00Z,Sandvikens IF,Falkenbergs FF,2.38,3.6,2.95,the-odds-api
 soccer_sweden_superettan,2026-06-09T17:00:00Z,Östers IF,IFK Värnamo,2.23,3.6,3.0,the-odds-api
-tennis_atp_french_open,2026-06-03T13:21:00Z,Felix Auger-Aliassime,Flavio Cobolli,2.02,,1.97,the-odds-api
+tennis_atp_french_open,2026-06-03T13:21:00Z,Felix Auger-Aliassime,Flavio Cobolli,2.02,,1.96,the-odds-api
 tennis_atp_french_open,2026-06-03T18:15:00Z,Matteo Berrettini,Matteo Arnaldi,1.57,,2.72,the-odds-api
 tennis_atp_french_open,2026-06-05T12:30:00Z,Jakub Mensik,Alexander Zverev,5.0,,1.26,the-odds-api
-tennis_wta_french_open,2026-06-03T11:30:00Z,Aryna Sabalenka,Diana Shnaider,1.14,,10.0,the-odds-api
+tennis_wta_french_open,2026-06-03T11:30:00Z,Aryna Sabalenka,Diana Shnaider,1.11,,10.0,the-odds-api
 tennis_wta_french_open,2026-06-04T13:00:00Z,Marta Kostyuk,Mirra Andreeva,1.83,,2.18,the-odds-api

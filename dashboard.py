@@ -323,7 +323,7 @@ max_daily_exposure_display = current_bankroll_display * 0.50
 # HELPERS AFFICHAGE
 # ============================================================
 
-SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "VALUE BET"]
+SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "FAVORI SOLIDE", "VALUE BET"]
 RISKY_MODES = ["RISKY VALUE"]
 RECOMMENDED_MODES = SAFE_MODES
 
@@ -335,10 +335,11 @@ def sort_recommendations(data):
     rank = {
         "MEGA VALUE": 0,
         "SAFE PICK": 1,
-        "VALUE BET": 2,
-        "RISKY VALUE": 3,
-        "WATCHLIST": 4,
-        "NO BET": 5,
+        "FAVORI SOLIDE": 2,
+        "VALUE BET": 3,
+        "RISKY VALUE": 4,
+        "WATCHLIST": 5,
+        "NO BET": 6,
     }
 
     out = data.copy()
@@ -688,6 +689,7 @@ def machine_stake(mode, bankroll):
     floors = {
         "MEGA VALUE": min(3.00 * growth_factor, 5.00),
         "SAFE PICK": min(2.00 * growth_factor, 5.00),
+        "FAVORI SOLIDE": min(1.50 * growth_factor, 5.00),
         "VALUE BET": min(1.00 * growth_factor, 5.00),
     }
     return round(min(floors.get(mode, 0.0), bankroll * 0.50, 5.00, bankroll), 2)
@@ -843,7 +845,11 @@ def best_card_rows(data):
     out["_safety"] = pd.to_numeric(out.get("safety_score", 0), errors="coerce").fillna(0)
     out["_prob"] = pd.to_numeric(out.get("ai_probability", 0), errors="coerce").fillna(0)
     out["_priority"] = pd.to_numeric(out.get("priority", 0), errors="coerce").fillna(0)
-    out = out[out["bet_mode"].isin(RECOMMENDED_MODES) & (out["_stake"] > 0) & (out["_value"] > 0)].copy()
+    out = out[
+        out["bet_mode"].isin(RECOMMENDED_MODES)
+        & (out["_stake"] > 0)
+        & ((out["_value"] > 0) | (out["bet_mode"] == "FAVORI SOLIDE"))
+    ].copy()
     if out.empty: return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority"], errors="ignore")
     out["_card_score"] = out["_priority"]*1000 + out["_stake"]*100 + out["_value"]*100 + out["_safety"] + out["_prob"]*10
     out = out.sort_values("_card_score", ascending=False).drop_duplicates("match_key", keep="first")

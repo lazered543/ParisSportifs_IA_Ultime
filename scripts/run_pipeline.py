@@ -100,7 +100,7 @@ OUTPUT_COLUMNS = [
     "priority",
 ]
 
-RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET"}
+RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET", "FAVORI SOLIDE"}
 DEFAULT_THRESHOLDS = {
     "mega_probability": 0.70,
     "mega_value": 0.03,
@@ -355,6 +355,8 @@ def select_bet_mode(probability, value, odds, safety, category):
         return "WATCHLIST"
 
     if odds <= 1 or value <= 0:
+        if probability >= 0.72 and value >= -0.10 and 1.10 <= odds <= 1.75:
+            return "FAVORI SOLIDE"
         if probability >= thresholds["value_probability"] and odds >= 1.10:
             return "WATCHLIST"
         return "NO BET"
@@ -368,6 +370,9 @@ def select_bet_mode(probability, value, odds, safety, category):
     if probability >= thresholds["safe_probability"] and value >= thresholds["safe_value"] and 1.10 <= odds <= 1.90:
         return "SAFE PICK"
 
+    if probability >= 0.68 and value >= -0.05 and 1.10 <= odds <= 1.85:
+        return "FAVORI SOLIDE"
+
     if probability >= thresholds["value_probability"] and value >= thresholds["value_value"] and 1.10 <= odds <= 3.00:
         return "VALUE BET"
 
@@ -379,6 +384,8 @@ def safety_level(mode, safety):
         return "1 - MEGA VALUE"
     if mode == "SAFE PICK":
         return "2 - SAFE PICK"
+    if mode == "FAVORI SOLIDE":
+        return "2B - FAVORI SOLIDE"
     if mode == "VALUE BET":
         return "3 - VALUE BET"
     if mode == "RISKY VALUE":
@@ -393,6 +400,7 @@ def ia_badge(mode):
     badges = {
         "MEGA VALUE": "MEGA VALUE",
         "SAFE PICK": "SAFE PICK",
+        "FAVORI SOLIDE": "FAVORI SOLIDE",
         "VALUE BET": "VALUE BET",
         "RISKY VALUE": "RISKY VALUE",
         "WATCHLIST": "WATCHLIST",
@@ -446,11 +454,11 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     if bankroll <= 0 or odds <= 1:
         return 0.0, 0.0, 0.0
 
-    if mode not in {"MEGA VALUE", "SAFE PICK", "VALUE BET"}:
+    if mode not in RECOMMENDED_MODES:
         return 0.0, 0.0, 0.0
 
     edge = probability * odds - 1
-    if edge <= 0:
+    if edge <= 0 and mode != "FAVORI SOLIDE":
         return 0.0, 0.0, 0.0
 
     b = odds - 1
@@ -463,18 +471,21 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     fractions = {
         "MEGA VALUE": 0.55,
         "SAFE PICK": 0.42,
+        "FAVORI SOLIDE": 0.32,
         "VALUE BET": 0.28,
     }
 
     caps_pct = {
         "MEGA VALUE": 0.30,
         "SAFE PICK": 0.20,
+        "FAVORI SOLIDE": 0.18,
         "VALUE BET": 0.12,
     }
 
     caps_abs = {
         "MEGA VALUE": MAX_ABSOLUTE_STAKE,
         "SAFE PICK": MAX_ABSOLUTE_STAKE,
+        "FAVORI SOLIDE": MAX_ABSOLUTE_STAKE,
         "VALUE BET": MAX_ABSOLUTE_STAKE,
     }
 
@@ -482,6 +493,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     floors = {
         "MEGA VALUE": min(3.00 * growth_factor, MAX_ABSOLUTE_STAKE),
         "SAFE PICK": min(2.00 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "FAVORI SOLIDE": min(1.50 * growth_factor, MAX_ABSOLUTE_STAKE),
         "VALUE BET": min(1.00 * growth_factor, MAX_ABSOLUTE_STAKE),
     }
 
@@ -730,7 +742,7 @@ def process_football_match(row, strengths, ratings):
             "value": round(value, 4),
             "confidence": confidence,
             "ia_badge": ia_badge(mode),
-            "reliable_only": mode in {"MEGA VALUE", "SAFE PICK", "VALUE BET"},
+            "reliable_only": mode in RECOMMENDED_MODES,
             "safety_score": safety,
             "safety_level": safety_level(mode, safety),
             "football_trap_signal": football_trap_signal(market, probability, book_probs.get(key, implied), value, bookmaker_odds, poisson_probs["p_draw"]),
@@ -1116,7 +1128,7 @@ def process_tennis_match(row, players):
             "value": round(value, 4),
             "confidence": confidence_label(probability),
             "ia_badge": ia_badge(mode),
-            "reliable_only": mode in {"MEGA VALUE", "SAFE PICK", "VALUE BET"},
+            "reliable_only": mode in RECOMMENDED_MODES,
             "safety_score": safety,
             "safety_level": safety_level(mode, safety),
             "football_trap_signal": "",
@@ -1438,7 +1450,7 @@ def _clean_day(value):
     if pd.isna(dt): return str(value)[:10]
     return dt.strftime("%Y-%m-%d")
 
-def one_real_bet_per_match(df, max_bets=10):
+def one_real_bet_per_match(df, max_bets=40):
     """
     LEVEL MAX :
     - 1 seul vrai pari par match
@@ -1470,9 +1482,9 @@ def one_real_bet_per_match(df, max_bets=10):
     )
 
     out["_is_real_bet"] = (
-        out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
+        out["bet_mode"].isin(RECOMMENDED_MODES)
         & (out["suggested_stake"] > 0)
-        & (out["value"] > 0)
+        & ((out["value"] > 0) | (out["bet_mode"] == "FAVORI SOLIDE"))
         & (out["ai_probability"] >= out["_min_probability"])
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
@@ -1503,9 +1515,9 @@ def one_real_bet_per_match(df, max_bets=10):
         out.loc[mask, "decision"] = "NO BET"
 
     real_after = out[
-        out["bet_mode"].isin({"MEGA VALUE", "SAFE PICK", "VALUE BET"})
+        out["bet_mode"].isin(RECOMMENDED_MODES)
         & (out["suggested_stake"] > 0)
-        & (out["value"] > 0)
+        & ((out["value"] > 0) | (out["bet_mode"] == "FAVORI SOLIDE"))
         & (out["ai_probability"] >= out["_min_probability"])
         & (out["bookmaker_odds"] >= 1.10)
         & (out["bookmaker_odds"] <= 3.00)
@@ -1551,6 +1563,7 @@ def cap_stakes_to_bankroll(df, bankroll):
             out["bet_mode"] = out["bet_mode"].replace({
                 "MEGA VALUE": "WATCHLIST",
                 "SAFE PICK": "WATCHLIST",
+                "FAVORI SOLIDE": "WATCHLIST",
                 "VALUE BET": "WATCHLIST",
                 "RISKY VALUE": "WATCHLIST",
             })
@@ -1561,10 +1574,47 @@ def cap_stakes_to_bankroll(df, bankroll):
 
     out["suggested_stake"] = out["suggested_stake"].clip(lower=0, upper=max_single_bet)
 
-    total = out["suggested_stake"].sum()
-    if total > max_daily_exposure:
-        factor = max_daily_exposure / total
-        out["suggested_stake"] = (out["suggested_stake"] * factor).round(2)
+    out["_stake_day"] = out["date"].apply(_clean_day) if "date" in out.columns else "all"
+    for _, day_idx in out.groupby("_stake_day").groups.items():
+        day_mask = out.index.isin(day_idx)
+        real_mask = day_mask & out["bet_mode"].isin(RECOMMENDED_MODES) & (out["suggested_stake"] > 0)
+        total = out.loc[real_mask, "suggested_stake"].sum()
+        if total <= max_daily_exposure:
+            continue
+
+        candidates = out[real_mask].copy()
+        for col in ["priority", "safety_score", "ai_probability", "value", "bookmaker_odds"]:
+            if col not in candidates.columns:
+                candidates[col] = 0
+            candidates[col] = pd.to_numeric(candidates[col], errors="coerce").fillna(0)
+
+        candidates["_bankroll_score"] = (
+            candidates["priority"] * 2
+            + candidates["ai_probability"] * 600
+            + candidates["safety_score"] * 4
+            + candidates["value"].clip(lower=-0.10, upper=0.25) * 220
+            - candidates["bookmaker_odds"] * 8
+        )
+
+        keep = []
+        remaining = max_daily_exposure
+        for idx, row in candidates.sort_values("_bankroll_score", ascending=False).iterrows():
+            stake = min(float(row["suggested_stake"]), remaining, max_single_bet)
+            if stake < MIN_ABSOLUTE_STAKE:
+                continue
+            keep.append((idx, round(stake, 2)))
+            remaining -= stake
+            if remaining < MIN_ABSOLUTE_STAKE:
+                break
+
+        out.loc[real_mask, "suggested_stake"] = 0
+        keep_indices = {idx for idx, _ in keep}
+        cut_mask = real_mask & (~out.index.isin(keep_indices))
+        out.loc[cut_mask, "bet_mode"] = "WATCHLIST"
+        out.loc[cut_mask, "decision"] = "NO BET"
+        for idx, stake in keep:
+            out.at[idx, "suggested_stake"] = stake
+            out.at[idx, "stake_percent"] = round(stake / bankroll, 4) if bankroll > 0 else 0
 
     small = out["suggested_stake"] < MIN_ABSOLUTE_STAKE
     out.loc[small, "suggested_stake"] = 0
@@ -1575,7 +1625,7 @@ def cap_stakes_to_bankroll(df, bankroll):
         if "decision" in out.columns:
             out.loc[mask, "decision"] = "NO BET"
 
-    return out
+    return out.drop(columns=["_stake_day"], errors="ignore")
 
 
 def force_daily_best_bet(df):
