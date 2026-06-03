@@ -753,6 +753,10 @@ def process_football_match(row, strengths, ratings):
         if not is_live_odds_source(odds_source):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
+        if odds_source == "verified-web-fallback" and stake > 0:
+            bankroll = load_current_bankroll(BANKROLL_START)
+            stake = min(stake, 1.50)
+            stake_percent = stake / bankroll if bankroll > 0 else 0.0
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
 
@@ -1407,6 +1411,9 @@ def refresh_predictions_after_learning(predictions):
         if not is_live_odds_source(row.get("odds_source", "")):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, odds, mode, bankroll=bankroll)
+        if row.get("odds_source", "") == "verified-web-fallback" and stake > 0:
+            stake = min(stake, 1.50)
+            stake_percent = stake / bankroll if bankroll > 0 else 0.0
 
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"

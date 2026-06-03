@@ -12,6 +12,7 @@ from src.utils.config import ODDS_API_KEY, REGION
 
 BASE_URL = "https://api.the-odds-api.com/v4"
 UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
+LOCAL_TZ = "Europe/Paris"
 
 FOOTBALL_SPORTS = [
     "soccer_epl",
@@ -57,12 +58,33 @@ OFFLINE_FOOTBALL_FIXTURES = [
     ("soccer_fifa_world_cup", "2026-06-26T19:00:00Z", "Senegal", "Iraq", 1.53, 4.10, 6.40),
 ]
 
+VERIFIED_TODAY_FOOTBALL_FIXTURES = [
+    # Amicaux internationaux du 03/06/2026 ajoutes quand l'API ne remonte pas le foot du jour.
+    ("soccer_international_friendlies", "2026-06-03T17:00:00Z", "Gibraltar", "British Virgin Islands", 1.38, 5.55, 9.10),
+    ("soccer_international_friendlies", "2026-06-03T18:00:00Z", "Albania", "Israel", 2.51, 3.40, 2.90),
+    ("soccer_international_friendlies", "2026-06-03T18:00:00Z", "DR Congo", "Denmark", 6.00, 3.80, 1.50),
+    ("soccer_international_friendlies", "2026-06-03T18:45:00Z", "Luxembourg", "Italy", 7.50, 4.80, 1.47),
+    ("soccer_international_friendlies", "2026-06-03T18:45:00Z", "Netherlands", "Algeria", 1.30, 5.60, 10.00),
+    ("soccer_international_friendlies", "2026-06-03T18:45:00Z", "Poland", "Nigeria", 2.10, 3.45, 3.80),
+]
+
 
 def _parse_dt(value):
     try:
         return pd.to_datetime(value, utc=True, errors="coerce")
     except Exception:
         return pd.NaT
+
+
+def _today_local():
+    return pd.Timestamp.now(tz=LOCAL_TZ).date()
+
+
+def _local_date(value):
+    dt = _parse_dt(value)
+    if pd.isna(dt):
+        return None
+    return dt.tz_convert(LOCAL_TZ).date()
 
 
 def _is_in_window(sport, commence_time):
@@ -220,6 +242,66 @@ def offline_football_rows():
     return rows
 
 
+def verified_today_football_rows():
+    rows = []
+    today = _today_local()
+    for sport, commence_time, home, away, home_odds, draw_odds, away_odds in VERIFIED_TODAY_FOOTBALL_FIXTURES:
+        if _local_date(commence_time) != today:
+            continue
+        rows.append({
+            "sport": sport,
+            "commence_time": commence_time,
+            "home_team": home,
+            "away_team": away,
+            "odds_home": home_odds,
+            "odds_draw": draw_odds,
+            "odds_away": away_odds,
+            "source": "verified-web-fallback",
+        })
+    return rows
+
+
+def add_missing_verified_today_football(df):
+    fallback = pd.DataFrame(verified_today_football_rows())
+    if fallback.empty:
+        return df
+
+    if df.empty:
+        print("Ajout du fallback web foot du jour.")
+        return fallback
+
+    existing = df.copy()
+    for col in ["sport", "commence_time", "home_team", "away_team"]:
+        if col not in existing.columns:
+            existing[col] = ""
+
+    existing["_key"] = (
+        existing["sport"].astype(str).str.lower()
+        + "|"
+        + existing["commence_time"].astype(str).str[:10]
+        + "|"
+        + existing["home_team"].astype(str).str.lower()
+        + "|"
+        + existing["away_team"].astype(str).str.lower()
+    )
+    fallback["_key"] = (
+        fallback["sport"].astype(str).str.lower()
+        + "|"
+        + fallback["commence_time"].astype(str).str[:10]
+        + "|"
+        + fallback["home_team"].astype(str).str.lower()
+        + "|"
+        + fallback["away_team"].astype(str).str.lower()
+    )
+    missing = fallback[~fallback["_key"].isin(set(existing["_key"]))].drop(columns=["_key"], errors="ignore")
+    existing = existing.drop(columns=["_key"], errors="ignore")
+
+    if not missing.empty:
+        print(f"Ajout fallback web foot du jour : {len(missing)} match(s).")
+        existing = pd.concat([existing, missing], ignore_index=True)
+    return existing
+
+
 def write_upcoming(df):
     UPCOMING_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -247,8 +329,11 @@ def fetch_upcoming_odds():
     if not ODDS_API_KEY or "COLLE" in str(ODDS_API_KEY):
         print("ODDS_API_KEY manquante.")
         existing = pd.read_csv(UPCOMING_PATH) if UPCOMING_PATH.exists() else pd.DataFrame()
+        existing = add_missing_verified_today_football(existing)
         if existing.empty or not existing.get("sport", pd.Series(dtype=str)).astype(str).str.contains("soccer|football", case=False, regex=True).any():
             existing = pd.concat([existing, pd.DataFrame(offline_football_rows())], ignore_index=True)
+            existing = write_upcoming(existing)
+        else:
             existing = write_upcoming(existing)
         return existing
 
@@ -263,6 +348,8 @@ def fetch_upcoming_odds():
     if df.empty:
         print("Aucun match recupere. Ancien upcoming_odds.csv conserve si present.")
         df = pd.read_csv(UPCOMING_PATH) if UPCOMING_PATH.exists() else pd.DataFrame()
+
+    df = add_missing_verified_today_football(df)
 
     has_football = (
         not df.empty
