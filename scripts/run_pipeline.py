@@ -19,6 +19,10 @@ from src.models.poisson import football_poisson_probs
 from src.utils.config import BANKROLL_START as CONFIG_BANKROLL_START
 
 BANKROLL_START = 10.0
+MIN_ABSOLUTE_STAKE = 0.20
+MAX_ABSOLUTE_STAKE = 3.00
+MAX_DAILY_EXPOSURE_RATE = 0.30
+MAX_SINGLE_BET_RATE = 0.30
 
 UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
 FOOTBALL_HISTORY_PATH = Path("data/processed/football_history_all.csv")
@@ -463,22 +467,22 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     }
 
     caps_pct = {
-        "MEGA VALUE": 0.25,
-        "SAFE PICK": 0.15,
-        "VALUE BET": 0.08,
+        "MEGA VALUE": 0.30,
+        "SAFE PICK": 0.20,
+        "VALUE BET": 0.12,
     }
 
     caps_abs = {
-        "MEGA VALUE": 15.00,
-        "SAFE PICK": 10.00,
-        "VALUE BET": 5.00,
+        "MEGA VALUE": MAX_ABSOLUTE_STAKE,
+        "SAFE PICK": MAX_ABSOLUTE_STAKE,
+        "VALUE BET": MAX_ABSOLUTE_STAKE,
     }
 
     # Planchers qui évoluent aussi, mais doucement.
     floors = {
-        "MEGA VALUE": min(1.50 * growth_factor, 8.00),
-        "SAFE PICK": min(1.00 * growth_factor, 5.00),
-        "VALUE BET": min(0.50 * growth_factor, 3.00),
+        "MEGA VALUE": min(1.80 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "SAFE PICK": min(1.20 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "VALUE BET": min(0.60 * growth_factor, MAX_ABSOLUTE_STAKE),
     }
 
     stake_percent = min(kelly * fractions.get(mode, 0), caps_pct.get(mode, 0))
@@ -488,7 +492,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     stake = max(stake, floors.get(mode, 0.0))
     stake = min(stake, bankroll * caps_pct.get(mode, 0.01), caps_abs.get(mode, bankroll), bankroll)
 
-    if stake < 0.10:
+    if stake < MIN_ABSOLUTE_STAKE:
         return 0.0, round(stake_percent, 4), round(kelly, 4)
 
     return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
@@ -1552,8 +1556,8 @@ def cap_stakes_to_bankroll(df, bankroll):
             })
         return out
 
-    max_daily_exposure = bankroll * 0.30
-    max_single_bet = bankroll * 0.25
+    max_daily_exposure = bankroll * MAX_DAILY_EXPOSURE_RATE
+    max_single_bet = min(bankroll * MAX_SINGLE_BET_RATE, MAX_ABSOLUTE_STAKE)
 
     out["suggested_stake"] = out["suggested_stake"].clip(lower=0, upper=max_single_bet)
 
@@ -1562,7 +1566,7 @@ def cap_stakes_to_bankroll(df, bankroll):
         factor = max_daily_exposure / total
         out["suggested_stake"] = (out["suggested_stake"] * factor).round(2)
 
-    small = out["suggested_stake"] < 0.10
+    small = out["suggested_stake"] < MIN_ABSOLUTE_STAKE
     out.loc[small, "suggested_stake"] = 0
 
     if "bet_mode" in out.columns:
