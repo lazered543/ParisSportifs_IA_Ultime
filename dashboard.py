@@ -323,7 +323,7 @@ max_daily_exposure_display = current_bankroll_display * 0.50
 # HELPERS AFFICHAGE
 # ============================================================
 
-SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "FAVORI SOLIDE", "VALUE BET"]
+SAFE_MODES = ["MEGA VALUE", "SAFE PICK", "FAVORI SOLIDE", "VALUE BET", "NUL POSSIBLE"]
 RISKY_MODES = ["RISKY VALUE"]
 RECOMMENDED_MODES = SAFE_MODES
 
@@ -337,9 +337,10 @@ def sort_recommendations(data):
         "SAFE PICK": 1,
         "FAVORI SOLIDE": 2,
         "VALUE BET": 3,
-        "RISKY VALUE": 4,
-        "WATCHLIST": 5,
-        "NO BET": 6,
+        "NUL POSSIBLE": 4,
+        "RISKY VALUE": 5,
+        "WATCHLIST": 6,
+        "NO BET": 7,
     }
 
     out = data.copy()
@@ -667,9 +668,18 @@ def fair_odds(probability):
     return round(1 / probability, 2)
 
 
-def machine_mode(probability, value):
+def machine_mode(probability, value, market=""):
     probability = to_float(probability)
     value = to_float(value)
+    market_l = str(market or "").strip().lower()
+    if market_l == "draw":
+        if probability >= 0.285 and value >= 0:
+            return "NUL POSSIBLE"
+        if probability >= 0.30 and value >= -0.08:
+            return "NUL POSSIBLE"
+        if probability >= 0.265 or value > 0:
+            return "WATCHLIST"
+        return "NO BET"
     if probability >= 0.70 and value >= 0.03:
         return "MEGA VALUE"
     if probability >= 0.63 and value >= 0.01:
@@ -691,6 +701,7 @@ def machine_stake(mode, bankroll):
         "SAFE PICK": min(2.00 * growth_factor, 5.00),
         "FAVORI SOLIDE": min(1.50 * growth_factor, 5.00),
         "VALUE BET": min(1.00 * growth_factor, 5.00),
+        "NUL POSSIBLE": min(1.00 * growth_factor, 2.50, 5.00),
     }
     return round(min(floors.get(mode, 0.0), bankroll * 0.50, 5.00, bankroll), 2)
 
@@ -732,7 +743,7 @@ def add_machine_prediction_row(rows, source, market, selection, probability, mar
     market_odds = to_float(market_odds)
     implied = (1 / market_odds) if market_odds > 1 else ""
     value = probability * market_odds - 1 if market_odds > 1 else ""
-    mode = machine_mode(probability, value) if market_odds > 1 else "INFO IA"
+    mode = machine_mode(probability, value, market) if market_odds > 1 else "INFO IA"
     rows.append({
         "source": source,
         "market": market,
@@ -848,7 +859,7 @@ def best_card_rows(data):
     out = out[
         out["bet_mode"].isin(RECOMMENDED_MODES)
         & (out["_stake"] > 0)
-        & ((out["_value"] > 0) | (out["bet_mode"] == "FAVORI SOLIDE"))
+        & ((out["_value"] > 0) | (out["bet_mode"].isin(["FAVORI SOLIDE", "NUL POSSIBLE"])))
     ].copy()
     if out.empty: return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority"], errors="ignore")
     out["_card_score"] = out["_priority"]*1000 + out["_stake"]*100 + out["_value"]*100 + out["_safety"] + out["_prob"]*10

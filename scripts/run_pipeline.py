@@ -100,7 +100,7 @@ OUTPUT_COLUMNS = [
     "priority",
 ]
 
-RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET", "FAVORI SOLIDE"}
+RECOMMENDED_MODES = {"MEGA VALUE", "SAFE PICK", "VALUE BET", "FAVORI SOLIDE", "NUL POSSIBLE"}
 DEFAULT_THRESHOLDS = {
     "mega_probability": 0.70,
     "mega_value": 0.03,
@@ -335,7 +335,7 @@ def safety_score(probability, value, odds, data_quality, mode_hint=""):
     return round(clamp(score, 0, 100), 2)
 
 
-def select_bet_mode(probability, value, odds, safety, category):
+def select_bet_mode(probability, value, odds, safety, category, market=""):
     """
     Mode équilibré demandé :
     - VALUE BET dès 58% avec value >= 3%
@@ -350,9 +350,18 @@ def select_bet_mode(probability, value, odds, safety, category):
     value = safe_float(value)
     safety = safe_float(safety)
     thresholds = threshold_profile(category)
+    market_l = str(market or "").strip().lower()
 
     if odds < 1.10:
         return "WATCHLIST"
+
+    if market_l == "draw":
+        if 2.75 <= odds <= 4.50:
+            if probability >= 0.285 and value >= 0:
+                return "NUL POSSIBLE"
+            if probability >= 0.30 and value >= -0.08:
+                return "NUL POSSIBLE"
+        return "WATCHLIST" if probability >= 0.265 or value > 0 else "NO BET"
 
     if odds <= 1 or value <= 0:
         if probability >= 0.72 and value >= -0.10 and 1.10 <= odds <= 1.75:
@@ -388,6 +397,8 @@ def safety_level(mode, safety):
         return "2B - FAVORI SOLIDE"
     if mode == "VALUE BET":
         return "3 - VALUE BET"
+    if mode == "NUL POSSIBLE":
+        return "3B - NUL POSSIBLE"
     if mode == "RISKY VALUE":
         return "4 - RISKY VALUE"
     if safety >= 55:
@@ -402,6 +413,7 @@ def ia_badge(mode):
         "SAFE PICK": "SAFE PICK",
         "FAVORI SOLIDE": "FAVORI SOLIDE",
         "VALUE BET": "VALUE BET",
+        "NUL POSSIBLE": "NUL POSSIBLE",
         "RISKY VALUE": "RISKY VALUE",
         "WATCHLIST": "WATCHLIST",
         "NO BET": "NO BET",
@@ -458,7 +470,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         return 0.0, 0.0, 0.0
 
     edge = probability * odds - 1
-    if edge <= 0 and mode != "FAVORI SOLIDE":
+    if edge <= 0 and mode not in {"FAVORI SOLIDE", "NUL POSSIBLE"}:
         return 0.0, 0.0, 0.0
 
     b = odds - 1
@@ -473,6 +485,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "SAFE PICK": 0.42,
         "FAVORI SOLIDE": 0.32,
         "VALUE BET": 0.28,
+        "NUL POSSIBLE": 0.16,
     }
 
     caps_pct = {
@@ -480,6 +493,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "SAFE PICK": 0.20,
         "FAVORI SOLIDE": 0.18,
         "VALUE BET": 0.12,
+        "NUL POSSIBLE": 0.10,
     }
 
     caps_abs = {
@@ -487,6 +501,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "SAFE PICK": MAX_ABSOLUTE_STAKE,
         "FAVORI SOLIDE": MAX_ABSOLUTE_STAKE,
         "VALUE BET": MAX_ABSOLUTE_STAKE,
+        "NUL POSSIBLE": min(2.50, MAX_ABSOLUTE_STAKE),
     }
 
     # Planchers qui évoluent aussi, mais doucement.
@@ -495,6 +510,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         "SAFE PICK": min(2.00 * growth_factor, MAX_ABSOLUTE_STAKE),
         "FAVORI SOLIDE": min(1.50 * growth_factor, MAX_ABSOLUTE_STAKE),
         "VALUE BET": min(1.00 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "NUL POSSIBLE": min(1.00 * growth_factor, 2.50, MAX_ABSOLUTE_STAKE),
     }
 
     stake_percent = min(kelly * fractions.get(mode, 0), caps_pct.get(mode, 0))
@@ -717,7 +733,7 @@ def process_football_match(row, strengths, ratings):
         implied = implied_probability(bookmaker_odds)
         value = probability * bookmaker_odds - 1
         safety = safety_score(probability, value, bookmaker_odds, quality, market)
-        mode = select_bet_mode(probability, value, bookmaker_odds, safety, "football")
+        mode = select_bet_mode(probability, value, bookmaker_odds, safety, "football", market)
         if not is_live_odds_source(odds_source):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
@@ -771,7 +787,7 @@ def process_football_match(row, strengths, ratings):
             "home_xg": round(home_xg, 3),
             "away_xg": round(away_xg, 3),
             "draw_probability": round(poisson_probs["p_draw"], 4),
-            "draw_hunter": "DRAW POSSIBLE" if poisson_probs["p_draw"] >= 0.285 else "NO DRAW SIGNAL",
+            "draw_hunter": "DRAW POSSIBLE" if key == "draw" and (probability >= 0.285 or poisson_probs["p_draw"] >= 0.285) else "NO DRAW SIGNAL",
             "score_exact_alert": (
                 "SCORE INDICATIF - SOURCE FALLBACK"
                 if not is_live_odds_source(odds_source)
@@ -1095,7 +1111,7 @@ def process_tennis_match(row, players):
         implied = implied_probability(bookmaker_odds)
         value = probability * bookmaker_odds - 1
         safety = safety_score(probability, value, bookmaker_odds, probs["quality"])
-        mode = select_bet_mode(probability, value, bookmaker_odds, safety, "tennis")
+        mode = select_bet_mode(probability, value, bookmaker_odds, safety, "tennis", market)
         if not is_live_odds_source(odds_source):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
@@ -1371,7 +1387,7 @@ def refresh_predictions_after_learning(predictions):
         market = row.get("market", "")
         category = row.get("category", "")
         safety = safety_score(probability, value, odds, quality, market)
-        mode = select_bet_mode(probability, value, odds, safety, category)
+        mode = select_bet_mode(probability, value, odds, safety, category, market)
         if not is_live_odds_source(row.get("odds_source", "")):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, odds, mode, bankroll=bankroll)
@@ -1480,14 +1496,15 @@ def one_real_bet_per_match(df, max_bets=40):
         lambda row: threshold_profile(row.get("category", ""))["value_probability"],
         axis=1,
     )
+    out["_max_playable_odds"] = out["bet_mode"].map({"NUL POSSIBLE": 4.50}).fillna(3.00)
 
     out["_is_real_bet"] = (
         out["bet_mode"].isin(RECOMMENDED_MODES)
         & (out["suggested_stake"] > 0)
-        & ((out["value"] > 0) | (out["bet_mode"] == "FAVORI SOLIDE"))
-        & (out["ai_probability"] >= out["_min_probability"])
+        & ((out["value"] > 0) | (out["bet_mode"].isin({"FAVORI SOLIDE", "NUL POSSIBLE"})))
+        & ((out["ai_probability"] >= out["_min_probability"]) | (out["bet_mode"] == "NUL POSSIBLE"))
         & (out["bookmaker_odds"] >= 1.10)
-        & (out["bookmaker_odds"] <= 3.00)
+        & (out["bookmaker_odds"] <= out["_max_playable_odds"])
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     )
 
@@ -1517,10 +1534,10 @@ def one_real_bet_per_match(df, max_bets=40):
     real_after = out[
         out["bet_mode"].isin(RECOMMENDED_MODES)
         & (out["suggested_stake"] > 0)
-        & ((out["value"] > 0) | (out["bet_mode"] == "FAVORI SOLIDE"))
-        & (out["ai_probability"] >= out["_min_probability"])
+        & ((out["value"] > 0) | (out["bet_mode"].isin({"FAVORI SOLIDE", "NUL POSSIBLE"})))
+        & ((out["ai_probability"] >= out["_min_probability"]) | (out["bet_mode"] == "NUL POSSIBLE"))
         & (out["bookmaker_odds"] >= 1.10)
-        & (out["bookmaker_odds"] <= 3.00)
+        & (out["bookmaker_odds"] <= out["_max_playable_odds"])
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     ].sort_values("_keep_score", ascending=False)
 
@@ -1536,7 +1553,7 @@ def one_real_bet_per_match(df, max_bets=40):
     out.loc[cut_mask, "bet_mode"] = "WATCHLIST"
     out.loc[cut_mask, "decision"] = "NO BET"
 
-    return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score", "_min_probability"], errors="ignore")
+    return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score", "_min_probability", "_max_playable_odds"], errors="ignore")
 
 
 def cap_stakes_to_bankroll(df, bankroll):
@@ -1566,6 +1583,7 @@ def cap_stakes_to_bankroll(df, bankroll):
                 "FAVORI SOLIDE": "WATCHLIST",
                 "VALUE BET": "WATCHLIST",
                 "RISKY VALUE": "WATCHLIST",
+                "NUL POSSIBLE": "WATCHLIST",
             })
         return out
 
@@ -1679,7 +1697,7 @@ def force_daily_best_bet(df):
     val = float(out.loc[best_idx, "value"])
     odds = float(out.loc[best_idx, "bookmaker_odds"])
 
-    mode = select_bet_mode(prob, val, odds, out.loc[best_idx, "safety_score"], out.loc[best_idx].get("category", ""))
+    mode = select_bet_mode(prob, val, odds, out.loc[best_idx, "safety_score"], out.loc[best_idx].get("category", ""), out.loc[best_idx].get("market", ""))
     if mode not in RECOMMENDED_MODES:
         mode = "VALUE BET"
 
@@ -1758,7 +1776,10 @@ def main():
     value_bets = predictions[
         predictions["bet_mode"].isin(RECOMMENDED_MODES)
         & (pd.to_numeric(predictions["suggested_stake"], errors="coerce").fillna(0) > 0)
-        & (pd.to_numeric(predictions["value"], errors="coerce").fillna(0) > 0)
+        & (
+            (pd.to_numeric(predictions["value"], errors="coerce").fillna(0) > 0)
+            | predictions["bet_mode"].isin({"FAVORI SOLIDE", "NUL POSSIBLE"})
+        )
     ].copy()
     value_bets.to_csv(VALUE_BETS_PATH, index=False)
 
