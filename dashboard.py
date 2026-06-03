@@ -29,6 +29,7 @@ BANKROLL_STATE_PATH = Path("data/bankroll_state.csv")
 BACKTEST_SUMMARY_PATH = Path("data/learning/backtest_summary.csv")
 CALIBRATION_PATH = Path("data/learning/probability_calibration.csv")
 THRESHOLD_PROFILE_PATH = Path("data/learning/threshold_optimizer.csv")
+LOCAL_TZ = "Europe/Paris"
 
 # ============================================================
 # STYLE / DESIGN
@@ -370,21 +371,17 @@ def parse_display_datetime(value):
         return pd.NaT
 
 
-def dashboard_window_hours(sport):
-    sport = str(sport).lower()
-    if "tennis" in sport: return 96
-    if "world_cup" in sport or "international" in sport: return 720
-    if "soccer" in sport or "football" in sport: return 336
-    return 72
+def display_today():
+    return pd.Timestamp.now(tz=LOCAL_TZ).date()
 
-def upcoming_only(data, hours=72):
+
+def today_only(data):
     if data.empty or "date" not in data.columns: return data
     out = data.copy(); out["_dt"] = out["date"].apply(parse_display_datetime)
-    now = pd.Timestamp.now(tz="UTC")
-    out["_max_hours"] = out["sport"].apply(dashboard_window_hours)
-    out["_end"] = out["_max_hours"].apply(lambda h: now + pd.Timedelta(hours=int(h)))
-    out = out[out["_dt"].isna() | ((out["_dt"] >= now - pd.Timedelta(hours=4)) & (out["_dt"] <= out["_end"]))].copy()
-    return out.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
+    out["_dt"] = pd.to_datetime(out["_dt"], utc=True, errors="coerce")
+    out["_local_day"] = out["_dt"].dt.tz_convert(LOCAL_TZ).dt.date
+    out = out[out["_dt"].notna() & (out["_local_day"] == display_today())].copy()
+    return out.drop(columns=["_dt", "_local_day"], errors="ignore")
 
 
 def odds_freshness_message(data):
@@ -1055,8 +1052,8 @@ if search:
         filtered.astype(str).apply(lambda r: s in " ".join(r.values).lower(), axis=1)
     ]
 
-# Fenêtre proche : le dashboard doit montrer les matchs du jour / très proches.
-filtered_today = upcoming_only(filtered, hours=72)
+# Jour courant : le dashboard montre uniquement les matchs du jour en heure France.
+filtered_today = today_only(filtered)
 
 football_df = filtered_today[filtered_today["category"] == "football"].copy()
 tennis_df = filtered_today[filtered_today["category"] == "tennis"].copy()
@@ -1109,7 +1106,7 @@ st.markdown(
 )
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Lignes proches", len(filtered_today))
+c1.metric("Lignes du jour", len(filtered_today))
 c2.metric("Paris avec mise", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
@@ -1170,14 +1167,14 @@ with tabs[0]:
 
 
 with tabs[1]:
-    st.subheader("⚽ Football — matchs proches")
-    st.caption("Uniquement les matchs dans la fenêtre proche, triés par priorité puis sécurité IA.")
+    st.subheader("⚽ Football — matchs du jour")
+    st.caption("Uniquement les matchs du jour, triés par priorité puis sécurité IA.")
 
     football_reco = best_card_rows(sort_recommendations(football_df))
     football_analysis = sort_recommendations(football_df)
 
     if football_reco.empty:
-        st.info("Aucun match football proche trouvé dans les données actuelles.")
+        st.info("Aucun match football du jour trouvé dans les données actuelles.")
     else:
         render_cards(football_reco, limit=9)
 
@@ -1189,14 +1186,14 @@ with tabs[1]:
 
 
 with tabs[2]:
-    st.subheader("🎾 Tennis — matchs proches")
-    st.caption("ATP/WTA proches uniquement. Les gros joueurs et gros tournois sont priorisés.")
+    st.subheader("🎾 Tennis — matchs du jour")
+    st.caption("ATP/WTA du jour uniquement. Les gros joueurs et gros tournois sont priorisés.")
 
     tennis_reco = best_card_rows(sort_recommendations(tennis_df))
     tennis_analysis = sort_recommendations(tennis_df)
 
     if tennis_reco.empty:
-        st.info("Aucun match tennis proche trouvé dans les données actuelles.")
+        st.info("Aucun match tennis du jour trouvé dans les données actuelles.")
     else:
         render_cards(tennis_reco, limit=9)
 
@@ -1493,7 +1490,7 @@ with tabs[10]:
         )
 
         if machine_table.empty:
-            st.warning("Match non trouve dans les predictions proches. Relance la mise a jour des donnees puis le pipeline pour l'analyser.")
+            st.warning("Match non trouve dans les predictions du jour. Relance la mise a jour des donnees puis le pipeline pour l'analyser.")
         else:
             proba_ia_sort = pd.to_numeric(machine_table["proba_ia"].replace("", pd.NA), errors="coerce").fillna(0)
             value_sort = pd.to_numeric(machine_table["value"].replace("", 0), errors="coerce").fillna(0)

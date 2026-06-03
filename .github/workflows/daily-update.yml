@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
 
   schedule:
-    - cron: "0 */2 * * *"
+    # GitHub utilise UTC : 22:05 couvre minuit France en ete, 23:05 en hiver.
+    - cron: "5 22,23 * * *"
 
 jobs:
   update:

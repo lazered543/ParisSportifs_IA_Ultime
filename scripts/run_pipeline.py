@@ -19,6 +19,7 @@ from src.models.poisson import football_poisson_probs
 from src.utils.config import BANKROLL_START as CONFIG_BANKROLL_START
 
 BANKROLL_START = 10.0
+LOCAL_TZ = "Europe/Paris"
 MIN_ABSOLUTE_STAKE = 1.00
 MAX_ABSOLUTE_STAKE = 5.00
 MAX_DAILY_EXPOSURE_RATE = 0.50
@@ -119,6 +120,21 @@ def safe_float(value, default=0.0):
         return float(value)
     except Exception:
         return default
+
+
+def local_today():
+    return pd.Timestamp.now(tz=LOCAL_TZ).date()
+
+
+def keep_today_only(df, date_col):
+    if df.empty or date_col not in df.columns:
+        return df.copy()
+
+    out = df.copy()
+    parsed = pd.to_datetime(out[date_col], utc=True, errors="coerce")
+    local_dates = parsed.dt.tz_convert(LOCAL_TZ).dt.date
+    today = local_today()
+    return out[parsed.notna() & (local_dates == today)].copy()
 
 
 def clamp(value, low, high):
@@ -1757,6 +1773,15 @@ def main():
         pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(VALUE_BETS_PATH, index=False)
         return
 
+    today = local_today()
+    upcoming = keep_today_only(upcoming, "commence_time")
+    if upcoming.empty:
+        print(f"Aucun match du jour ({today}) dans data/processed/upcoming_odds.csv")
+        PREDICTIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(PREDICTIONS_PATH, index=False)
+        pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(VALUE_BETS_PATH, index=False)
+        return
+
     football_history, strengths, ratings = load_football_context()
     tennis_players = build_tennis_model()
 
@@ -1769,6 +1794,7 @@ def main():
             rows.extend(process_tennis_match(match, tennis_players))
 
     predictions = finalise_predictions(rows)
+    predictions = keep_today_only(predictions, "date")
 
     PREDICTIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(PREDICTIONS_PATH, index=False)
