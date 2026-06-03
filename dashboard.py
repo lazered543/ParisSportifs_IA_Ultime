@@ -19,6 +19,7 @@ st.set_page_config(
 
 APP_PASSWORD = "29052007"
 PRED_PATH = Path("data/predictions/predictions_today.csv")
+UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
 TRACK_PATH = Path("tracking_results.csv")
 TELEGRAM_SENT_PATH = Path("data/telegram_sent.csv")
 ARCHIVE_PATH = Path("data/archive/finished_bets_archive.csv")
@@ -220,6 +221,7 @@ def load_csv(path):
 
 
 df = load_csv(PRED_PATH)
+upcoming_odds = load_csv(UPCOMING_PATH)
 tracking = load_csv(TRACK_PATH)
 archive = load_csv(ARCHIVE_PATH)
 bankroll_state = load_csv(BANKROLL_STATE_PATH)
@@ -275,6 +277,14 @@ def prepare_data(data):
 
     if "decision" not in data.columns:
         data["decision"] = "NO BET"
+
+    data["potential_profit"] = (
+        data["suggested_stake"] * (data["bookmaker_odds"] - 1)
+    ).clip(lower=0).round(2)
+    data["potential_return"] = (
+        data["suggested_stake"] * data["bookmaker_odds"]
+    ).clip(lower=0).round(2)
+    data["benefice_avec_mise"] = data["potential_return"].round(2)
 
     return data
 
@@ -366,11 +376,57 @@ def dashboard_window_hours(sport):
 def upcoming_only(data, hours=72):
     if data.empty or "date" not in data.columns: return data
     out = data.copy(); out["_dt"] = out["date"].apply(parse_display_datetime)
-    now = pd.Timestamp.utcnow()
+    now = pd.Timestamp.now(tz="UTC")
     out["_max_hours"] = out["sport"].apply(dashboard_window_hours)
     out["_end"] = out["_max_hours"].apply(lambda h: now + pd.Timedelta(hours=int(h)))
     out = out[out["_dt"].isna() | ((out["_dt"] >= now - pd.Timedelta(hours=4)) & (out["_dt"] <= out["_end"]))].copy()
     return out.drop(columns=["_dt", "_max_hours", "_end"], errors="ignore")
+
+
+def odds_freshness_message(data):
+    if data.empty:
+        return "warning", "Aucune cote en memoire. Relance la mise a jour des donnees avant de chercher des matchs."
+    if "commence_time" not in data.columns:
+        return "warning", "Le fichier de cotes ne contient pas les horaires des matchs. Les donnees sont incompletes."
+
+    out = data.copy()
+    out["_dt"] = pd.to_datetime(out["commence_time"], utc=True, errors="coerce")
+    out["_source"] = out.get("odds_source", pd.Series("", index=out.index)).astype(str).str.lower()
+    out["_sport"] = out.get("sport", pd.Series("", index=out.index)).astype(str).str.lower()
+
+    now = pd.Timestamp.now(tz="UTC")
+    fresh = out[out["_dt"].isna() | (out["_dt"] >= now - pd.Timedelta(hours=4))].copy()
+    live_api = fresh[fresh["_source"].eq("the-odds-api")]
+    live_tennis = live_api[live_api["_sport"].str.contains("tennis")]
+
+    def fmt_dt(value):
+        if pd.isna(value):
+            return "inconnue"
+        try:
+            return pd.Timestamp(value).tz_convert("Europe/Paris").strftime("%d/%m %H:%M")
+        except Exception:
+            return str(value)
+
+    if fresh.empty:
+        latest = out["_dt"].max()
+        return "warning", f"Aucune cote future dans les donnees actuelles. Derniere cote trouvee : {fmt_dt(latest)}."
+
+    if live_api.empty:
+        next_match = fresh["_dt"].min()
+        return "warning", (
+            "Aucune cote API fraiche dans les donnees actuelles. "
+            f"Prochaine ligne locale : {fmt_dt(next_match)}. "
+            "Les lignes fallback ne doivent pas etre jouees en argent reel."
+        )
+
+    if live_tennis.empty:
+        next_match = fresh["_dt"].min()
+        return "info", (
+            "Aucune cote tennis fraiche dans le flux API actuel. "
+            f"Prochaine cote sportive disponible : {fmt_dt(next_match)}."
+        )
+
+    return "", ""
 
 
 def match_display_label(row):
@@ -399,6 +455,9 @@ def clean_table(data, compact=True):
         "bookmaker_odds",
         "value",
         "suggested_stake",
+        "potential_profit",
+        "potential_return",
+        "benefice_avec_mise",
         "score_exact_1",
         "score_exact_1_proba",
         "score_exact_2",
@@ -421,6 +480,11 @@ def clean_table(data, compact=True):
         "result",
         "stake",
         "profit",
+        "potential_profit",
+        "potential_return",
+        "return_paid",
+        "benefice_avec_mise",
+        "benefice_avec_mise_encaisse",
         "final_winner",
         "final_score_home",
         "final_score_away",
@@ -443,6 +507,11 @@ def clean_table(data, compact=True):
         "suggested_stake",
         "stake",
         "profit",
+        "potential_profit",
+        "potential_return",
+        "return_paid",
+        "benefice_avec_mise",
+        "benefice_avec_mise_encaisse",
         "safety_score",
         "tennis_engine_score",
         "score_exact_1_proba",
@@ -555,6 +624,10 @@ def render_cards(data, limit=6):
             value = float(row.get("value", 0) or 0) * 100
             proba = float(row.get("ai_probability", 0) or 0) * 100
             stake = float(row.get("suggested_stake", 0) or 0)
+            odds_value = float(row.get("bookmaker_odds", 0) or 0)
+            potential_profit = float(row.get("potential_profit", stake * (odds_value - 1)) or 0)
+            potential_return = float(row.get("potential_return", stake * odds_value) or 0)
+            benefice_avec_mise = float(row.get("benefice_avec_mise", potential_return) or 0)
             odds = row.get("bookmaker_odds", "")
             mode = row.get("bet_mode", "")
             source = row.get("odds_source", "")
@@ -572,6 +645,9 @@ def render_cards(data, limit=6):
                     Cote : <b>{odds}</b><br>
                     Source : <b>{source}</b><br>
                     Value : <b>{value:.1f}%</b><br>
+                    Profit net potentiel : <b>+{potential_profit:.2f} EUR</b><br>
+                    Retour total potentiel : <b>{potential_return:.2f} EUR</b><br>
+                    Benefice avec mise : <b>{benefice_avec_mise:.2f} EUR</b><br>
                     Mise conseillée : <b>{stake:.2f}€</b><br>
                     <span class="small-muted">
                     {reason}
@@ -797,6 +873,13 @@ st.caption(
     f"Mise max par pari : {max_single_bet_display:.2f}€ | Exposition max jour : {max_daily_exposure_display:.2f}€"
 )
 
+odds_level, odds_message = odds_freshness_message(upcoming_odds)
+if odds_message:
+    if odds_level == "warning":
+        st.warning(odds_message)
+    else:
+        st.info(odds_message)
+
 # ============================================================
 # TABS
 # ============================================================
@@ -937,6 +1020,9 @@ with tabs[6]:
         "bookmaker_odds",
         "value",
         "suggested_stake",
+        "potential_profit",
+        "potential_return",
+        "benefice_avec_mise",
         "stake_percent",
         "kelly_fraction",
         "bankroll",
@@ -951,10 +1037,16 @@ with tabs[6]:
     else:
         total_stake = recommended["suggested_stake"].sum()
         avg_stake = recommended["suggested_stake"].mean()
-        m1, m2, m3 = st.columns(3)
+        total_potential_profit = recommended["potential_profit"].sum() if "potential_profit" in recommended.columns else 0
+        total_potential_return = recommended["potential_return"].sum() if "potential_return" in recommended.columns else 0
+        total_benefice_avec_mise = recommended["benefice_avec_mise"].sum() if "benefice_avec_mise" in recommended.columns else total_potential_return
+        m1, m2, m3, m4, m5, m6 = st.columns(6)
         m1.metric("Mise totale conseillée", f"{total_stake:.2f}€")
         m2.metric("Mise moyenne", f"{avg_stake:.2f}€")
         m3.metric("Nombre de tickets", len(recommended))
+        m4.metric("Profit potentiel", f"+{total_potential_profit:.2f} EUR")
+        m5.metric("Retour potentiel", f"{total_potential_return:.2f} EUR")
+        m6.metric("Benefice avec mise", f"{total_benefice_avec_mise:.2f} EUR")
         st.dataframe(clean_table(recommended[stake_cols]), use_container_width=True, hide_index=True, height=540)
 
 with tabs[7]:
@@ -971,6 +1063,12 @@ with tabs[7]:
         tr["stake"] = pd.to_numeric(tr.get("stake", tr.get("suggested_stake", 0)), errors="coerce").fillna(0)
         tr["profit"] = pd.to_numeric(tr.get("profit", 0), errors="coerce").fillna(0)
         tr["bookmaker_odds"] = pd.to_numeric(tr.get("bookmaker_odds", 0), errors="coerce").fillna(0)
+        tr["potential_profit"] = (tr["stake"] * (tr["bookmaker_odds"] - 1)).clip(lower=0).round(2)
+        tr["potential_return"] = (tr["stake"] * tr["bookmaker_odds"]).clip(lower=0).round(2)
+        tr["return_paid"] = 0.0
+        tr.loc[tr["result"] == "WIN", "return_paid"] = tr.loc[tr["result"] == "WIN", "potential_return"]
+        tr["benefice_avec_mise"] = tr["potential_return"]
+        tr["benefice_avec_mise_encaisse"] = tr["return_paid"]
         if "category" not in tr.columns:
             tr["category"] = tr["sport"].apply(sport_category)
         if "resolved_at" not in tr.columns:
@@ -996,6 +1094,8 @@ with tabs[7]:
 
         total_staked = finished["stake"].sum() if not finished.empty else 0
         total_profit = finished["profit"].sum() if not finished.empty else 0
+        total_return_paid = finished["return_paid"].sum() if "return_paid" in finished.columns and not finished.empty else 0
+        total_benefice_avec_mise_paid = finished["benefice_avec_mise_encaisse"].sum() if "benefice_avec_mise_encaisse" in finished.columns and not finished.empty else 0
         roi = total_profit / total_staked if total_staked > 0 else 0
         winrate = len(wins) / len(finished) if len(finished) else 0
 
@@ -1013,10 +1113,12 @@ with tabs[7]:
                 "Échantillon encore trop faible : il faut idéalement 50 à 100 paris terminés pour juger la fiabilité réelle."
             )
 
-        r5, r6, r7 = st.columns(3)
+        r5, r6, r7, r8, r9 = st.columns(5)
         r5.metric("Misé total", f"{total_staked:.2f}€")
         r6.metric("Profit net", f"{total_profit:.2f}€")
         r7.metric("Cote moyenne", f"{finished['bookmaker_odds'].mean() if not finished.empty else 0:.2f}")
+        r8.metric("Retour encaisse", f"{total_return_paid:.2f} EUR")
+        r9.metric("Benefice avec mise", f"{total_benefice_avec_mise_paid:.2f} EUR")
 
         g1, g2 = st.columns(2)
         g1.metric(

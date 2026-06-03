@@ -51,6 +51,7 @@ def football_poisson_probs(
     btts_yes = 0
 
     scores = []
+    calibrated_scores = []
 
     for i in range(max_goals + 1):
 
@@ -79,8 +80,24 @@ def football_poisson_probs(
                 )
             )
 
+            calibrated_scores.append(
+                (
+                    f"{i}-{j}",
+                    float(p) * score_exact_weight(i, j, home_xg, away_xg)
+                )
+            )
+
+    calibrated_total = sum(p for _, p in calibrated_scores)
+    if calibrated_total > 0:
+        calibrated_scores = [
+            (score, p / calibrated_total)
+            for score, p in calibrated_scores
+        ]
+
+    calibrated_scores = blend_with_score_prior(calibrated_scores, model_weight=0.68)
+
     top_scores = sorted(
-        scores,
+        calibrated_scores,
         key=lambda x: x[1],
         reverse=True
     )[:5]
@@ -105,3 +122,75 @@ def football_poisson_probs(
 
         "top_scores": top_scores
     }
+
+
+def score_exact_weight(home_goals, away_goals, home_xg, away_xg):
+    total_goals = home_goals + away_goals
+    margin = abs(home_goals - away_goals)
+    xg_total = home_xg + away_xg
+    xg_gap = abs(home_xg - away_xg)
+    weight = 1.0
+
+    if total_goals >= 5:
+        weight *= 0.45
+    elif total_goals == 4:
+        weight *= 0.72
+
+    if margin >= 3 and xg_gap < 1.35:
+        weight *= 0.58
+
+    if home_goals >= 3 and away_goals == 0 and away_xg >= 0.45:
+        weight *= 0.62
+    if away_goals >= 3 and home_goals == 0 and home_xg >= 0.45:
+        weight *= 0.62
+
+    if xg_total < 2.30 and total_goals >= 4:
+        weight *= 0.55
+    if xg_total > 3.20 and total_goals <= 1:
+        weight *= 0.78
+
+    if (home_goals, away_goals) in {(1, 0), (0, 1), (1, 1), (2, 1), (1, 2), (2, 0), (0, 2)}:
+        weight *= 1.08
+
+    if (home_goals, away_goals) == (0, 0):
+        weight *= 1.08 if xg_total <= 2.15 else 0.74
+
+    return weight
+
+
+def blend_with_score_prior(scores, model_weight=0.68):
+    prior = {
+        "1-1": 0.115,
+        "1-0": 0.105,
+        "2-1": 0.090,
+        "0-1": 0.078,
+        "2-0": 0.075,
+        "0-0": 0.066,
+        "1-2": 0.064,
+        "0-2": 0.046,
+        "2-2": 0.043,
+        "3-1": 0.036,
+        "1-3": 0.028,
+        "3-0": 0.026,
+        "0-3": 0.020,
+    }
+    prior_floor = 0.004
+    score_map = dict(scores)
+    all_scores = set(score_map) | set(prior)
+    blended = []
+
+    for score in all_scores:
+        model_probability = score_map.get(score, 0.0)
+        prior_probability = prior.get(score, prior_floor)
+        blended.append(
+            (
+                score,
+                model_probability * model_weight + prior_probability * (1 - model_weight),
+            )
+        )
+
+    total = sum(p for _, p in blended)
+    if total <= 0:
+        return scores
+
+    return [(score, p / total) for score, p in blended]

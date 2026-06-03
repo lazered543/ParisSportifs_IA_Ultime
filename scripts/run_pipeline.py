@@ -224,6 +224,13 @@ def load_upcoming():
     for col in required:
         if col not in df.columns:
             df[col] = ""
+    parsed_dates = pd.to_datetime(df["commence_time"], utc=True, errors="coerce")
+    now = pd.Timestamp.now(tz="UTC")
+    fresh_mask = parsed_dates.isna() | (parsed_dates >= now - pd.Timedelta(hours=4))
+    stale_count = int((~fresh_mask).sum())
+    if stale_count:
+        print(f"Matchs deja passes ignores : {stale_count}")
+    df = df[fresh_mask].copy()
     return df
 
 
