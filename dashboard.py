@@ -581,6 +581,65 @@ def plot_line(data, x, y, title):
         st.line_chart(chart.set_index(x)[y])
 
 
+def plot_gain_loss_bars(data):
+    if data.empty:
+        st.info("Aucun pari termine pour afficher le graphique gains / pertes.")
+        return
+
+    chart = data.copy()
+    chart["profit"] = pd.to_numeric(chart.get("profit", 0), errors="coerce").fillna(0)
+    chart["stake"] = pd.to_numeric(chart.get("stake", 0), errors="coerce").fillna(0)
+    chart["bookmaker_odds"] = pd.to_numeric(chart.get("bookmaker_odds", 0), errors="coerce").fillna(0)
+    chart["result"] = chart.get("result", pd.Series("", index=chart.index)).astype(str).str.upper()
+
+    chart["gain_loss"] = chart.apply(
+        lambda row: abs(row["profit"]) if row["result"] == "WIN" else -abs(row["profit"] or row["stake"]),
+        axis=1,
+    )
+    if "date" in chart.columns:
+        chart = chart.sort_values("date").copy()
+    chart["bet_number"] = range(1, len(chart) + 1)
+    chart["match"] = chart.apply(match_display_label, axis=1)
+    chart["gain_loss_label"] = chart["gain_loss"].apply(lambda value: f"{value:+.2f} EUR")
+    chart["bar_color"] = chart["gain_loss"].apply(lambda value: "#22c55e" if value >= 0 else "#ef4444")
+
+    if PLOTLY_OK:
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    x=chart["bet_number"],
+                    y=chart["gain_loss"],
+                    text=chart["gain_loss_label"],
+                    textposition="outside",
+                    marker_color=chart["bar_color"],
+                    customdata=chart[["match", "result", "stake", "bookmaker_odds"]],
+                    hovertemplate=(
+                        "Pari %{x}<br>"
+                        "%{customdata[0]}<br>"
+                        "Resultat : %{customdata[1]}<br>"
+                        "Mise : %{customdata[2]:.2f} EUR<br>"
+                        "Cote : %{customdata[3]:.2f}<br>"
+                        "Gain / perte : %{text}<extra></extra>"
+                    ),
+                )
+            ]
+        )
+        fig.add_hline(y=0, line_color="rgba(255,255,255,.35)", line_width=1)
+        fig.update_layout(
+            title="Gains / pertes par pari",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#f8fafc",
+            xaxis_title="Pari",
+            yaxis_title="Montant",
+            bargap=0.26,
+            margin=dict(l=20, r=20, t=56, b=30),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.bar_chart(chart.set_index("bet_number")["gain_loss"])
+
+
 def mode_class(mode):
     m = str(mode).upper()
     if "RISKY" in m:
@@ -1158,6 +1217,9 @@ with tabs[7]:
             )
             st.subheader("Topo des paris terminés")
             st.dataframe(by_sport, use_container_width=True, hide_index=True, height=180)
+
+            st.subheader("Gains / pertes")
+            plot_gain_loss_bars(finished)
 
             chart = finished.sort_values("date").copy()
             chart["cumulative_profit"] = chart["profit"].cumsum()
