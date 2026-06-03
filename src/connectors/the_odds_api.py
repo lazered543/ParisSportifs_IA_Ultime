@@ -73,11 +73,11 @@ def _is_in_window(sport, commence_time):
     now = pd.Timestamp.now(tz="UTC")
     sport_l = str(sport).lower()
     if "tennis" in sport_l:
-        days = 3
+        days = 5
     elif "world_cup" in sport_l or "international" in sport_l:
         days = 35
     elif "soccer" in sport_l or "football" in sport_l:
-        days = 10
+        days = 21
     else:
         days = 3
 

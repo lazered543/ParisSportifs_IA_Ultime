@@ -1,2 +1,2 @@
 finished_bets,profit,stake,roi,winrate,best_action
-2,0.53,1.5,0.3533,1.0,"BOOST les segments rentables, REDUCE les segments négatifs."
+3,0.36,1.67,0.2156,0.6667,"BOOST les segments rentables, REDUCE les segments négatifs."

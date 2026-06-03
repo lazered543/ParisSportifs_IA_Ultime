@@ -370,9 +370,9 @@ def parse_display_datetime(value):
 
 def dashboard_window_hours(sport):
     sport = str(sport).lower()
-    if "tennis" in sport: return 48
-    if "world_cup" in sport or "international" in sport: return 240
-    if "soccer" in sport or "football" in sport: return 168
+    if "tennis" in sport: return 96
+    if "world_cup" in sport or "international" in sport: return 720
+    if "soccer" in sport or "football" in sport: return 336
     return 72
 
 def upcoming_only(data, hours=72):
