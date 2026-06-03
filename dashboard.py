@@ -1,4 +1,6 @@
 import ast
+import re
+import unicodedata
 from pathlib import Path
 
 import pandas as pd
@@ -640,6 +642,232 @@ def plot_gain_loss_bars(data):
         st.bar_chart(chart.set_index("bet_number")["gain_loss"])
 
 
+def normalize_lookup_text(value):
+    text = str(value or "").strip().lower()
+    text = unicodedata.normalize("NFD", text)
+    text = text.encode("ascii", "ignore").decode("utf-8")
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(text.split())
+
+
+def to_float(value, default=0.0):
+    try:
+        if pd.isna(value):
+            return default
+        return float(value)
+    except Exception:
+        return default
+
+
+def fair_odds(probability):
+    probability = to_float(probability)
+    if probability <= 0:
+        return 0.0
+    return round(1 / probability, 2)
+
+
+def machine_mode(probability, value):
+    probability = to_float(probability)
+    value = to_float(value)
+    if probability >= 0.70 and value >= 0.03:
+        return "MEGA VALUE"
+    if probability >= 0.63 and value >= 0.01:
+        return "SAFE PICK"
+    if probability >= 0.58 and value >= 0.03:
+        return "VALUE BET"
+    if value > 0:
+        return "WATCHLIST"
+    return "NO BET"
+
+
+def machine_stake(mode, bankroll):
+    if mode not in RECOMMENDED_MODES:
+        return 0.0
+    bankroll = max(to_float(bankroll, 10.0), 0.0)
+    growth_factor = max(1.0, min(bankroll / 10.0, 6.0))
+    floors = {
+        "MEGA VALUE": min(1.80 * growth_factor, 3.00),
+        "SAFE PICK": min(1.20 * growth_factor, 3.00),
+        "VALUE BET": min(0.60 * growth_factor, 3.00),
+    }
+    return round(min(floors.get(mode, 0.0), bankroll * 0.30, 3.00, bankroll), 2)
+
+
+def find_machine_match_rows(data, category, first_name, second_name):
+    if data.empty:
+        return data
+
+    first_key = normalize_lookup_text(first_name)
+    second_key = normalize_lookup_text(second_name)
+    if not first_key and not second_key:
+        return pd.DataFrame(columns=data.columns)
+
+    out = data.copy()
+    out["_home_key"] = out.get("home_team", "").astype(str).apply(normalize_lookup_text)
+    out["_away_key"] = out.get("away_team", "").astype(str).apply(normalize_lookup_text)
+
+    if category != "all" and "category" in out.columns:
+        out = out[out["category"].astype(str).str.lower().eq(category)]
+
+    mask = pd.Series(True, index=out.index)
+    if first_key:
+        mask &= out["_home_key"].str.contains(first_key, na=False) | out["_away_key"].str.contains(first_key, na=False)
+    if second_key:
+        mask &= out["_home_key"].str.contains(second_key, na=False) | out["_away_key"].str.contains(second_key, na=False)
+
+    return out[mask].drop(columns=["_home_key", "_away_key"], errors="ignore")
+
+
+def normalize_betclic_market(items):
+    valid = [(label, selection, to_float(odds)) for label, selection, odds in items if to_float(odds) > 1]
+    total = sum(1 / odds for _, _, odds in valid)
+    rows = []
+    for market, selection, odds in valid:
+        probability = (1 / odds) / total if total > 0 and len(valid) > 1 else 1 / odds
+        rows.append({
+            "source": "Betclic saisi",
+            "market": market,
+            "selection": selection,
+            "proba_ia": "",
+            "proba_betclic": probability,
+            "cote_betclic": odds,
+            "cote_fair_ia": "",
+            "value": "",
+            "mode": "INFO COTE",
+            "mise": 0.0,
+            "note": "Probabilite implicite Betclic normalisee",
+        })
+    return rows
+
+
+def prediction_betclic_odds(row, odds_map):
+    market = normalize_lookup_text(row.get("market", ""))
+    selection = normalize_lookup_text(row.get("selection", ""))
+    home = normalize_lookup_text(row.get("home_team", ""))
+    away = normalize_lookup_text(row.get("away_team", ""))
+
+    if "player 1" in market:
+        return odds_map.get("player1_win", 0)
+    if "player 2" in market:
+        return odds_map.get("player2_win", 0)
+    if "draw" in market or selection == "draw":
+        return odds_map.get("draw", 0)
+    if "home" in market or (home and selection == home):
+        return odds_map.get("home_win", 0)
+    if "away" in market or (away and selection == away):
+        return odds_map.get("away_win", 0)
+    if "over" in market and "25" in market:
+        return odds_map.get("over_25", 0)
+    if "under" in market and "25" in market:
+        return odds_map.get("under_25", 0)
+    if "btts" in market and ("yes" in market or "oui" in market):
+        return odds_map.get("btts_yes", 0)
+    if "btts" in market and ("no" in market or "non" in market):
+        return odds_map.get("btts_no", 0)
+    return 0
+
+
+def add_machine_prediction_row(rows, source, market, selection, probability, betclic_odds, bankroll, note):
+    probability = to_float(probability)
+    betclic_odds = to_float(betclic_odds)
+    implied = (1 / betclic_odds) if betclic_odds > 1 else 0
+    value = probability * betclic_odds - 1 if betclic_odds > 1 else 0
+    mode = machine_mode(probability, value) if betclic_odds > 1 else "INFO IA"
+    rows.append({
+        "source": source,
+        "market": market,
+        "selection": selection,
+        "proba_ia": probability,
+        "proba_betclic": implied,
+        "cote_betclic": betclic_odds if betclic_odds > 1 else "",
+        "cote_fair_ia": fair_odds(probability),
+        "value": value if betclic_odds > 1 else "",
+        "mode": mode,
+        "mise": machine_stake(mode, bankroll),
+        "note": note,
+    })
+
+
+def build_betclic_machine_rows(match_rows, odds_map, bankroll, sport_category_value):
+    rows = []
+
+    if not match_rows.empty:
+        local = sort_recommendations(match_rows).copy()
+        for _, row in local.head(18).iterrows():
+            betclic_odds = prediction_betclic_odds(row, odds_map) or to_float(row.get("bookmaker_odds", 0))
+            add_machine_prediction_row(
+                rows,
+                "IA + Betclic",
+                row.get("market", ""),
+                row.get("selection", ""),
+                row.get("ai_probability", 0),
+                betclic_odds,
+                bankroll,
+                row.get("decision_reason", "Analyse IA locale"),
+            )
+
+        first = local.iloc[0]
+        if sport_category_value == "football":
+            derived = [
+                ("Total buts", "Over 2.5", "over_25", "over_25"),
+                ("Total buts", "Under 2.5", "under_25", "under_25"),
+                ("BTTS", "Oui", "btts_yes", "btts_yes"),
+                ("BTTS", "Non", "btts_no", "btts_no"),
+            ]
+            for market, selection, probability_key, odds_key in derived:
+                probability = to_float(first.get(probability_key, 0))
+                if probability > 0:
+                    add_machine_prediction_row(
+                        rows,
+                        "IA + Betclic",
+                        market,
+                        selection,
+                        probability,
+                        odds_map.get(odds_key, 0),
+                        bankroll,
+                        "Marche derive du modele football",
+                    )
+
+    if rows:
+        return pd.DataFrame(rows)
+
+    manual_rows = []
+    if sport_category_value == "football":
+        manual_rows += normalize_betclic_market([
+            ("1N2", "Equipe 1", odds_map.get("home_win", 0)),
+            ("1N2", "Nul", odds_map.get("draw", 0)),
+            ("1N2", "Equipe 2", odds_map.get("away_win", 0)),
+        ])
+        manual_rows += normalize_betclic_market([
+            ("Total buts", "Over 2.5", odds_map.get("over_25", 0)),
+            ("Total buts", "Under 2.5", odds_map.get("under_25", 0)),
+        ])
+        manual_rows += normalize_betclic_market([
+            ("BTTS", "Oui", odds_map.get("btts_yes", 0)),
+            ("BTTS", "Non", odds_map.get("btts_no", 0)),
+        ])
+    else:
+        manual_rows += normalize_betclic_market([
+            ("Vainqueur", "Joueur 1", odds_map.get("player1_win", 0)),
+            ("Vainqueur", "Joueur 2", odds_map.get("player2_win", 0)),
+        ])
+
+    return pd.DataFrame(manual_rows)
+
+
+def format_machine_table(data):
+    if data.empty:
+        return data
+    out = data.copy()
+    for col in ["proba_ia", "proba_betclic", "value"]:
+        if col in out.columns:
+            out[col] = out[col].apply(lambda value: format_pct(value) if value != "" else "")
+    for col in ["cote_betclic", "cote_fair_ia", "mise"]:
+        if col in out.columns:
+            out[col] = out[col].apply(lambda value: "" if value == "" else round(to_float(value), 2))
+    return out.astype(str)
+
+
 def mode_class(mode):
     m = str(mode).upper()
     if "RISKY" in m:
@@ -954,6 +1182,7 @@ tabs = st.tabs([
     "Résultats / ROI",
     "Backtest IA",
     "Toutes les lignes",
+    "Machine Betclic",
 ])
 
 with tabs[0]:
@@ -1261,3 +1490,112 @@ with tabs[8]:
 with tabs[9]:
     st.subheader("Toutes les lignes analysées")
     show_table(sort_recommendations(filtered_today), height=720)
+
+with tabs[10]:
+    st.subheader("Machine Betclic")
+
+    sport_machine = st.selectbox(
+        "Sport",
+        ["football", "tennis"],
+        key="machine_betclic_sport",
+    )
+
+    n1, n2 = st.columns(2)
+    with n1:
+        machine_first = st.text_input(
+            "Equipe / joueur 1",
+            placeholder="ex: PSG, Alcaraz...",
+            key="machine_betclic_first",
+        )
+    with n2:
+        machine_second = st.text_input(
+            "Equipe / joueur 2",
+            placeholder="ex: Marseille, Sinner...",
+            key="machine_betclic_second",
+        )
+
+    st.markdown("**Cotes Betclic**")
+    odds_map = {}
+    if sport_machine == "football":
+        o1, ox, o2 = st.columns(3)
+        with o1:
+            odds_map["home_win"] = st.number_input("1", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_home")
+        with ox:
+            odds_map["draw"] = st.number_input("N", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_draw")
+        with o2:
+            odds_map["away_win"] = st.number_input("2", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_away")
+
+        ou1, ou2, btts1, btts2 = st.columns(4)
+        with ou1:
+            odds_map["over_25"] = st.number_input("Over 2.5", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_over25")
+        with ou2:
+            odds_map["under_25"] = st.number_input("Under 2.5", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_under25")
+        with btts1:
+            odds_map["btts_yes"] = st.number_input("BTTS Oui", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_btts_yes")
+        with btts2:
+            odds_map["btts_no"] = st.number_input("BTTS Non", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_btts_no")
+    else:
+        t1, t2 = st.columns(2)
+        with t1:
+            odds_map["player1_win"] = st.number_input("Joueur 1 gagne", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_player1")
+        with t2:
+            odds_map["player2_win"] = st.number_input("Joueur 2 gagne", min_value=0.0, value=0.0, step=0.01, format="%.2f", key="betclic_player2")
+
+    has_input = bool(machine_first.strip() or machine_second.strip() or any(to_float(v) > 1 for v in odds_map.values()))
+    if not has_input:
+        st.info("Entre un match et/ou colle les cotes Betclic pour lancer l'analyse.")
+    else:
+        machine_matches = find_machine_match_rows(filtered_today, sport_machine, machine_first, machine_second)
+        machine_table = build_betclic_machine_rows(
+            machine_matches,
+            odds_map,
+            current_bankroll_display,
+            sport_machine,
+        )
+
+        if machine_table.empty:
+            st.warning("Aucune ligne exploitable. Ajoute au moins une cote Betclic ou un match present dans les predictions.")
+        else:
+            proba_ia_sort = pd.to_numeric(machine_table["proba_ia"].replace("", pd.NA), errors="coerce")
+            proba_betclic_sort = pd.to_numeric(machine_table["proba_betclic"].replace("", pd.NA), errors="coerce")
+            value_sort = pd.to_numeric(machine_table["value"].replace("", 0), errors="coerce").fillna(0)
+            machine_table["_sort_prob"] = proba_ia_sort.fillna(proba_betclic_sort).fillna(0)
+            machine_table["_sort_value"] = value_sort
+            machine_table = machine_table.sort_values(
+                ["_sort_prob", "_sort_value"],
+                ascending=[False, False],
+            ).drop(columns=["_sort_prob", "_sort_value"], errors="ignore")
+
+            top = machine_table.iloc[0]
+            top_probability = top.get("proba_ia", "") if top.get("proba_ia", "") != "" else top.get("proba_betclic", "")
+            top_value = top.get("value", "")
+
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Plus probable", str(top.get("selection", "")))
+            m2.metric("Probabilite", format_pct(top_probability) if top_probability != "" else "")
+            m3.metric("Cote Betclic", f"{to_float(top.get('cote_betclic', 0)):.2f}" if top.get("cote_betclic", "") != "" else "")
+            m4.metric("Value", format_pct(top_value) if top_value != "" else "")
+
+            if machine_matches.empty:
+                st.info("Match non trouve dans les predictions proches : affichage base uniquement sur les cotes Betclic collees.")
+            else:
+                st.success("Match trouve dans les predictions : analyse IA + cotes Betclic.")
+
+            st.dataframe(
+                format_machine_table(machine_table),
+                use_container_width=True,
+                hide_index=True,
+                height=420,
+            )
+
+            if not machine_matches.empty and sport_machine == "football":
+                score_machine = football_score_table(machine_matches)
+                if not score_machine.empty:
+                    st.subheader("Scores exacts les plus probables")
+                    st.dataframe(score_machine.head(5), use_container_width=True, hide_index=True, height=220)
+
+            if not machine_matches.empty and sport_machine == "tennis":
+                sets_machine = tennis_sets_table(machine_matches)
+                if not sets_machine.empty:
+                    st.subheader("Sets les plus probables")
+                    st.dataframe(sets_machine.head(5), use_container_width=True, hide_index=True, height=220)
