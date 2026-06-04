@@ -380,7 +380,7 @@ def select_bet_mode(probability, value, odds, safety, category, market=""):
         return "WATCHLIST" if probability >= 0.265 or value > 0 else "NO BET"
 
     if odds <= 1 or value <= 0:
-        if probability >= 0.72 and value >= -0.10 and 1.10 <= odds <= 1.75:
+        if probability >= 0.68 and value >= -0.08 and 1.10 <= odds <= 1.85:
             return "FAVORI SOLIDE"
         if probability >= thresholds["value_probability"] and odds >= 1.10:
             return "WATCHLIST"
@@ -1748,16 +1748,25 @@ def force_daily_best_bet(df):
     current_real = out[
         out["bet_mode"].isin(RECOMMENDED_MODES)
         & (out["suggested_stake"] > 0)
-        & (out["value"] > 0)
+        & ((out["value"] > 0) | (out["bet_mode"].isin({"FAVORI SOLIDE", "NUL POSSIBLE"})))
     ]
     if not current_real.empty:
         return out.drop(columns=["_min_probability"], errors="ignore")
 
     candidates = out[
-        (out["ai_probability"] >= out["_min_probability"])
-        & (out["bookmaker_odds"] >= 1.10)
-        & (out["value"] > 0)
+        (out["bookmaker_odds"] >= 1.10)
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
+        & (
+            (
+                (out["ai_probability"] >= out["_min_probability"])
+                & (out["value"] > 0)
+            )
+            | (
+                (out["ai_probability"] >= 0.68)
+                & (out["value"] >= -0.08)
+                & (out["bookmaker_odds"] <= 1.85)
+            )
+        )
     ].copy()
 
     if candidates.empty:

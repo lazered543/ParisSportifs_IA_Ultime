@@ -1173,7 +1173,7 @@ with tabs[1]:
     football_reco = best_card_rows(sort_recommendations(football_df))
     football_analysis = sort_recommendations(football_df)
 
-    if football_reco.empty:
+    if football_df.empty:
         st.info("Aucun match football du jour trouvé dans les données actuelles.")
     else:
         render_cards(football_reco, limit=9)
@@ -1192,7 +1192,7 @@ with tabs[2]:
     tennis_reco = best_card_rows(sort_recommendations(tennis_df))
     tennis_analysis = sort_recommendations(tennis_df)
 
-    if tennis_reco.empty:
+    if tennis_df.empty:
         st.info("Aucun match tennis du jour trouvé dans les données actuelles.")
     else:
         render_cards(tennis_reco, limit=9)

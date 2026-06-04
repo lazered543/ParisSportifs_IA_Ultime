@@ -59,13 +59,23 @@ OFFLINE_FOOTBALL_FIXTURES = [
 ]
 
 VERIFIED_TODAY_FOOTBALL_FIXTURES = [
-    # Amicaux internationaux du 03/06/2026 ajoutes quand l'API ne remonte pas le foot du jour.
+    # Amicaux internationaux ajoutes quand l'API ne remonte pas le foot du jour.
     ("soccer_international_friendlies", "2026-06-03T17:00:00Z", "Gibraltar", "British Virgin Islands", 1.38, 5.55, 9.10),
     ("soccer_international_friendlies", "2026-06-03T18:00:00Z", "Albania", "Israel", 2.51, 3.40, 2.90),
     ("soccer_international_friendlies", "2026-06-03T18:00:00Z", "DR Congo", "Denmark", 6.00, 3.80, 1.50),
     ("soccer_international_friendlies", "2026-06-03T18:45:00Z", "Luxembourg", "Italy", 7.50, 4.80, 1.47),
     ("soccer_international_friendlies", "2026-06-03T18:45:00Z", "Netherlands", "Algeria", 1.30, 5.60, 10.00),
     ("soccer_international_friendlies", "2026-06-03T18:45:00Z", "Poland", "Nigeria", 2.10, 3.45, 3.80),
+    ("soccer_international_friendlies", "2026-06-04T11:00:00Z", "Maldives", "Pakistan", 2.35, 3.25, 3.10),
+    ("soccer_international_friendlies", "2026-06-04T12:00:00Z", "Cambodia", "Bhutan", 1.82, 3.40, 4.50),
+    ("soccer_international_friendlies", "2026-06-04T13:00:00Z", "Lesotho", "Kenya", 4.50, 3.40, 1.82),
+    ("soccer_international_friendlies", "2026-06-04T16:00:00Z", "Northern Ireland", "Guinea", 2.35, 3.23, 3.51),
+    ("soccer_international_friendlies", "2026-06-04T16:00:00Z", "Slovenia", "Cyprus", 1.37, 4.86, 9.80),
+    ("soccer_international_friendlies", "2026-06-04T16:00:00Z", "Equatorial Guinea", "Burundi", 1.84, 3.43, 5.50),
+    ("soccer_international_friendlies", "2026-06-04T17:00:00Z", "Andorra", "Liechtenstein", 1.58, 3.55, 8.00),
+    ("soccer_international_friendlies", "2026-06-04T17:00:00Z", "Sweden", "Greece", 2.04, 3.65, 4.80),
+    ("soccer_international_friendlies", "2026-06-04T19:00:00Z", "Spain", "Iraq", 1.05, 21.00, 70.00),
+    ("soccer_international_friendlies", "2026-06-04T19:10:00Z", "France", "Côte d'Ivoire", 1.35, 5.50, 9.75),
 ]
 
 
