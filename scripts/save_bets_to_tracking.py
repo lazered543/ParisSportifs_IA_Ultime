@@ -5,7 +5,7 @@ import pandas as pd
 
 pred_path = Path("data/predictions/value_bets_today.csv")
 track_path = Path("tracking_results.csv")
-ALLOWED_MODES = ["SAFE PICK", "VALUE BET", "MEGA VALUE", "RISKY VALUE"]
+ALLOWED_MODES = ["SAFE PICK", "VALUE BET", "MEGA VALUE", "FAVORI SOLIDE", "NUL POSSIBLE"]
 
 def safe_text(value):
     if pd.isna(value): return ""
@@ -58,7 +58,10 @@ def main():
     if "bet_mode" in bets.columns: bets = bets[bets["bet_mode"].isin(ALLOWED_MODES)].copy()
     bets["suggested_stake"] = pd.to_numeric(bets.get("suggested_stake", 0), errors="coerce").fillna(0)
     bets["value"] = pd.to_numeric(bets.get("value", 0), errors="coerce").fillna(0)
-    bets = bets[(bets["suggested_stake"] > 0) & (bets["value"] > 0)].copy()
+    bets = bets[
+        (bets["suggested_stake"] > 0)
+        & ((bets["value"] > 0) | (bets["bet_mode"].isin(["FAVORI SOLIDE", "NUL POSSIBLE"])))
+    ].copy()
     if bets.empty:
         print("Aucun pari recommandé après filtrage."); return
     cols = ["date","sport","odds_source","category","home_team","away_team","market","selection","ai_probability","bookmaker_odds","value","safety_score","safety_level","suggested_stake","bet_mode","stake_percent","kelly_fraction","bankroll","confidence","ia_badge","learning_adjustment","calibration_adjustment","threshold_profile","decision_status","refusal_reason","decision_reason","score_exact_1","score_exact_1_proba","score_exact_2","score_exact_2_proba","score_exact_3","score_exact_3_proba","tennis_engine_score","tennis_edge","priority"]
@@ -74,7 +77,7 @@ def main():
     bets = bets.sort_values(["_match_key","_score_keep"], ascending=[True,False]).drop_duplicates("_match_key", keep="first")
     if track_path.exists():
         existing = add_keys(pd.read_csv(track_path, low_memory=False))
-        new_bets = bets[~bets["_match_key"].isin(set(existing["_match_key"].dropna().astype(str)))].copy()
+        new_bets = bets[~bets["_bet_key"].isin(set(existing["_bet_key"].dropna().astype(str)))].copy()
         final = pd.concat([existing, new_bets], ignore_index=True)
     else:
         new_bets, final = bets.copy(), bets.copy()
@@ -85,7 +88,7 @@ def main():
     final["suggested_stake"] = final["stake"].where(final["stake"] > 0, final["suggested_stake"])
     final["_resolved_rank"] = final.get("result", "PENDING").astype(str).str.upper().isin(["WIN","LOSS","VOID"]).astype(int)
     final["_score_keep"] = final["_resolved_rank"]*100000 + final["priority"]*10 + final["safety_score"]*6 + final["value"]*350 + final["stake"].fillna(final["suggested_stake"])*120 + final["ai_probability"]*40
-    final = final.sort_values(["_match_key","_score_keep"], ascending=[True,False]).drop_duplicates("_match_key", keep="first")
+    final = final.sort_values(["_bet_key","_score_keep"], ascending=[True,False]).drop_duplicates("_bet_key", keep="first")
     final = final.drop(columns=[c for c in final.columns if c.startswith("_")], errors="ignore")
     final.to_csv(track_path, index=False)
     print("Paris ajoutés au tracking :", len(new_bets))

@@ -1,12 +1,20 @@
 import os
 import time
-import requests
 import pandas as pd
 
 from pathlib import Path
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 
-load_dotenv()
+try:
+    import requests
+except Exception:
+    requests = None
+
+if load_dotenv is not None:
+    load_dotenv()
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
 
@@ -33,6 +41,8 @@ SEASONS = [
 
 
 def api_get(endpoint, params):
+    if requests is None:
+        raise RuntimeError("Module requests indisponible")
 
     url = f"{BASE_URL}/{endpoint}"
 
@@ -302,6 +312,9 @@ def get_players_for_league(
 
 
 def main():
+    if requests is None:
+        print("Module requests indisponible : player_scorers.csv existant conserve.")
+        return
 
     if not API_KEY:
 

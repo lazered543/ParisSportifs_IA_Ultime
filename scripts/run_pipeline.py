@@ -1107,6 +1107,43 @@ def tennis_set_scores(probability, selected_stats=None, opponent_stats=None, qua
     return "2-1", round(three_sets * 100, 2), "2-0", round(straight * 100, 2)
 
 
+def tennis_risk_multiplier(probability, odds, value, selected_stats=None, opponent_stats=None):
+    selected_stats = selected_stats or {}
+    opponent_stats = opponent_stats or {}
+
+    selected_form = safe_float(selected_stats.get("form", 0.5), 0.5)
+    opponent_form = safe_float(opponent_stats.get("form", 0.5), 0.5)
+    selected_surface = safe_float(selected_stats.get("surface_form", 0.5), 0.5)
+    opponent_surface = safe_float(opponent_stats.get("surface_form", 0.5), 0.5)
+    selected_rank = safe_float(selected_stats.get("rank", 999), 999)
+    opponent_rank = safe_float(opponent_stats.get("rank", 999), 999)
+
+    multiplier = 1.0
+    tags = []
+
+    if odds <= 1.35 and value < 0.025:
+        multiplier *= 0.93
+        tags.append("LOW_VALUE_FAVORITE")
+
+    if probability >= 0.68 and selected_form + 0.04 < opponent_form:
+        multiplier *= 0.96
+        tags.append("FORM_ALERT")
+
+    if probability >= 0.68 and selected_surface + 0.04 < opponent_surface:
+        multiplier *= 0.97
+        tags.append("SURFACE_ALERT")
+
+    if odds <= 1.45 and opponent_rank <= 35 and value < 0.035:
+        multiplier *= 0.95
+        tags.append("DANGEROUS_OPPONENT")
+
+    if selected_rank > 80 and opponent_rank <= 80 and odds <= 1.70:
+        multiplier *= 0.96
+        tags.append("RANK_TRAP")
+
+    return multiplier, "|".join(tags)
+
+
 def process_tennis_match(row, players):
     probs = tennis_probabilities(row, players)
     if probs is None:
@@ -1127,9 +1164,23 @@ def process_tennis_match(row, players):
         if bookmaker_odds <= 1:
             continue
 
+        selected_stats = probs["home_stats"] if key == "home" else probs["away_stats"]
+        opponent_stats = probs["away_stats"] if key == "home" else probs["home_stats"]
+
         probability = probs[key]
         implied = implied_probability(bookmaker_odds)
         value = probability * bookmaker_odds - 1
+        risk_multiplier, risk_tag = tennis_risk_multiplier(
+            probability,
+            bookmaker_odds,
+            value,
+            selected_stats,
+            opponent_stats,
+        )
+        if risk_multiplier != 1.0:
+            probability = clamp(probability * risk_multiplier, 0.02, 0.90)
+            value = probability * bookmaker_odds - 1
+
         safety = safety_score(probability, value, bookmaker_odds, probs["quality"])
         mode = select_bet_mode(probability, value, bookmaker_odds, safety, "tennis", market)
         if not is_live_odds_source(odds_source):
@@ -1138,8 +1189,6 @@ def process_tennis_match(row, players):
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
 
-        selected_stats = probs["home_stats"] if key == "home" else probs["away_stats"]
-        opponent_stats = probs["away_stats"] if key == "home" else probs["home_stats"]
         score1, score1_proba, score2, score2_proba = tennis_set_scores(
             probability,
             selected_stats,
@@ -1168,7 +1217,7 @@ def process_tennis_match(row, players):
             "safety_score": safety,
             "safety_level": safety_level(mode, safety),
             "football_trap_signal": "",
-            "learning_adjustment": "BASELINE",
+            "learning_adjustment": risk_tag or "BASELINE",
             "calibration_adjustment": "BASELINE",
             "threshold_profile": threshold_profile_label("tennis"),
             "decision_status": "",
@@ -1267,13 +1316,16 @@ def learning_multiplier(segment):
 
     roi = safe_float(segment.get("roi", 0))
     winrate = safe_float(segment.get("winrate", 0.5))
-    evidence = clamp(bets / 20, 0.25, 1.0)
+    losses = safe_float(segment.get("losses", 0))
+    evidence = clamp(bets / 12, 0.35, 1.0)
+    if losses >= 2 and (roi < -0.20 or winrate < 0.45):
+        evidence = max(evidence, 0.75)
 
     if recommendation == "BOOST":
         strength = clamp(0.015 + max(roi, 0) * 0.12 + max(winrate - 0.55, 0) * 0.10, 0.015, 0.07)
         return 1 + strength * evidence, "BOOST"
 
-    strength = clamp(0.025 + max(-roi, 0) * 0.14 + max(0.50 - winrate, 0) * 0.12, 0.025, 0.10)
+    strength = clamp(0.035 + max(-roi, 0) * 0.16 + max(0.50 - winrate, 0) * 0.14, 0.035, 0.14)
     return 1 - strength * evidence, "REDUCE"
 
 
@@ -1303,7 +1355,7 @@ def apply_global_learning_guard(predictions):
 
     row = summary.iloc[0]
     finished = safe_float(row.get("finished_bets", 0))
-    if finished < 15:
+    if finished < 5:
         return predictions, False
 
     roi = safe_float(row.get("roi", 0))
@@ -1311,7 +1363,10 @@ def apply_global_learning_guard(predictions):
     multiplier = 1.0
     tag = ""
 
-    if roi < -0.05 or winrate < 0.48:
+    if roi < -0.12 or winrate < 0.45:
+        multiplier = 0.93
+        tag = "GLOBAL_RECENT_REDUCE"
+    elif roi < -0.05 or winrate < 0.48:
         multiplier = 0.96
         tag = "GLOBAL_REDUCE"
     elif roi > 0.08 and winrate > 0.55:
