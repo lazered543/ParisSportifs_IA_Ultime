@@ -22,7 +22,7 @@ BANKROLL_START = 10.0
 LOCAL_TZ = "Europe/Paris"
 MIN_ABSOLUTE_STAKE = 1.00
 MAX_ABSOLUTE_STAKE = 5.00
-MAX_DAILY_EXPOSURE_RATE = 0.55
+MAX_DAILY_EXPOSURE_RATE = 0.65
 MAX_SINGLE_BET_RATE = 0.50
 
 UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
@@ -648,7 +648,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     fractions = {
         "MEGA VALUE": 0.55,
         "SAFE PICK": 0.42,
-        "FAVORI SOLIDE": 0.32,
+        "FAVORI SOLIDE": 0.42,
         "VALUE BET": 0.28,
         "NUL POSSIBLE": 0.16,
     }
@@ -656,7 +656,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     caps_pct = {
         "MEGA VALUE": 0.50,
         "SAFE PICK": 0.40,
-        "FAVORI SOLIDE": 0.30,
+        "FAVORI SOLIDE": 0.40,
         "VALUE BET": 0.22,
         "NUL POSSIBLE": 0.18,
     }
@@ -673,7 +673,7 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     floors = {
         "MEGA VALUE": min(3.00 * growth_factor, MAX_ABSOLUTE_STAKE),
         "SAFE PICK": min(2.00 * growth_factor, MAX_ABSOLUTE_STAKE),
-        "FAVORI SOLIDE": min(1.50 * growth_factor, MAX_ABSOLUTE_STAKE),
+        "FAVORI SOLIDE": min(2.00 * growth_factor, MAX_ABSOLUTE_STAKE),
         "VALUE BET": min(1.00 * growth_factor, MAX_ABSOLUTE_STAKE),
         "NUL POSSIBLE": min(1.00 * growth_factor, 2.50, MAX_ABSOLUTE_STAKE),
     }
@@ -689,6 +689,22 @@ def bankroll_management(probability, odds, mode, bankroll=None):
         return 0.0, round(stake_percent, 4), round(kelly, 4)
 
     return round(stake, 2), round(stake / bankroll, 4), round(kelly, 4)
+
+
+def verified_fallback_stake_cap(probability, odds, mode):
+    probability = safe_float(probability)
+    odds = safe_float(odds)
+    mode = str(mode or "")
+
+    if mode == "FAVORI SOLIDE":
+        if probability >= 0.84 and 1.08 <= odds <= 1.22:
+            return 2.50
+        if probability >= 0.80 and 1.10 <= odds <= 1.35:
+            return 2.00
+        return 1.50
+    if mode in {"MEGA VALUE", "SAFE PICK"}:
+        return 2.00
+    return 1.50
 
 
 def score_exact_fields(poisson_probs, confidence_factor=1.0):
@@ -915,9 +931,7 @@ def process_football_match(row, strengths, ratings):
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
         if odds_source == "verified-web-fallback" and stake > 0:
             bankroll = load_current_bankroll(BANKROLL_START)
-            stake = min(stake, 1.50)
-            if bookmaker_odds <= 1.15 and probability >= 0.80:
-                stake = min(stake, 1.00)
+            stake = min(stake, verified_fallback_stake_cap(probability, bookmaker_odds, mode))
             stake_percent = stake / bankroll if bankroll > 0 else 0.0
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
@@ -1702,9 +1716,7 @@ def refresh_predictions_after_learning(predictions):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, odds, mode, bankroll=bankroll)
         if row.get("odds_source", "") == "verified-web-fallback" and stake > 0:
-            stake = min(stake, 1.50)
-            if odds <= 1.15 and probability >= 0.80:
-                stake = min(stake, 1.00)
+            stake = min(stake, verified_fallback_stake_cap(probability, odds, mode))
             stake_percent = stake / bankroll if bankroll > 0 else 0.0
 
         if stake <= 0 and mode in RECOMMENDED_MODES:

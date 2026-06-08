@@ -317,7 +317,7 @@ if next_goal_display > previous_goal_display:
 progress_display = max(0.0, min(100.0, progress_display))
 
 max_single_bet_display = min(current_bankroll_display * 0.50, 5.00)
-max_daily_exposure_display = current_bankroll_display * 0.55
+max_daily_exposure_display = current_bankroll_display * 0.65
 
 
 # ============================================================
@@ -776,7 +776,7 @@ def machine_stake(mode, bankroll):
     floors = {
         "MEGA VALUE": min(3.00 * growth_factor, 5.00),
         "SAFE PICK": min(2.00 * growth_factor, 5.00),
-        "FAVORI SOLIDE": min(1.50 * growth_factor, 5.00),
+        "FAVORI SOLIDE": min(2.00 * growth_factor, 5.00),
         "VALUE BET": min(1.00 * growth_factor, 5.00),
         "NUL POSSIBLE": min(1.00 * growth_factor, 2.50, 5.00),
     }
@@ -980,6 +980,13 @@ def probable_detail(row):
         proba_text = ""
 
     if category == "football":
+        top_scores = parse_top_scores(row.get("top_scores", ""))[:6]
+        if top_scores:
+            score_text = " | ".join(
+                f"{score} ({round(proba, 1)}%)"
+                for score, proba in top_scores
+            )
+            return f"Scores probables : <b>{score_text}</b>"
         return f"Score exact probable : <b>{score}{proba_text}</b>"
     if category == "tennis":
         return f"Set probable : <b>{score}{proba_text}</b>"
@@ -1044,7 +1051,7 @@ def parse_top_scores(value):
         for item in parsed:
             if isinstance(item, (list, tuple)) and len(item) >= 2:
                 result.append((str(item[0]), float(item[1]) * 100))
-        return result[:5]
+        return result[:12]
     except Exception:
         return []
 
@@ -1075,6 +1082,13 @@ def football_score_table(data):
         best = top_scores[0] if top_scores else ("", 0)
         second = top_scores[1] if len(top_scores) > 1 else ("", 0)
         third = top_scores[2] if len(top_scores) > 2 else ("", 0)
+        fourth = top_scores[3] if len(top_scores) > 3 else ("", 0)
+        fifth = top_scores[4] if len(top_scores) > 4 else ("", 0)
+        sixth = top_scores[5] if len(top_scores) > 5 else ("", 0)
+        full_list = " | ".join(
+            f"{score} ({round(proba, 2)}%)"
+            for score, proba in top_scores[:12]
+        )
 
         rows.append({
             "match": f"{row.get('home_team', '')} vs {row.get('away_team', '')}",
@@ -1086,6 +1100,13 @@ def football_score_table(data):
             "proba score 2": round(second[1], 2),
             "alternative 2": third[0],
             "proba score 3": round(third[1], 2),
+            "alternative 3": fourth[0],
+            "proba score 4": round(fourth[1], 2),
+            "alternative 4": fifth[0],
+            "proba score 5": round(fifth[1], 2),
+            "alternative 5": sixth[0],
+            "proba score 6": round(sixth[1], 2),
+            "top 12 scores": full_list,
             "draw signal": row.get("draw_hunter", ""),
             "piège bookmaker": row.get("football_trap_signal", ""),
             "source": row.get("odds_source", ""),
@@ -1289,6 +1310,10 @@ tabs = st.tabs([
     "Backtest IA",
     "Toutes les lignes",
     "Machine IA",
+    "Aujourd'hui",
+    "Matchs a venir",
+    "Amicaux",
+    "Watchlist",
 ])
 
 with tabs[0]:
@@ -1697,3 +1722,64 @@ with tabs[10]:
                 if not sets_machine.empty:
                     st.subheader("Sets les plus probables")
                     st.dataframe(sets_machine.head(5), use_container_width=True, hide_index=True, height=220)
+
+with tabs[11]:
+    st.subheader("Aujourd'hui")
+    st.caption("Tous les matchs du jour dans les filtres actuels, avec les paris jouables en haut.")
+
+    today_all = sort_for_display(filtered_today)
+    today_reco = best_card_rows(sort_for_display(recommended_today))
+    if today_reco.empty:
+        st.info("Aucun pari avec mise aujourd'hui.")
+    else:
+        render_cards(today_reco, limit=18)
+
+    if today_all.empty:
+        st.info("Aucune ligne analysee pour aujourd'hui.")
+    else:
+        show_table(today_all, height=620)
+
+
+with tabs[12]:
+    st.subheader("Matchs a venir")
+    st.caption("Tous les matchs analyses sur les 7 prochains jours, football et tennis.")
+
+    upcoming_all = sort_for_display(filtered_week)
+    upcoming_cards = best_card_rows(upcoming_all)
+    if upcoming_cards.empty:
+        st.info("Aucun pari avec mise sur les prochains jours.")
+    else:
+        render_cards(upcoming_cards, limit=18)
+
+    if upcoming_all.empty:
+        st.info("Aucun match a venir dans les donnees actuelles.")
+    else:
+        show_table(upcoming_all, height=680)
+
+
+with tabs[13]:
+    st.subheader("Amicaux")
+    st.caption("Amicaux internationaux de la semaine, avec les favoris solides et les watchlists.")
+
+    friendly_all = sort_for_display(friendlies_week)
+    friendly_reco = best_card_rows(friendly_all)
+    if friendly_reco.empty:
+        st.info("Aucun amical avec mise conseillee.")
+    else:
+        render_cards(friendly_reco, limit=18)
+
+    if friendly_all.empty:
+        st.info("Aucun amical trouve dans les donnees actuelles.")
+    else:
+        show_table(friendly_all, height=680)
+
+
+with tabs[14]:
+    st.subheader("Watchlist")
+    st.caption("Matchs surveilles par l'IA : interessants, mais pas assez propres pour une vraie mise.")
+
+    watch_sorted = sort_for_display(watchlist)
+    if watch_sorted.empty:
+        st.info("Aucune watchlist dans les filtres actuels.")
+    else:
+        show_table(watch_sorted, height=720)
