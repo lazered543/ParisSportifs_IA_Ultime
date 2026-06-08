@@ -874,6 +874,21 @@ def best_card_rows(data):
     out = out.sort_values("_card_score", ascending=False).drop_duplicates("match_key", keep="first")
     return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority", "_card_score"], errors="ignore")
 
+def probable_detail(row):
+    category = str(row.get("category", "")).lower()
+    score = row.get("score_exact_1", "")
+    proba = row.get("score_exact_1_proba", "")
+    try:
+        proba_text = f" ({float(proba):.2f}%)"
+    except Exception:
+        proba_text = ""
+
+    if category == "football":
+        return f"Score exact probable : <b>{score}{proba_text}</b>"
+    if category == "tennis":
+        return f"Set probable : <b>{score}{proba_text}</b>"
+    return ""
+
 def render_cards(data, limit=6):
     if data.empty:
         st.info("Aucun pari à afficher.")
@@ -895,6 +910,7 @@ def render_cards(data, limit=6):
             source = row.get("odds_source", "")
             reason = row.get("decision_reason", "")
             card_class, badge_class = mode_class(mode)
+            detail_line = probable_detail(row)
 
             st.markdown(
                 f"""
@@ -914,7 +930,7 @@ def render_cards(data, limit=6):
                     <span class="small-muted">
                     {reason}
                     </span><br>
-                    Score / Set probable : <b>{row.get("score_exact_1", "")}</b>
+                    {detail_line}
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -940,6 +956,10 @@ def football_score_table(data):
         return pd.DataFrame()
 
     data = ensure_match_key(data).copy()
+    if "category" in data.columns:
+        data = data[data["category"].astype(str).str.lower() == "football"].copy()
+    if data.empty:
+        return pd.DataFrame()
     data["_priority"] = pd.to_numeric(data.get("priority", 0), errors="coerce").fillna(0)
     data = data.sort_values("_priority", ascending=False).drop_duplicates("match_key", keep="first")
 
@@ -979,6 +999,13 @@ def football_score_table(data):
 
 
 def tennis_sets_table(data):
+    if data.empty:
+        return pd.DataFrame()
+    if "category" in data.columns:
+        data = data[data["category"].astype(str).str.lower() == "tennis"].copy()
+    if data.empty:
+        return pd.DataFrame()
+
     rows = []
     for _, row in data.iterrows():
         p = float(row.get("ai_probability", 0) or 0)
@@ -1063,14 +1090,14 @@ if search:
         filtered.astype(str).apply(lambda r: s in " ".join(r.values).lower(), axis=1)
     ]
 
-# Jour courant : le dashboard montre uniquement les matchs du jour en heure France.
+# Les mises restent visibles en priorité, mais les onglets sport affichent tout l'univers analysé.
 filtered_today = today_only(filtered)
 
-football_df = filtered_today[filtered_today["category"] == "football"].copy()
-tennis_df = filtered_today[filtered_today["category"] == "tennis"].copy()
-recommended = filtered_today[
-    filtered_today["bet_mode"].isin(RECOMMENDED_MODES)
-    & (filtered_today["suggested_stake"] > 0)
+football_df = filtered[filtered["category"] == "football"].copy()
+tennis_df = filtered[filtered["category"] == "tennis"].copy()
+recommended = filtered[
+    filtered["bet_mode"].isin(RECOMMENDED_MODES)
+    & (filtered["suggested_stake"] > 0)
 ].copy()
 
 # ============================================================
@@ -1086,10 +1113,10 @@ recommended["suggested_stake"] = recommended.apply(
     axis=1
 )
 recommended = best_card_rows(recommended)
-risky_list = filtered_today[
-    filtered_today["bet_mode"].astype(str).str.upper().str.contains("RISKY")
+risky_list = filtered[
+    filtered["bet_mode"].astype(str).str.upper().str.contains("RISKY")
 ].copy()
-watchlist = filtered_today[filtered_today["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
+watchlist = filtered[filtered["bet_mode"].astype(str).str.upper().str.contains("WATCH")].copy()
 
 last_update = df["last_update"].iloc[0] if "last_update" in df.columns else "Inconnue"
 telegram_count = 0
@@ -1117,7 +1144,7 @@ st.markdown(
 )
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Lignes du jour", len(filtered_today))
+c1.metric("Lignes analysees", len(filtered))
 c2.metric("Paris avec mise", len(recommended))
 c3.metric("Football", len(football_df))
 c4.metric("Tennis", len(tennis_df))
@@ -1161,7 +1188,7 @@ tabs = st.tabs([
 ])
 
 with tabs[0]:
-    st.subheader("Meilleurs spots du jour")
+    st.subheader("Meilleurs spots a venir")
     render_cards(sort_recommendations(recommended), limit=6)
 
     a, b = st.columns(2)
@@ -1464,7 +1491,7 @@ with tabs[8]:
 
 with tabs[9]:
     st.subheader("Toutes les lignes analysées")
-    show_table(sort_recommendations(filtered_today), height=720)
+    show_table(sort_recommendations(filtered), height=720)
 
 with tabs[10]:
     st.subheader("Machine IA")
@@ -1493,7 +1520,7 @@ with tabs[10]:
     if not has_input:
         st.info("Entre simplement le match pour lancer l'analyse IA.")
     else:
-        machine_matches = find_machine_match_rows(filtered_today, sport_machine, machine_first, machine_second)
+        machine_matches = find_machine_match_rows(filtered, sport_machine, machine_first, machine_second)
         machine_table = build_ai_machine_rows(
             machine_matches,
             current_bankroll_display,
@@ -1501,7 +1528,7 @@ with tabs[10]:
         )
 
         if machine_table.empty:
-            st.warning("Match non trouve dans les predictions du jour. Relance la mise a jour des donnees puis le pipeline pour l'analyser.")
+            st.warning("Match non trouve dans les predictions disponibles. Relance la mise a jour des donnees puis le pipeline pour l'analyser.")
         else:
             proba_ia_sort = pd.to_numeric(machine_table["proba_ia"].replace("", pd.NA), errors="coerce").fillna(0)
             value_sort = pd.to_numeric(machine_table["value"].replace("", 0), errors="coerce").fillna(0)

@@ -112,6 +112,38 @@ DEFAULT_THRESHOLDS = {
 }
 _THRESHOLD_CACHE = None
 
+CORE_FOOTBALL_SPORTS = {
+    "soccer_epl",
+    "soccer_efl_champ",
+    "soccer_france_ligue_one",
+    "soccer_france_ligue_two",
+    "soccer_spain_la_liga",
+    "soccer_spain_segunda_division",
+    "soccer_germany_bundesliga",
+    "soccer_germany_bundesliga2",
+    "soccer_italy_serie_a",
+    "soccer_italy_serie_b",
+    "soccer_portugal_primeira_liga",
+    "soccer_netherlands_eredivisie",
+    "soccer_belgium_first_div",
+    "soccer_uefa_champs_league",
+    "soccer_uefa_europa_league",
+    "soccer_uefa_europa_conference_league",
+    "soccer_uefa_nations_league",
+    "soccer_uefa_euro_qualification",
+    "soccer_fifa_world_cup",
+    "soccer_fifa_world_cup_qualification",
+    "soccer_fifa_club_world_cup",
+    "soccer_copa_america",
+    "soccer_conmebol_copa_libertadores",
+    "soccer_conmebol_copa_sudamericana",
+    "soccer_usa_mls",
+    "soccer_brazil_campeonato",
+    "soccer_argentina_primera_division",
+    "soccer_mexico_ligamx",
+    "soccer_international_friendlies",
+}
+
 
 def safe_float(value, default=0.0):
     try:
@@ -147,6 +179,35 @@ def keep_today_only(df, date_col):
         return out[future & (local_dates == next_day)].copy()
 
     return out.iloc[0:0].copy()
+
+
+def is_core_prediction_sport(sport):
+    sport_l = str(sport or "").lower()
+    if is_tennis_sport(sport_l):
+        return True
+    if is_football_sport(sport_l):
+        return sport_l in CORE_FOOTBALL_SPORTS
+    return False
+
+
+def keep_prediction_universe(df, date_col):
+    if df.empty or date_col not in df.columns:
+        return df.copy()
+
+    out = df.copy()
+    parsed = pd.to_datetime(out[date_col], utc=True, errors="coerce")
+    now = pd.Timestamp.now(tz="UTC")
+    future = parsed.notna() & (parsed >= now - pd.Timedelta(hours=2))
+    out = out[future].copy()
+    parsed = parsed[future]
+
+    if out.empty:
+        return out
+
+    out["_dt"] = parsed
+    out = out[out["sport"].apply(is_core_prediction_sport)].copy()
+    out = out.sort_values(["_dt", "sport", "home_team", "away_team"])
+    return out.drop(columns=["_dt"], errors="ignore")
 
 
 def clamp(value, low, high):
@@ -2007,10 +2068,9 @@ def main():
         pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(VALUE_BETS_PATH, index=False)
         return
 
-    today = local_today()
-    upcoming = keep_today_only(upcoming, "commence_time")
+    upcoming = keep_prediction_universe(upcoming, "commence_time")
     if upcoming.empty:
-        print(f"Aucun match du jour ({today}) dans data/processed/upcoming_odds.csv")
+        print("Aucun match majeur a venir dans data/processed/upcoming_odds.csv")
         PREDICTIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(PREDICTIONS_PATH, index=False)
         pd.DataFrame(columns=OUTPUT_COLUMNS).to_csv(VALUE_BETS_PATH, index=False)
@@ -2028,7 +2088,7 @@ def main():
             rows.extend(process_tennis_match(match, tennis_players))
 
     predictions = finalise_predictions(rows)
-    predictions = keep_today_only(predictions, "date")
+    predictions = keep_prediction_universe(predictions, "date")
 
     PREDICTIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(PREDICTIONS_PATH, index=False)

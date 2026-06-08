@@ -16,24 +16,31 @@ LOCAL_TZ = "Europe/Paris"
 
 FOOTBALL_SPORTS = [
     "soccer_epl",
+    "soccer_efl_champ",
     "soccer_france_ligue_one",
     "soccer_france_ligue_two",
     "soccer_spain_la_liga",
+    "soccer_spain_segunda_division",
     "soccer_germany_bundesliga",
+    "soccer_germany_bundesliga2",
     "soccer_italy_serie_a",
+    "soccer_italy_serie_b",
+    "soccer_portugal_primeira_liga",
+    "soccer_netherlands_eredivisie",
+    "soccer_belgium_first_div",
     "soccer_uefa_champs_league",
     "soccer_uefa_europa_league",
+    "soccer_uefa_europa_conference_league",
+    "soccer_uefa_nations_league",
+    "soccer_uefa_euro_qualification",
     "soccer_fifa_world_cup",
+    "soccer_fifa_world_cup_qualification",
+    "soccer_fifa_club_world_cup",
     "soccer_usa_mls",
     "soccer_brazil_campeonato",
     "soccer_argentina_primera_division",
-    "soccer_norway_eliteserien",
-    "soccer_sweden_allsvenskan",
-    "soccer_japan_j_league",
-    "soccer_korea_kleague1",
-    "soccer_china_superleague",
     "soccer_mexico_ligamx",
-    "soccer_uefa_nations_league",
+    "soccer_copa_america",
     "soccer_conmebol_copa_libertadores",
     "soccer_conmebol_copa_sudamericana",
 ]
@@ -149,7 +156,7 @@ def get_available_football_sports(available=None):
     priority = [s for s in FOOTBALL_SPORTS if not key_set or s in key_set]
     football = [
         k for k in keys
-        if ("soccer" in k.lower() or "football" in k.lower()) and _is_match_market_key(k)
+        if k in FOOTBALL_SPORTS and _is_match_market_key(k)
     ]
     merged = list(dict.fromkeys(priority + football)) or FOOTBALL_SPORTS
     print("Competitions foot utilisees :", merged)
