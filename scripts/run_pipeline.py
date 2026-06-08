@@ -134,7 +134,19 @@ def keep_today_only(df, date_col):
     parsed = pd.to_datetime(out[date_col], utc=True, errors="coerce")
     local_dates = parsed.dt.tz_convert(LOCAL_TZ).dt.date
     today = local_today()
-    return out[parsed.notna() & (local_dates == today)].copy()
+    valid = parsed.notna()
+
+    today_mask = valid & (local_dates == today)
+    if today_mask.any():
+        return out[today_mask].copy()
+
+    now = pd.Timestamp.now(tz="UTC")
+    future = valid & (parsed >= now - pd.Timedelta(hours=2))
+    if future.any():
+        next_day = local_dates[future].min()
+        return out[future & (local_dates == next_day)].copy()
+
+    return out.iloc[0:0].copy()
 
 
 def clamp(value, low, high):
@@ -331,6 +343,65 @@ def blend_football_probabilities(book_probs, poisson_probs, elo_home_prob, quali
     return {key: clamp(value, 0.03, 0.86) for key, value in calibrated.items()}
 
 
+def draw_tightness_context(book_probs, poisson_probs, elo_diff, home_xg, away_xg):
+    home_book = safe_float(book_probs.get("home", 0.34), 0.34)
+    away_book = safe_float(book_probs.get("away", 0.34), 0.34)
+    draw_book = safe_float(book_probs.get("draw", poisson_probs.get("p_draw", 0.27)), 0.27)
+    xg_gap = abs(safe_float(home_xg) - safe_float(away_xg))
+    elo_gap = abs(safe_float(elo_diff))
+    market_gap = abs(home_book - away_book)
+
+    market_close = clamp((0.16 - market_gap) / 0.16, 0, 1)
+    xg_close = clamp((0.42 - xg_gap) / 0.42, 0, 1)
+    elo_close = clamp((170 - elo_gap) / 170, 0, 1)
+    draw_market_ok = clamp((draw_book - 0.235) / 0.08, 0, 1)
+
+    tightness = (
+        market_close * 0.38
+        + xg_close * 0.32
+        + elo_close * 0.18
+        + draw_market_ok * 0.12
+    )
+    signal = tightness >= 0.58 and draw_book >= 0.245 and poisson_probs.get("p_draw", 0) >= 0.235
+    return {
+        "tightness": round(tightness, 4),
+        "signal": bool(signal),
+        "market_gap": round(market_gap, 4),
+        "xg_gap": round(xg_gap, 4),
+        "elo_gap": round(elo_gap, 2),
+        "draw_book": round(draw_book, 4),
+    }
+
+
+def apply_draw_tightness(ai_probs, draw_context, poisson_probs):
+    if not draw_context.get("signal"):
+        return ai_probs
+
+    out = dict(ai_probs)
+    tightness = safe_float(draw_context.get("tightness"))
+    boost = clamp((tightness - 0.50) * 0.09, 0.0, 0.055)
+    target_draw = max(
+        out.get("draw", 0.27) + boost,
+        safe_float(draw_context.get("draw_book")) + boost * 0.35,
+        safe_float(poisson_probs.get("p_draw")) + boost * 0.45,
+    )
+    target_draw = clamp(target_draw, 0.20, 0.38)
+
+    old_draw = clamp(out.get("draw", 0.27), 0.03, 0.86)
+    if target_draw <= old_draw:
+        return out
+
+    non_draw_old = max(out.get("home", 0.36) + out.get("away", 0.36), 0.01)
+    non_draw_new = max(1 - target_draw, 0.01)
+    out["home"] = out.get("home", 0.36) / non_draw_old * non_draw_new
+    out["away"] = out.get("away", 0.36) / non_draw_old * non_draw_new
+    out["draw"] = target_draw
+    total = sum(out.values())
+    if total > 0:
+        out = {key: value / total for key, value in out.items()}
+    return {key: clamp(value, 0.03, 0.86) for key, value in out.items()}
+
+
 def safety_score(probability, value, odds, data_quality, mode_hint=""):
     odds = safe_float(odds)
     score = 42
@@ -375,7 +446,9 @@ def select_bet_mode(probability, value, odds, safety, category, market=""):
         if 2.75 <= odds <= 4.50:
             if probability >= 0.285 and value >= 0:
                 return "NUL POSSIBLE"
-            if probability >= 0.30 and value >= -0.08:
+            if probability >= 0.275 and value >= -0.06:
+                return "NUL POSSIBLE"
+            if probability >= 0.30 and value >= -0.10:
                 return "NUL POSSIBLE"
         return "WATCHLIST" if probability >= 0.265 or value > 0 else "NO BET"
 
@@ -505,11 +578,11 @@ def bankroll_management(probability, odds, mode, bankroll=None):
     }
 
     caps_pct = {
-        "MEGA VALUE": 0.30,
-        "SAFE PICK": 0.20,
-        "FAVORI SOLIDE": 0.18,
-        "VALUE BET": 0.12,
-        "NUL POSSIBLE": 0.10,
+        "MEGA VALUE": 0.50,
+        "SAFE PICK": 0.40,
+        "FAVORI SOLIDE": 0.30,
+        "VALUE BET": 0.22,
+        "NUL POSSIBLE": 0.18,
     }
 
     caps_abs = {
@@ -731,9 +804,12 @@ def process_football_match(row, strengths, ratings):
     if total_three_way > 0:
         ai_probs = {k: v / total_three_way for k, v in ai_probs.items()}
 
+    draw_context = draw_tightness_context(book_probs, poisson_probs, elo["elo_diff"], home_xg, away_xg)
+    ai_probs = apply_draw_tightness(ai_probs, draw_context, poisson_probs)
+
     score_confidence = score_exact_confidence_factor(odds_source, quality, poisson_probs)
-    score_fields = score_exact_fields(poisson_probs, score_confidence)
-    top_scores = scale_top_scores(poisson_probs.get("top_scores", []), score_confidence)
+    score_fields = score_exact_fields(poisson_probs, 1.0)
+    top_scores = scale_top_scores(poisson_probs.get("top_scores", []), 1.0)
 
     rows = []
     for key, market, selection, bookmaker_odds in [
@@ -750,6 +826,14 @@ def process_football_match(row, strengths, ratings):
         value = probability * bookmaker_odds - 1
         safety = safety_score(probability, value, bookmaker_odds, quality, market)
         mode = select_bet_mode(probability, value, bookmaker_odds, safety, "football", market)
+        if (
+            key == "draw"
+            and draw_context.get("signal")
+            and probability >= 0.27
+            and value >= -0.10
+            and 2.70 <= bookmaker_odds <= 4.60
+        ):
+            mode = "NUL POSSIBLE"
         if not is_live_odds_source(odds_source):
             mode = "WATCHLIST"
         stake, stake_percent, kelly = bankroll_management(probability, bookmaker_odds, mode)
@@ -781,7 +865,11 @@ def process_football_match(row, strengths, ratings):
             "reliable_only": mode in RECOMMENDED_MODES,
             "safety_score": safety,
             "safety_level": safety_level(mode, safety),
-            "football_trap_signal": football_trap_signal(market, probability, book_probs.get(key, implied), value, bookmaker_odds, poisson_probs["p_draw"]),
+            "football_trap_signal": (
+                "NUL SERRE"
+                if key == "draw" and draw_context.get("signal")
+                else football_trap_signal(market, probability, book_probs.get(key, implied), value, bookmaker_odds, poisson_probs["p_draw"])
+            ),
             "learning_adjustment": "BASELINE",
             "calibration_adjustment": "BASELINE",
             "threshold_profile": threshold_profile_label("football"),
@@ -807,11 +895,15 @@ def process_football_match(row, strengths, ratings):
             "home_xg": round(home_xg, 3),
             "away_xg": round(away_xg, 3),
             "draw_probability": round(poisson_probs["p_draw"], 4),
-            "draw_hunter": "DRAW POSSIBLE" if key == "draw" and (probability >= 0.285 or poisson_probs["p_draw"] >= 0.285) else "NO DRAW SIGNAL",
+            "draw_hunter": (
+                f"DRAW POSSIBLE - tight {draw_context.get('tightness', 0):.0%}"
+                if key == "draw" and (draw_context.get("signal") or probability >= 0.285 or poisson_probs["p_draw"] >= 0.285)
+                else "NO DRAW SIGNAL"
+            ),
             "score_exact_alert": (
                 "SCORE INDICATIF - SOURCE FALLBACK"
                 if not is_live_odds_source(odds_source)
-                else "SCORE CALIBRE - PROBA PRUDENTE"
+                else f"SCORE POISSON + FORME - confiance {score_confidence:.0%}"
                 if score_fields["score_exact_1"]
                 else ""
             ),
@@ -1037,7 +1129,7 @@ def tennis_probabilities(row, players):
     }
 
 
-def tennis_set_scores(probability, selected_stats=None, opponent_stats=None, quality=0.5):
+def legacy_tennis_set_scores(probability, selected_stats=None, opponent_stats=None, quality=0.5):
     """
     Estimation des sets basée sur :
     - probabilité IA
@@ -1100,6 +1192,69 @@ def tennis_set_scores(probability, selected_stats=None, opponent_stats=None, qua
 
     straight = clamp(straight, 0.34, 0.70)
     three_sets = 1 - straight
+
+    if straight >= three_sets:
+        return "2-0", round(straight * 100, 2), "2-1", round(three_sets * 100, 2)
+
+    return "2-1", round(three_sets * 100, 2), "2-0", round(straight * 100, 2)
+
+
+def infer_set_win_probability(match_probability):
+    match_probability = clamp(match_probability, 0.01, 0.99)
+    low, high = 0.01, 0.99
+    for _ in range(40):
+        mid = (low + high) / 2
+        best_of_three_win = mid * mid * (3 - 2 * mid)
+        if best_of_three_win < match_probability:
+            low = mid
+        else:
+            high = mid
+    return (low + high) / 2
+
+
+def tennis_set_scores(probability, selected_stats=None, opponent_stats=None, quality=0.5):
+    probability = clamp(probability, 0.01, 0.99)
+    selected_stats = selected_stats or {}
+    opponent_stats = opponent_stats or {}
+
+    selected_form = safe_float(selected_stats.get("form", 0.5), 0.5)
+    opponent_form = safe_float(opponent_stats.get("form", 0.5), 0.5)
+    selected_surface = safe_float(selected_stats.get("surface_form", 0.5), 0.5)
+    opponent_surface = safe_float(opponent_stats.get("surface_form", 0.5), 0.5)
+    selected_elo = safe_float(selected_stats.get("elo", 1500), 1500)
+    opponent_elo = safe_float(opponent_stats.get("elo", 1500), 1500)
+    selected_rank = safe_float(selected_stats.get("rank", 999), 999)
+    opponent_rank = safe_float(opponent_stats.get("rank", 999), 999)
+
+    form_gap = selected_form - opponent_form
+    surface_gap = selected_surface - opponent_surface
+    elo_gap = clamp((selected_elo - opponent_elo) / 400, -1, 1)
+    rank_gap = clamp((opponent_rank - selected_rank) / 250, -1, 1)
+    prob_gap = probability - 0.50
+    domination_score = (
+        prob_gap * 1.35
+        + form_gap * 0.42
+        + surface_gap * 0.28
+        + elo_gap * 0.30
+        + rank_gap * 0.18
+        + clamp(quality, 0, 1) * 0.08
+    )
+
+    set_win = infer_set_win_probability(probability)
+    straight = set_win * set_win
+    straight_share = straight / probability if probability > 0 else 0.50
+
+    dominance_adjustment = clamp(domination_score, -0.45, 0.55) * 0.18
+    if selected_form < 0.50:
+        dominance_adjustment -= 0.035
+    if opponent_form > 0.58:
+        dominance_adjustment -= 0.035
+    if selected_surface < opponent_surface:
+        dominance_adjustment -= 0.025
+
+    straight_share = clamp(straight_share + dominance_adjustment, 0.34, 0.72)
+    straight = probability * straight_share
+    three_sets = max(probability - straight, 0.0)
 
     if straight >= three_sets:
         return "2-0", round(straight * 100, 2), "2-1", round(three_sets * 100, 2)
@@ -1311,21 +1466,23 @@ def learning_multiplier(segment):
         return 1.0, ""
 
     bets = safe_float(segment.get("bets", 0))
-    if bets < 3:
+    if recommendation == "REDUCE" and bets < 12:
+        return 1.0, ""
+    if recommendation == "BOOST" and bets < 8:
         return 1.0, ""
 
     roi = safe_float(segment.get("roi", 0))
     winrate = safe_float(segment.get("winrate", 0.5))
     losses = safe_float(segment.get("losses", 0))
-    evidence = clamp(bets / 12, 0.35, 1.0)
-    if losses >= 2 and (roi < -0.20 or winrate < 0.45):
-        evidence = max(evidence, 0.75)
+    evidence = clamp(bets / 40, 0.20, 1.0)
+    if bets >= 20 and losses >= 4 and (roi < -0.20 or winrate < 0.45):
+        evidence = max(evidence, 0.55)
 
     if recommendation == "BOOST":
         strength = clamp(0.015 + max(roi, 0) * 0.12 + max(winrate - 0.55, 0) * 0.10, 0.015, 0.07)
         return 1 + strength * evidence, "BOOST"
 
-    strength = clamp(0.035 + max(-roi, 0) * 0.16 + max(0.50 - winrate, 0) * 0.14, 0.035, 0.14)
+    strength = clamp(0.020 + max(-roi, 0) * 0.10 + max(0.50 - winrate, 0) * 0.08, 0.020, 0.08)
     return 1 - strength * evidence, "REDUCE"
 
 
@@ -1355,7 +1512,7 @@ def apply_global_learning_guard(predictions):
 
     row = summary.iloc[0]
     finished = safe_float(row.get("finished_bets", 0))
-    if finished < 5:
+    if finished < 30:
         return predictions, False
 
     roi = safe_float(row.get("roi", 0))
@@ -1363,11 +1520,11 @@ def apply_global_learning_guard(predictions):
     multiplier = 1.0
     tag = ""
 
-    if roi < -0.12 or winrate < 0.45:
-        multiplier = 0.93
+    if roi < -0.18 or winrate < 0.42:
+        multiplier = 0.965
         tag = "GLOBAL_RECENT_REDUCE"
-    elif roi < -0.05 or winrate < 0.48:
-        multiplier = 0.96
+    elif roi < -0.08 or winrate < 0.47:
+        multiplier = 0.982
         tag = "GLOBAL_REDUCE"
     elif roi > 0.08 and winrate > 0.55:
         multiplier = 1.015
@@ -1542,7 +1699,7 @@ def apply_learning_adjustment(predictions):
 def _clean_day(value):
     dt = pd.to_datetime(value, utc=True, errors="coerce")
     if pd.isna(dt): return str(value)[:10]
-    return dt.strftime("%Y-%m-%d")
+    return dt.tz_convert(LOCAL_TZ).strftime("%Y-%m-%d")
 
 def one_real_bet_per_match(df, max_bets=40):
     """
@@ -1765,6 +1922,12 @@ def force_daily_best_bet(df):
                 (out["ai_probability"] >= 0.68)
                 & (out["value"] >= -0.08)
                 & (out["bookmaker_odds"] <= 1.85)
+            )
+            | (
+                (out.get("market", "").astype(str).str.lower() == "draw")
+                & (out["ai_probability"] >= 0.275)
+                & (out["value"] >= -0.08)
+                & (out["bookmaker_odds"] <= 4.60)
             )
         )
     ].copy()

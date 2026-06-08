@@ -30,6 +30,7 @@ def football_poisson_probs(
             matrix[i, j] = (
                 poisson(i, home_xg)
                 * poisson(j, away_xg)
+                * score_matrix_context_weight(i, j, home_xg, away_xg)
             )
 
     total_probability = matrix.sum()
@@ -154,6 +155,34 @@ def score_exact_weight(home_goals, away_goals, home_xg, away_xg):
 
     if (home_goals, away_goals) == (0, 0):
         weight *= 1.08 if xg_total <= 2.15 else 0.74
+
+    return weight
+
+
+def score_matrix_context_weight(home_goals, away_goals, home_xg, away_xg):
+    total_goals = home_goals + away_goals
+    margin = abs(home_goals - away_goals)
+    xg_total = home_xg + away_xg
+    xg_gap = abs(home_xg - away_xg)
+    tightness = max(0.0, min(1.0, (0.48 - xg_gap) / 0.48))
+    weight = 1.0
+
+    if home_goals == away_goals:
+        if home_goals <= 1:
+            weight *= 1 + 0.12 * tightness
+        elif home_goals == 2:
+            weight *= 1 + 0.06 * tightness
+
+    if margin == 1 and total_goals <= 3:
+        weight *= 1 + 0.04 * (1 - tightness)
+
+    if xg_total < 2.15 and total_goals >= 3:
+        weight *= 0.84
+    elif xg_total > 3.15 and total_goals <= 1:
+        weight *= 0.88
+
+    if xg_gap >= 0.85 and home_goals == away_goals:
+        weight *= 0.86
 
     return weight
 

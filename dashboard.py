@@ -380,7 +380,18 @@ def today_only(data):
     out = data.copy(); out["_dt"] = out["date"].apply(parse_display_datetime)
     out["_dt"] = pd.to_datetime(out["_dt"], utc=True, errors="coerce")
     out["_local_day"] = out["_dt"].dt.tz_convert(LOCAL_TZ).dt.date
-    out = out[out["_dt"].notna() & (out["_local_day"] == display_today())].copy()
+    valid = out["_dt"].notna()
+    today_mask = valid & (out["_local_day"] == display_today())
+    if today_mask.any():
+        out = out[today_mask].copy()
+    else:
+        now = pd.Timestamp.now(tz="UTC")
+        future = valid & (out["_dt"] >= now - pd.Timedelta(hours=2))
+        if future.any():
+            next_day = out.loc[future, "_local_day"].min()
+            out = out[future & (out["_local_day"] == next_day)].copy()
+        else:
+            out = out.iloc[0:0].copy()
     return out.drop(columns=["_dt", "_local_day"], errors="ignore")
 
 
