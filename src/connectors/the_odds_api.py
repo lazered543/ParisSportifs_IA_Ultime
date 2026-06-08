@@ -103,12 +103,18 @@ RESEARCHED_WEEK_FOOTBALL_FIXTURES = [
     ("soccer_international_friendlies", "2026-06-08T19:10:00Z", "France", "Northern Ireland", 1.11, 7.50, 17.00),
     ("soccer_colombia_primera_a", "2026-06-08T21:00:00Z", "Atletico Nacional", "Atletico Junior", 1.50, 4.20, 5.00),
     ("soccer_morocco_gnf_1", "2026-06-08T20:00:00Z", "Olympique Dcheira", "HUSA Agadir", 2.88, 3.00, 2.30),
-    ("soccer_international_friendlies", "2026-06-09T10:00:00Z", "Philippines", "Myanmar", 1.55, 4.20, 6.00),
-    ("soccer_international_friendlies", "2026-06-09T12:00:00Z", "Thailand", "China PR", 3.60, 3.50, 2.05),
+    ("soccer_international_friendlies", "2026-06-09T10:30:00Z", "Philippines", "Myanmar", 1.52, 4.20, 5.75),
+    ("soccer_international_friendlies", "2026-06-09T11:00:00Z", "Cambodia", "Hong Kong", 4.15, 3.68, 1.67),
+    ("soccer_international_friendlies", "2026-06-09T10:35:00Z", "China PR", "Thailand", 2.18, 3.46, 3.63),
+    ("soccer_international_friendlies", "2026-06-09T11:30:00Z", "Kyrgyzstan", "Palestine", 2.90, 2.90, 2.70),
+    ("soccer_international_friendlies", "2026-06-09T13:00:00Z", "Bahrain", "Syria", 2.30, 3.10, 3.20),
+    ("soccer_international_friendlies", "2026-06-09T14:00:00Z", "Tajikistan", "India", 1.95, 3.45, 3.88),
     ("soccer_international_friendlies", "2026-06-09T13:00:00Z", "Armenia", "Moldova", 1.66, 3.80, 5.50),
     ("soccer_international_friendlies", "2026-06-09T14:00:00Z", "DR Congo", "Chile", 2.00, 3.30, 3.90),
     ("soccer_international_friendlies", "2026-06-09T15:00:00Z", "Liberia", "Sierra Leone", 2.65, 3.20, 2.63),
-    ("soccer_international_friendlies", "2026-06-09T17:00:00Z", "Hungary", "Kazakhstan", 1.25, 5.75, 11.50),
+    ("soccer_international_friendlies", "2026-06-09T15:30:00Z", "Belarus", "Burkina Faso", 3.50, 3.40, 2.24),
+    ("soccer_international_friendlies", "2026-06-09T16:00:00Z", "Russia", "Trinidad and Tobago", 1.03, 19.00, 44.00),
+    ("soccer_international_friendlies", "2026-06-09T17:00:00Z", "Hungary", "Kazakhstan", 1.24, 5.45, 11.10),
     ("soccer_international_friendlies", "2026-06-09T18:00:00Z", "San Marino", "Azerbaijan", 17.00, 7.00, 1.22),
     ("soccer_international_friendlies", "2026-06-09T19:00:00Z", "Peru", "Spain", 21.00, 8.50, 1.18),
     ("soccer_international_friendlies", "2026-06-10T01:00:00Z", "Iceland", "Argentina", 12.00, 6.50, 1.17),
@@ -329,6 +335,20 @@ def add_missing_verified_today_football(df):
     for col in ["sport", "commence_time", "home_team", "away_team"]:
         if col not in existing.columns:
             existing[col] = ""
+
+    if "source" not in existing.columns:
+        existing["source"] = ""
+    start_day = _today_local()
+    end_day = (pd.Timestamp(start_day) + pd.Timedelta(days=7)).date()
+    existing["_local_day"] = existing["commence_time"].apply(_local_date)
+    existing["_replace_week_fallback"] = (
+        existing["source"].astype(str).eq("verified-web-fallback")
+        & existing["_local_day"].apply(lambda d: d is not None and start_day <= d <= end_day)
+    )
+    existing = existing[~existing["_replace_week_fallback"]].drop(
+        columns=["_local_day", "_replace_week_fallback"],
+        errors="ignore",
+    )
 
     existing["_key"] = (
         existing["sport"].astype(str).str.lower()

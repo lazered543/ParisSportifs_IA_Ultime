@@ -395,6 +395,75 @@ def today_only(data):
     return out.drop(columns=["_dt", "_local_day"], errors="ignore")
 
 
+def add_display_time_columns(data, date_col="date"):
+    out = data.copy()
+    if out.empty or date_col not in out.columns:
+        out["_dt_display"] = pd.NaT
+        out["_hours_until"] = 9999.0
+        out["_day_distance"] = 999
+        return out
+
+    out["_dt_display"] = pd.to_datetime(out[date_col], utc=True, errors="coerce")
+    now = pd.Timestamp.now(tz="UTC")
+    out["_hours_until"] = ((out["_dt_display"] - now).dt.total_seconds() / 3600).fillna(9999)
+    local_dates = out["_dt_display"].dt.tz_convert(LOCAL_TZ).dt.date
+    today = display_today()
+    out["_day_distance"] = local_dates.apply(lambda d: (d - today).days if pd.notna(d) else 999)
+    return out
+
+
+def future_window(data, days=7, hours_back=2):
+    if data.empty or "date" not in data.columns:
+        return data.copy()
+
+    out = add_display_time_columns(data)
+    keep = (
+        out["_dt_display"].notna()
+        & (out["_hours_until"] >= -hours_back)
+        & (out["_hours_until"] <= days * 24)
+    )
+    return out[keep].drop(columns=["_dt_display", "_hours_until", "_day_distance"], errors="ignore")
+
+
+def sort_for_display(data):
+    if data.empty:
+        return data
+
+    rank = {
+        "MEGA VALUE": 0,
+        "SAFE PICK": 1,
+        "FAVORI SOLIDE": 2,
+        "VALUE BET": 3,
+        "NUL POSSIBLE": 4,
+        "RISKY VALUE": 5,
+        "WATCHLIST": 6,
+        "NO BET": 7,
+    }
+
+    out = add_display_time_columns(data)
+    out["_rank"] = out["bet_mode"].map(rank).fillna(9) if "bet_mode" in out.columns else 9
+    for col in ["suggested_stake", "ai_probability", "priority", "safety_score", "value"]:
+        if col not in out.columns:
+            out[col] = 0
+        out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0)
+
+    out = out.sort_values(
+        ["_day_distance", "_rank", "suggested_stake", "ai_probability", "priority", "safety_score", "value"],
+        ascending=[True, True, False, False, False, False, False],
+    )
+    return out.drop(columns=["_dt_display", "_hours_until", "_day_distance", "_rank"], errors="ignore")
+
+
+def format_card_datetime(value):
+    dt = parse_display_datetime(value)
+    if pd.isna(dt):
+        return ""
+    try:
+        return pd.Timestamp(dt).tz_convert(LOCAL_TZ).strftime("%d/%m %H:%M")
+    except Exception:
+        return str(value)
+
+
 def odds_freshness_message(data):
     if data.empty:
         return "warning", "Aucune cote en memoire. Relance la mise a jour des donnees avant de chercher des matchs."
@@ -859,6 +928,7 @@ def ensure_match_key(data):
 def best_card_rows(data):
     if data.empty: return data
     out = ensure_match_key(data).copy()
+    out = add_display_time_columns(out)
     out["_stake"] = pd.to_numeric(out.get("suggested_stake", 0), errors="coerce").fillna(0)
     out["_value"] = pd.to_numeric(out.get("value", 0), errors="coerce").fillna(-9)
     out["_safety"] = pd.to_numeric(out.get("safety_score", 0), errors="coerce").fillna(0)
@@ -869,10 +939,36 @@ def best_card_rows(data):
         & (out["_stake"] > 0)
         & ((out["_value"] > 0) | (out["bet_mode"].isin(["FAVORI SOLIDE", "NUL POSSIBLE"])))
     ].copy()
-    if out.empty: return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority"], errors="ignore")
-    out["_card_score"] = out["_priority"]*1000 + out["_stake"]*100 + out["_value"]*100 + out["_safety"] + out["_prob"]*10
+    if out.empty:
+        return out.drop(columns=[
+            "_stake", "_value", "_safety", "_prob", "_priority",
+            "_dt_display", "_hours_until", "_day_distance",
+        ], errors="ignore")
+    out["_day_bonus"] = (8 - out["_day_distance"].clip(lower=0, upper=8)) * 120000
+    out["_soon_bonus"] = (1 - (out["_hours_until"].clip(lower=0, upper=168) / 168)) * 45000
+    out["_elite_bonus"] = 0
+    elite = (
+        out["bet_mode"].eq("FAVORI SOLIDE")
+        & (out["_prob"] >= 0.80)
+        & (pd.to_numeric(out.get("bookmaker_odds", 0), errors="coerce").fillna(0).between(1.05, 1.20))
+    )
+    out.loc[elite, "_elite_bonus"] = 55000
+    out["_card_score"] = (
+        out["_day_bonus"]
+        + out["_soon_bonus"]
+        + out["_elite_bonus"]
+        + out["_priority"] * 1000
+        + out["_stake"] * 100
+        + out["_value"].clip(lower=0) * 100
+        + out["_safety"]
+        + out["_prob"] * 10
+    )
     out = out.sort_values("_card_score", ascending=False).drop_duplicates("match_key", keep="first")
-    return out.drop(columns=["_stake", "_value", "_safety", "_prob", "_priority", "_card_score"], errors="ignore")
+    return out.drop(columns=[
+        "_stake", "_value", "_safety", "_prob", "_priority", "_card_score",
+        "_dt_display", "_hours_until", "_day_distance", "_day_bonus",
+        "_soon_bonus", "_elite_bonus",
+    ], errors="ignore")
 
 def probable_detail(row):
     category = str(row.get("category", "")).lower()
@@ -911,6 +1007,7 @@ def render_cards(data, limit=6):
             reason = row.get("decision_reason", "")
             card_class, badge_class = mode_class(mode)
             detail_line = probable_detail(row)
+            match_time = format_card_datetime(row.get("date", ""))
 
             st.markdown(
                 f"""
@@ -919,6 +1016,7 @@ def render_cards(data, limit=6):
                     <span class="badge badge-blue">{row.get("market", "")}</span><br><br>
                     <b>{row.get("home_team", "")} vs {row.get("away_team", "")}</b><br>
                     <span class="small-muted">{row.get("sport", "")}</span><br><br>
+                    Heure : <b>{match_time}</b><br>
                     Proba IA : <b>{proba:.1f}%</b><br>
                     Cote : <b>{odds}</b><br>
                     Source : <b>{source}</b><br>
@@ -1092,12 +1190,18 @@ if search:
 
 # Les mises restent visibles en priorité, mais les onglets sport affichent tout l'univers analysé.
 filtered_today = today_only(filtered)
+filtered_week = future_window(filtered, days=7)
 
-football_df = filtered[filtered["category"] == "football"].copy()
-tennis_df = filtered[filtered["category"] == "tennis"].copy()
-recommended = filtered[
-    filtered["bet_mode"].isin(RECOMMENDED_MODES)
-    & (filtered["suggested_stake"] > 0)
+football_df = filtered_week[filtered_week["category"] == "football"].copy()
+tennis_df = filtered_week[filtered_week["category"] == "tennis"].copy()
+recommended = filtered_week[
+    filtered_week["bet_mode"].isin(RECOMMENDED_MODES)
+    & (filtered_week["suggested_stake"] > 0)
+].copy()
+recommended_today = today_only(recommended)
+friendlies_week = filtered_week[
+    filtered_week["category"].eq("football")
+    & filtered_week["sport"].astype(str).str.contains("friendlies", case=False, na=False)
 ].copy()
 
 # ============================================================
@@ -1188,8 +1292,24 @@ tabs = st.tabs([
 ])
 
 with tabs[0]:
+    st.subheader("A voir aujourd'hui")
+    today_cards = best_card_rows(sort_for_display(recommended_today))
+    if today_cards.empty:
+        st.info("Aucun pari avec mise pour aujourd'hui dans les filtres actuels.")
+    else:
+        render_cards(today_cards, limit=12)
+
+    st.subheader("Amicaux de la semaine")
+    friendly_cards = best_card_rows(sort_for_display(friendlies_week))
+    if friendly_cards.empty:
+        st.info("Aucun amical disponible cette semaine dans les filtres actuels.")
+    else:
+        render_cards(friendly_cards, limit=15)
+    if not friendlies_week.empty:
+        show_table(sort_for_display(friendlies_week), height=420)
+
     st.subheader("Meilleurs spots a venir")
-    render_cards(sort_recommendations(recommended), limit=6)
+    render_cards(best_card_rows(sort_for_display(recommended)), limit=12)
 
     a, b = st.columns(2)
     with a:
@@ -1208,13 +1328,19 @@ with tabs[1]:
     st.subheader("⚽ Football — matchs du jour")
     st.caption("Uniquement les matchs du jour, triés par priorité puis sécurité IA.")
 
-    football_reco = best_card_rows(sort_recommendations(football_df))
-    football_analysis = sort_recommendations(football_df)
+    football_reco = best_card_rows(sort_for_display(football_df))
+    football_analysis = sort_for_display(football_df)
 
     if football_df.empty:
         st.info("Aucun match football du jour trouvé dans les données actuelles.")
     else:
-        render_cards(football_reco, limit=9)
+        render_cards(football_reco, limit=18)
+
+        st.subheader("Amicaux internationaux de la semaine")
+        if friendlies_week.empty:
+            st.info("Aucun amical international disponible dans les donnees actuelles.")
+        else:
+            show_table(sort_for_display(friendlies_week), height=360)
 
         st.subheader("Analyse football")
         score_df = football_score_table(football_analysis)
@@ -1245,15 +1371,15 @@ with tabs[2]:
 
 with tabs[3]:
     st.subheader("Paris conseillés avec mise")
-    render_cards(sort_recommendations(recommended), limit=9)
-    show_table(sort_recommendations(recommended), height=620)
+    render_cards(best_card_rows(sort_for_display(recommended)), limit=18)
+    show_table(sort_for_display(recommended), height=620)
 
 with tabs[4]:
     st.subheader("Football — score exact plus lisible")
     st.caption("Le score exact reste un marché très difficile. Ici, le dashboard affiche les 3 scores les plus probables + signal piège bookmaker.")
 
-    football_reco = best_card_rows(sort_recommendations(football_df))
-    football_analysis = sort_recommendations(football_df)
+    football_reco = best_card_rows(sort_for_display(football_df))
+    football_analysis = sort_for_display(football_df)
     score_df = football_score_table(football_analysis)
 
     if score_df.empty:
