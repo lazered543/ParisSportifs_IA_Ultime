@@ -95,7 +95,10 @@ def football_poisson_probs(
             for score, p in calibrated_scores
         ]
 
-    calibrated_scores = blend_with_score_prior(calibrated_scores, model_weight=0.68)
+    calibrated_scores = blend_with_score_prior(
+        calibrated_scores,
+        model_weight=score_prior_model_weight(home_xg, away_xg),
+    )
 
     top_scores = sorted(
         calibrated_scores,
@@ -148,7 +151,19 @@ def score_exact_weight(home_goals, away_goals, home_xg, away_xg):
     if xg_total < 2.30 and total_goals >= 4:
         weight *= 0.55
     if xg_total > 3.20 and total_goals <= 1:
-        weight *= 0.78
+        weight *= 0.62
+
+    if home_xg >= 2.25 and away_xg <= 0.85:
+        if (home_goals, away_goals) in {(2, 0), (3, 0), (3, 1), (4, 0)}:
+            weight *= 1.22
+        if (home_goals, away_goals) in {(1, 0), (1, 1), (0, 0)}:
+            weight *= 0.86
+
+    if away_xg >= 2.15 and home_xg <= 0.85:
+        if (home_goals, away_goals) in {(0, 2), (0, 3), (1, 3), (0, 4)}:
+            weight *= 1.22
+        if (home_goals, away_goals) in {(0, 1), (1, 1), (0, 0)}:
+            weight *= 0.86
 
     if (home_goals, away_goals) in {(1, 0), (0, 1), (1, 1), (2, 1), (1, 2), (2, 0), (0, 2)}:
         weight *= 1.08
@@ -179,12 +194,30 @@ def score_matrix_context_weight(home_goals, away_goals, home_xg, away_xg):
     if xg_total < 2.15 and total_goals >= 3:
         weight *= 0.84
     elif xg_total > 3.15 and total_goals <= 1:
-        weight *= 0.88
+        weight *= 0.72
 
     if xg_gap >= 0.85 and home_goals == away_goals:
         weight *= 0.86
 
+    if xg_gap >= 1.15 and margin >= 2 and total_goals >= 2:
+        if home_xg > away_xg and home_goals > away_goals:
+            weight *= 1.16
+        if away_xg > home_xg and away_goals > home_goals:
+            weight *= 1.16
+
     return weight
+
+
+def score_prior_model_weight(home_xg, away_xg):
+    xg_total = home_xg + away_xg
+    xg_gap = abs(home_xg - away_xg)
+    if xg_gap >= 1.35 or xg_total >= 3.15:
+        return 0.86
+    if xg_gap >= 0.85 or xg_total >= 2.85:
+        return 0.78
+    if xg_total <= 2.05:
+        return 0.72
+    return 0.68
 
 
 def blend_with_score_prior(scores, model_weight=0.68):

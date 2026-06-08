@@ -22,7 +22,7 @@ BANKROLL_START = 10.0
 LOCAL_TZ = "Europe/Paris"
 MIN_ABSOLUTE_STAKE = 1.00
 MAX_ABSOLUTE_STAKE = 5.00
-MAX_DAILY_EXPOSURE_RATE = 0.50
+MAX_DAILY_EXPOSURE_RATE = 0.55
 MAX_SINGLE_BET_RATE = 0.50
 
 UPCOMING_PATH = Path("data/processed/upcoming_odds.csv")
@@ -142,6 +142,9 @@ CORE_FOOTBALL_SPORTS = {
     "soccer_argentina_primera_division",
     "soccer_mexico_ligamx",
     "soccer_international_friendlies",
+    "soccer_u21_international_friendlies",
+    "soccer_morocco_gnf_1",
+    "soccer_colombia_primera_a",
 }
 
 
@@ -205,7 +208,12 @@ def keep_prediction_universe(df, date_col):
         return out
 
     out["_dt"] = parsed
-    out = out[out["sport"].apply(is_core_prediction_sport)].copy()
+    verified = (
+        out.get("source", pd.Series("", index=out.index)).astype(str).eq("verified-web-fallback")
+        if "source" in out.columns
+        else pd.Series(False, index=out.index)
+    )
+    out = out[out["sport"].apply(is_core_prediction_sport) | verified].copy()
     out = out.sort_values(["_dt", "sport", "home_team", "away_team"])
     return out.drop(columns=["_dt"], errors="ignore")
 
@@ -368,11 +376,13 @@ def market_xg_from_odds(book_probs):
     home_prob = book_probs.get("home", 0.42)
     away_prob = book_probs.get("away", 0.31)
     draw_prob = book_probs.get("draw", 0.27)
-    diff = clamp(home_prob - away_prob, -0.48, 0.48)
+    diff = clamp(home_prob - away_prob, -0.70, 0.70)
     draw_drag = clamp((draw_prob - 0.27) * 1.1, -0.20, 0.25)
+    home_favorite_boost = clamp(home_prob - 0.62, 0.0, 0.25)
+    away_favorite_boost = clamp(away_prob - 0.62, 0.0, 0.25)
 
-    home_xg = 1.28 + diff * 1.35 - draw_drag * 0.45
-    away_xg = 1.08 - diff * 1.08 - draw_drag * 0.35
+    home_xg = 1.30 + diff * 1.55 - draw_drag * 0.45 + home_favorite_boost * 2.15 - away_favorite_boost * 0.55
+    away_xg = 1.10 - diff * 1.25 - draw_drag * 0.35 + away_favorite_boost * 2.00 - home_favorite_boost * 0.45
     return round(clamp(home_xg, 0.35, 3.8), 3), round(clamp(away_xg, 0.25, 3.4), 3)
 
 
@@ -500,7 +510,12 @@ def select_bet_mode(probability, value, odds, safety, category, market=""):
     thresholds = threshold_profile(category)
     market_l = str(market or "").strip().lower()
 
+    if odds < 1.05:
+        return "WATCHLIST"
+
     if odds < 1.10:
+        if probability >= 0.82 and value >= -0.12:
+            return "FAVORI SOLIDE"
         return "WATCHLIST"
 
     if market_l == "draw":
@@ -514,9 +529,9 @@ def select_bet_mode(probability, value, odds, safety, category, market=""):
         return "WATCHLIST" if probability >= 0.265 or value > 0 else "NO BET"
 
     if odds <= 1 or value <= 0:
-        if probability >= 0.68 and value >= -0.08 and 1.10 <= odds <= 1.85:
+        if probability >= 0.68 and value >= -0.08 and 1.05 <= odds <= 1.85:
             return "FAVORI SOLIDE"
-        if probability >= thresholds["value_probability"] and odds >= 1.10:
+        if probability >= thresholds["value_probability"] and odds >= 1.05:
             return "WATCHLIST"
         return "NO BET"
 
@@ -529,7 +544,7 @@ def select_bet_mode(probability, value, odds, safety, category, market=""):
     if probability >= thresholds["safe_probability"] and value >= thresholds["safe_value"] and 1.10 <= odds <= 1.90:
         return "SAFE PICK"
 
-    if probability >= 0.68 and value >= -0.05 and 1.10 <= odds <= 1.85:
+    if probability >= 0.68 and value >= -0.05 and 1.05 <= odds <= 1.85:
         return "FAVORI SOLIDE"
 
     if probability >= thresholds["value_probability"] and value >= thresholds["value_value"] and 1.10 <= odds <= 3.00:
@@ -753,7 +768,7 @@ def build_decision_reason(row):
     reasons = []
     if not is_live_odds_source(source):
         reasons.append("Analyse seulement: cote fallback non live")
-    if odds < 1.10:
+    if odds < 1.05:
         reasons.append("Cote trop basse")
     if value <= 0:
         reasons.append("Value negative ou nulle")
@@ -788,7 +803,7 @@ def refusal_reason(row):
         return "source fallback"
     if odds <= 1:
         return "cote absente"
-    if odds < 1.10:
+    if odds < 1.05:
         return "cote trop basse"
     if odds > 3.00:
         return "cote trop haute"
@@ -901,6 +916,8 @@ def process_football_match(row, strengths, ratings):
         if odds_source == "verified-web-fallback" and stake > 0:
             bankroll = load_current_bankroll(BANKROLL_START)
             stake = min(stake, 1.50)
+            if bookmaker_odds <= 1.15 and probability >= 0.80:
+                stake = min(stake, 1.00)
             stake_percent = stake / bankroll if bankroll > 0 else 0.0
         if stake <= 0 and mode in RECOMMENDED_MODES:
             mode = "WATCHLIST"
@@ -1686,6 +1703,8 @@ def refresh_predictions_after_learning(predictions):
         stake, stake_percent, kelly = bankroll_management(probability, odds, mode, bankroll=bankroll)
         if row.get("odds_source", "") == "verified-web-fallback" and stake > 0:
             stake = min(stake, 1.50)
+            if odds <= 1.15 and probability >= 0.80:
+                stake = min(stake, 1.00)
             stake_percent = stake / bankroll if bankroll > 0 else 0.0
 
         if stake <= 0 and mode in RECOMMENDED_MODES:
@@ -1799,7 +1818,7 @@ def one_real_bet_per_match(df, max_bets=40):
         & (out["suggested_stake"] > 0)
         & ((out["value"] > 0) | (out["bet_mode"].isin({"FAVORI SOLIDE", "NUL POSSIBLE"})))
         & ((out["ai_probability"] >= out["_min_probability"]) | (out["bet_mode"] == "NUL POSSIBLE"))
-        & (out["bookmaker_odds"] >= 1.10)
+        & (out["bookmaker_odds"] >= 1.05)
         & (out["bookmaker_odds"] <= out["_max_playable_odds"])
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     )
@@ -1832,7 +1851,7 @@ def one_real_bet_per_match(df, max_bets=40):
         & (out["suggested_stake"] > 0)
         & ((out["value"] > 0) | (out["bet_mode"].isin({"FAVORI SOLIDE", "NUL POSSIBLE"})))
         & ((out["ai_probability"] >= out["_min_probability"]) | (out["bet_mode"] == "NUL POSSIBLE"))
-        & (out["bookmaker_odds"] >= 1.10)
+        & (out["bookmaker_odds"] >= 1.05)
         & (out["bookmaker_odds"] <= out["_max_playable_odds"])
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
     ].sort_values("_keep_score", ascending=False)
@@ -1972,7 +1991,7 @@ def force_daily_best_bet(df):
         return out.drop(columns=["_min_probability"], errors="ignore")
 
     candidates = out[
-        (out["bookmaker_odds"] >= 1.10)
+        (out["bookmaker_odds"] >= 1.05)
         & (out.get("odds_source", "").apply(is_live_odds_source) if "odds_source" in out.columns else True)
         & (
             (

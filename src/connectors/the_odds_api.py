@@ -43,6 +43,10 @@ FOOTBALL_SPORTS = [
     "soccer_copa_america",
     "soccer_conmebol_copa_libertadores",
     "soccer_conmebol_copa_sudamericana",
+    "soccer_international_friendlies",
+    "soccer_u21_international_friendlies",
+    "soccer_morocco_gnf_1",
+    "soccer_colombia_primera_a",
 ]
 
 FALLBACK_TENNIS_SPORTS = [
@@ -83,6 +87,22 @@ VERIFIED_TODAY_FOOTBALL_FIXTURES = [
     ("soccer_international_friendlies", "2026-06-04T17:00:00Z", "Sweden", "Greece", 2.04, 3.65, 4.80),
     ("soccer_international_friendlies", "2026-06-04T19:00:00Z", "Spain", "Iraq", 1.05, 21.00, 70.00),
     ("soccer_international_friendlies", "2026-06-04T19:10:00Z", "France", "Côte d'Ivoire", 1.35, 5.50, 9.75),
+]
+
+RESEARCHED_TODAY_FOOTBALL_FIXTURES = [
+    # Matchs verifies manuellement le 08/06 quand l'API n'a pas tout remonte.
+    ("soccer_international_friendlies", "2026-06-08T11:30:00Z", "Sri Lanka", "Bhutan", 1.36, 4.75, 5.75),
+    ("soccer_u21_international_friendlies", "2026-06-08T13:00:00Z", "Japan U21", "Ukraine U21", 2.15, 3.40, 2.80),
+    ("soccer_u21_international_friendlies", "2026-06-08T16:00:00Z", "Norway U21", "Finland U21", 1.67, 3.80, 4.33),
+    ("soccer_u21_international_friendlies", "2026-06-08T16:15:00Z", "Italy U21", "Albania U21", 1.30, 5.25, 7.00),
+    ("soccer_morocco_gnf_1", "2026-06-08T16:00:00Z", "FUS Rabat", "Difaa El Jadida", 1.73, 3.20, 4.50),
+    ("soccer_morocco_gnf_1", "2026-06-08T18:00:00Z", "RSB Berkane", "Ittihad Tanger", 1.65, 3.40, 5.00),
+    ("soccer_morocco_gnf_1", "2026-06-08T18:00:00Z", "WAC Casablanca", "OC Safi", 1.45, 3.80, 6.00),
+    ("soccer_international_friendlies", "2026-06-08T18:45:00Z", "Netherlands", "Uzbekistan", 1.25, 6.00, 11.00),
+    ("soccer_international_friendlies", "2026-06-08T19:00:00Z", "Mauritania", "Niger", 2.60, 2.70, 2.80),
+    ("soccer_international_friendlies", "2026-06-08T19:10:00Z", "France", "Northern Ireland", 1.11, 7.50, 17.00),
+    ("soccer_colombia_primera_a", "2026-06-08T21:00:00Z", "Atletico Nacional", "Atletico Junior", 1.50, 4.20, 5.00),
+    ("soccer_morocco_gnf_1", "2026-06-08T20:00:00Z", "Olympique Dcheira", "HUSA Agadir", 2.88, 3.00, 2.30),
 ]
 
 
@@ -262,7 +282,8 @@ def offline_football_rows():
 def verified_today_football_rows():
     rows = []
     today = _today_local()
-    for sport, commence_time, home, away, home_odds, draw_odds, away_odds in VERIFIED_TODAY_FOOTBALL_FIXTURES:
+    fixtures = VERIFIED_TODAY_FOOTBALL_FIXTURES + RESEARCHED_TODAY_FOOTBALL_FIXTURES
+    for sport, commence_time, home, away, home_odds, draw_odds, away_odds in fixtures:
         if _local_date(commence_time) != today:
             continue
         rows.append({
