@@ -1812,6 +1812,18 @@ def one_real_bet_per_match(df, max_bets=40):
         axis=1,
     )
     out["_max_playable_odds"] = out["bet_mode"].map({"NUL POSSIBLE": 4.50}).fillna(3.00)
+    parsed_dates = pd.to_datetime(out["date"], utc=True, errors="coerce")
+    hours_until = (parsed_dates - pd.Timestamp.now(tz="UTC")).dt.total_seconds() / 3600
+    soon_bonus = (1 - (hours_until.clip(lower=0, upper=168) / 168)).fillna(0) * 32
+    elite_favorite = (
+        out["bet_mode"].eq("FAVORI SOLIDE")
+        & (out["ai_probability"] >= 0.80)
+        & (out["bookmaker_odds"] >= 1.05)
+        & (out["bookmaker_odds"] <= 1.20)
+    )
+    out["_soon_bonus"] = soon_bonus
+    out["_elite_favorite_bonus"] = 0.0
+    out.loc[elite_favorite, "_elite_favorite_bonus"] = 28.0
 
     out["_is_real_bet"] = (
         out["bet_mode"].isin(RECOMMENDED_MODES)
@@ -1829,6 +1841,8 @@ def one_real_bet_per_match(df, max_bets=40):
         + out["value"].clip(lower=0, upper=0.16) * 180
         - out["bookmaker_odds"] * 12
         + out["priority"] * 2
+        + out["_soon_bonus"]
+        + out["_elite_favorite_bonus"]
     )
 
     for key, g in out.groupby("_match_key"):
@@ -1868,7 +1882,15 @@ def one_real_bet_per_match(df, max_bets=40):
     out.loc[cut_mask, "bet_mode"] = "WATCHLIST"
     out.loc[cut_mask, "decision"] = "NO BET"
 
-    return out.drop(columns=["_match_key", "_is_real_bet", "_keep_score", "_min_probability", "_max_playable_odds"], errors="ignore")
+    return out.drop(columns=[
+        "_match_key",
+        "_is_real_bet",
+        "_keep_score",
+        "_min_probability",
+        "_max_playable_odds",
+        "_soon_bonus",
+        "_elite_favorite_bonus",
+    ], errors="ignore")
 
 
 def cap_stakes_to_bankroll(df, bankroll):
@@ -1921,12 +1943,26 @@ def cap_stakes_to_bankroll(df, bankroll):
                 candidates[col] = 0
             candidates[col] = pd.to_numeric(candidates[col], errors="coerce").fillna(0)
 
+        parsed_dates = pd.to_datetime(candidates["date"], utc=True, errors="coerce")
+        hours_until = (parsed_dates - pd.Timestamp.now(tz="UTC")).dt.total_seconds() / 3600
+        candidates["_soon_bonus"] = (1 - (hours_until.clip(lower=0, upper=168) / 168)).fillna(0) * 28
+        candidates["_elite_favorite_bonus"] = 0.0
+        elite_favorite = (
+            candidates["bet_mode"].eq("FAVORI SOLIDE")
+            & (candidates["ai_probability"] >= 0.80)
+            & (candidates["bookmaker_odds"] >= 1.05)
+            & (candidates["bookmaker_odds"] <= 1.20)
+        )
+        candidates.loc[elite_favorite, "_elite_favorite_bonus"] = 26.0
+
         candidates["_bankroll_score"] = (
             candidates["priority"] * 2
             + candidates["ai_probability"] * 600
             + candidates["safety_score"] * 4
             + candidates["value"].clip(lower=-0.10, upper=0.25) * 220
             - candidates["bookmaker_odds"] * 8
+            + candidates["_soon_bonus"]
+            + candidates["_elite_favorite_bonus"]
         )
 
         keep = []

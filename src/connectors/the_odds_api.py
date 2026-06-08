@@ -89,8 +89,8 @@ VERIFIED_TODAY_FOOTBALL_FIXTURES = [
     ("soccer_international_friendlies", "2026-06-04T19:10:00Z", "France", "Côte d'Ivoire", 1.35, 5.50, 9.75),
 ]
 
-RESEARCHED_TODAY_FOOTBALL_FIXTURES = [
-    # Matchs verifies manuellement le 08/06 quand l'API n'a pas tout remonte.
+RESEARCHED_WEEK_FOOTBALL_FIXTURES = [
+    # Matchs verifies manuellement quand l'API n'a pas tout remonte.
     ("soccer_international_friendlies", "2026-06-08T11:30:00Z", "Sri Lanka", "Bhutan", 1.36, 4.75, 5.75),
     ("soccer_u21_international_friendlies", "2026-06-08T13:00:00Z", "Japan U21", "Ukraine U21", 2.15, 3.40, 2.80),
     ("soccer_u21_international_friendlies", "2026-06-08T16:00:00Z", "Norway U21", "Finland U21", 1.67, 3.80, 4.33),
@@ -103,6 +103,19 @@ RESEARCHED_TODAY_FOOTBALL_FIXTURES = [
     ("soccer_international_friendlies", "2026-06-08T19:10:00Z", "France", "Northern Ireland", 1.11, 7.50, 17.00),
     ("soccer_colombia_primera_a", "2026-06-08T21:00:00Z", "Atletico Nacional", "Atletico Junior", 1.50, 4.20, 5.00),
     ("soccer_morocco_gnf_1", "2026-06-08T20:00:00Z", "Olympique Dcheira", "HUSA Agadir", 2.88, 3.00, 2.30),
+    ("soccer_international_friendlies", "2026-06-09T10:00:00Z", "Philippines", "Myanmar", 1.55, 4.20, 6.00),
+    ("soccer_international_friendlies", "2026-06-09T12:00:00Z", "Thailand", "China PR", 3.60, 3.50, 2.05),
+    ("soccer_international_friendlies", "2026-06-09T13:00:00Z", "Armenia", "Moldova", 1.66, 3.80, 5.50),
+    ("soccer_international_friendlies", "2026-06-09T14:00:00Z", "DR Congo", "Chile", 2.00, 3.30, 3.90),
+    ("soccer_international_friendlies", "2026-06-09T15:00:00Z", "Liberia", "Sierra Leone", 2.65, 3.20, 2.63),
+    ("soccer_international_friendlies", "2026-06-09T17:00:00Z", "Hungary", "Kazakhstan", 1.25, 5.75, 11.50),
+    ("soccer_international_friendlies", "2026-06-09T18:00:00Z", "San Marino", "Azerbaijan", 17.00, 7.00, 1.22),
+    ("soccer_international_friendlies", "2026-06-09T19:00:00Z", "Peru", "Spain", 21.00, 8.50, 1.18),
+    ("soccer_international_friendlies", "2026-06-10T01:00:00Z", "Iceland", "Argentina", 12.00, 6.50, 1.17),
+    ("soccer_international_friendlies", "2026-06-10T16:00:00Z", "Saudi Arabia", "Senegal", 5.25, 3.90, 1.67),
+    ("soccer_international_friendlies", "2026-06-10T17:00:00Z", "Iraq", "Venezuela", 3.75, 3.30, 1.95),
+    ("soccer_international_friendlies", "2026-06-10T18:45:00Z", "Portugal", "Nigeria", 1.26, 5.75, 13.00),
+    ("soccer_international_friendlies", "2026-06-10T19:00:00Z", "England", "Costa Rica", 1.17, 9.00, 19.00),
 ]
 
 
@@ -279,12 +292,16 @@ def offline_football_rows():
     return rows
 
 
-def verified_today_football_rows():
+def verified_week_football_rows():
     rows = []
-    today = _today_local()
-    fixtures = VERIFIED_TODAY_FOOTBALL_FIXTURES + RESEARCHED_TODAY_FOOTBALL_FIXTURES
+    start_day = _today_local()
+    end_day = (pd.Timestamp(start_day) + pd.Timedelta(days=7)).date()
+    fixtures = VERIFIED_TODAY_FOOTBALL_FIXTURES + RESEARCHED_WEEK_FOOTBALL_FIXTURES
     for sport, commence_time, home, away, home_odds, draw_odds, away_odds in fixtures:
-        if _local_date(commence_time) != today:
+        local_day = _local_date(commence_time)
+        if local_day is None or local_day < start_day or local_day > end_day:
+            continue
+        if not _is_in_window(sport, commence_time):
             continue
         rows.append({
             "sport": sport,
@@ -300,12 +317,12 @@ def verified_today_football_rows():
 
 
 def add_missing_verified_today_football(df):
-    fallback = pd.DataFrame(verified_today_football_rows())
+    fallback = pd.DataFrame(verified_week_football_rows())
     if fallback.empty:
         return df
 
     if df.empty:
-        print("Ajout du fallback web foot du jour.")
+        print("Ajout du fallback web foot de la semaine.")
         return fallback
 
     existing = df.copy()
@@ -335,7 +352,7 @@ def add_missing_verified_today_football(df):
     existing = existing.drop(columns=["_key"], errors="ignore")
 
     if not missing.empty:
-        print(f"Ajout fallback web foot du jour : {len(missing)} match(s).")
+        print(f"Ajout fallback web foot de la semaine : {len(missing)} match(s).")
         existing = pd.concat([existing, missing], ignore_index=True)
     return existing
 
