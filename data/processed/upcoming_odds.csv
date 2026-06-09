@@ -1,81 +1,76 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
-soccer_colombia_primera_a,2026-06-08T21:00:00Z,Atletico Nacional,Atletico Junior,1.5,4.2,5.0,verified-web-fallback
-soccer_fifa_world_cup,2026-06-11T19:00:00Z,Mexico,South Africa,1.45,4.7,9.6,the-odds-api
-soccer_fifa_world_cup,2026-06-12T02:00:00Z,South Korea,Czech Republic,2.76,3.2,3.0,the-odds-api
-soccer_fifa_world_cup,2026-06-12T19:00:00Z,Canada,Bosnia & Herzegovina,1.85,3.75,5.0,the-odds-api
-soccer_fifa_world_cup,2026-06-13T01:00:00Z,USA,Paraguay,2.06,3.55,4.2,the-odds-api
-soccer_fifa_world_cup,2026-06-13T19:00:00Z,Qatar,Switzerland,15.5,7.0,1.25,the-odds-api
-soccer_fifa_world_cup,2026-06-13T22:00:00Z,Brazil,Morocco,1.71,4.0,5.8,the-odds-api
-soccer_fifa_world_cup,2026-06-14T01:00:00Z,Haiti,Scotland,7.2,4.7,1.54,the-odds-api
-soccer_fifa_world_cup,2026-06-14T04:00:00Z,Australia,Turkey,5.5,3.8,1.8,the-odds-api
-soccer_fifa_world_cup,2026-06-14T17:00:00Z,Germany,Curaçao,1.06,23.0,56.0,the-odds-api
-soccer_fifa_world_cup,2026-06-14T20:00:00Z,Netherlands,Japan,2.06,3.75,3.9,the-odds-api
-soccer_fifa_world_cup,2026-06-14T23:00:00Z,Ivory Coast,Ecuador,3.7,2.92,2.56,the-odds-api
+soccer_fifa_world_cup,2026-06-11T19:00:00Z,Mexico,South Africa,1.44,4.7,10.0,the-odds-api
+soccer_fifa_world_cup,2026-06-12T02:00:00Z,South Korea,Czech Republic,2.72,3.25,3.05,the-odds-api
+soccer_fifa_world_cup,2026-06-12T19:00:00Z,Canada,Bosnia & Herzegovina,1.87,3.75,4.9,the-odds-api
+soccer_fifa_world_cup,2026-06-13T01:00:00Z,USA,Paraguay,2.04,3.55,4.3,the-odds-api
+soccer_fifa_world_cup,2026-06-13T19:00:00Z,Qatar,Switzerland,16.5,7.2,1.24,the-odds-api
+soccer_fifa_world_cup,2026-06-13T22:00:00Z,Brazil,Morocco,1.72,4.0,5.8,the-odds-api
+soccer_fifa_world_cup,2026-06-14T01:00:00Z,Haiti,Scotland,6.8,4.6,1.56,the-odds-api
+soccer_fifa_world_cup,2026-06-14T04:00:00Z,Australia,Turkey,5.7,3.9,1.75,the-odds-api
+soccer_fifa_world_cup,2026-06-14T17:00:00Z,Germany,Curaçao,1.06,22.0,56.0,the-odds-api
+soccer_fifa_world_cup,2026-06-14T20:00:00Z,Netherlands,Japan,2.12,3.7,3.8,the-odds-api
+soccer_fifa_world_cup,2026-06-14T23:00:00Z,Ivory Coast,Ecuador,3.65,2.92,2.58,the-odds-api
 soccer_fifa_world_cup,2026-06-15T02:00:00Z,Sweden,Tunisia,1.98,3.55,4.6,the-odds-api
-soccer_fifa_world_cup,2026-06-15T16:00:00Z,Spain,Cape Verde,1.11,14.0,30.0,the-odds-api
-soccer_fifa_world_cup,2026-06-15T19:00:00Z,Belgium,Egypt,1.7,4.0,5.9,the-odds-api
-soccer_fifa_world_cup,2026-06-15T22:00:00Z,Saudi Arabia,Uruguay,8.2,4.6,1.49,the-odds-api
-soccer_fifa_world_cup,2026-06-16T01:00:00Z,Iran,New Zealand,1.97,3.5,4.6,the-odds-api
-soccer_fifa_world_cup,2026-06-16T19:00:00Z,France,Senegal,1.5,4.7,8.0,the-odds-api
-soccer_fifa_world_cup,2026-06-16T22:00:00Z,Iraq,Norway,16.5,7.4,1.24,the-odds-api
+soccer_fifa_world_cup,2026-06-15T16:00:00Z,Spain,Cape Verde,1.11,14.0,32.0,the-odds-api
+soccer_fifa_world_cup,2026-06-15T19:00:00Z,Belgium,Egypt,1.71,3.95,5.8,the-odds-api
+soccer_fifa_world_cup,2026-06-15T22:00:00Z,Saudi Arabia,Uruguay,8.8,4.7,1.46,the-odds-api
+soccer_fifa_world_cup,2026-06-16T01:00:00Z,Iran,New Zealand,1.95,3.55,4.7,the-odds-api
+soccer_fifa_world_cup,2026-06-16T19:00:00Z,France,Senegal,1.51,4.6,8.0,the-odds-api
+soccer_fifa_world_cup,2026-06-16T22:00:00Z,Iraq,Norway,16.5,7.4,1.23,the-odds-api
 soccer_fifa_world_cup,2026-06-17T01:00:00Z,Argentina,Algeria,1.43,4.9,9.6,the-odds-api
-soccer_fifa_world_cup,2026-06-17T04:00:00Z,Austria,Jordan,1.35,5.9,10.0,the-odds-api
+soccer_fifa_world_cup,2026-06-17T04:00:00Z,Austria,Jordan,1.36,5.9,10.0,the-odds-api
 soccer_fifa_world_cup,2026-06-17T17:00:00Z,Portugal,DR Congo,1.3,6.2,13.5,the-odds-api
-soccer_fifa_world_cup,2026-06-17T20:00:00Z,England,Croatia,1.78,3.95,5.2,the-odds-api
-soccer_fifa_world_cup,2026-06-17T23:00:00Z,Ghana,Panama,2.14,3.55,3.85,the-odds-api
+soccer_fifa_world_cup,2026-06-17T20:00:00Z,England,Croatia,1.79,3.95,5.2,the-odds-api
+soccer_fifa_world_cup,2026-06-17T23:00:00Z,Ghana,Panama,2.16,3.55,3.85,the-odds-api
 soccer_fifa_world_cup,2026-06-18T02:00:00Z,Uzbekistan,Colombia,9.8,4.9,1.43,the-odds-api
 soccer_fifa_world_cup,2026-06-18T16:00:00Z,Czech Republic,South Africa,2.02,3.45,4.3,the-odds-api
 soccer_fifa_world_cup,2026-06-18T19:00:00Z,Switzerland,Bosnia & Herzegovina,1.65,4.1,6.1,the-odds-api
-soccer_fifa_world_cup,2026-06-18T22:00:00Z,Canada,Qatar,1.33,5.6,11.5,the-odds-api
-soccer_fifa_world_cup,2026-06-19T01:00:00Z,Mexico,South Korea,1.85,3.6,4.9,the-odds-api
-soccer_fifa_world_cup,2026-06-19T19:00:00Z,USA,Australia,1.76,4.1,4.9,the-odds-api
-soccer_fifa_world_cup,2026-06-19T22:00:00Z,Scotland,Morocco,4.4,3.45,2.05,the-odds-api
+soccer_fifa_world_cup,2026-06-18T22:00:00Z,Canada,Qatar,1.33,5.7,11.5,the-odds-api
+soccer_fifa_world_cup,2026-06-19T01:00:00Z,Mexico,South Korea,1.85,3.7,4.8,the-odds-api
+soccer_fifa_world_cup,2026-06-19T19:00:00Z,USA,Australia,1.79,4.0,4.75,the-odds-api
+soccer_fifa_world_cup,2026-06-19T22:00:00Z,Scotland,Morocco,4.3,3.45,2.05,the-odds-api
 soccer_fifa_world_cup,2026-06-20T01:00:00Z,Brazil,Haiti,1.09,15.5,35.0,the-odds-api
-soccer_fifa_world_cup,2026-06-20T03:00:00Z,Turkey,Paraguay,2.25,3.25,3.45,the-odds-api
-soccer_fifa_world_cup,2026-06-20T17:00:00Z,Netherlands,Sweden,1.67,4.3,5.4,the-odds-api
-soccer_fifa_world_cup,2026-06-20T20:00:00Z,Germany,Ivory Coast,1.57,4.7,6.0,the-odds-api
-soccer_fifa_world_cup,2026-06-21T00:00:00Z,Ecuador,Curaçao,1.22,7.4,17.0,the-odds-api
-soccer_fifa_world_cup,2026-06-21T04:00:00Z,Tunisia,Japan,5.4,3.65,1.8,the-odds-api
-soccer_fifa_world_cup,2026-06-21T16:00:00Z,Spain,Saudi Arabia,1.13,10.5,28.01,the-odds-api
-soccer_fifa_world_cup,2026-06-21T19:00:00Z,Belgium,Iran,1.44,4.9,8.6,the-odds-api
-soccer_fifa_world_cup,2026-06-21T22:00:00Z,Uruguay,Cape Verde,1.45,4.8,7.8,the-odds-api
-soccer_fifa_world_cup,2026-06-22T01:00:00Z,New Zealand,Egypt,5.2,3.85,1.75,the-odds-api
-soccer_fifa_world_cup,2026-06-22T17:00:00Z,Argentina,Austria,1.67,4.0,5.9,the-odds-api
-soccer_fifa_world_cup,2026-06-22T21:00:00Z,France,Iraq,1.15,9.4,26.0,the-odds-api
-soccer_fifa_world_cup,2026-06-23T00:00:00Z,Norway,Senegal,2.14,3.8,3.5,the-odds-api
-soccer_fifa_world_cup,2026-06-23T03:00:00Z,Jordan,Algeria,6.6,4.3,1.55,the-odds-api
-soccer_fifa_world_cup,2026-06-23T17:00:00Z,Portugal,Uzbekistan,1.29,6.4,13.0,the-odds-api
-soccer_fifa_world_cup,2026-06-23T20:00:00Z,England,Ghana,1.35,5.7,10.0,the-odds-api
+soccer_fifa_world_cup,2026-06-20T03:00:00Z,Turkey,Paraguay,2.25,3.25,3.5,the-odds-api
+soccer_fifa_world_cup,2026-06-20T17:00:00Z,Netherlands,Sweden,1.67,4.2,5.5,the-odds-api
+soccer_fifa_world_cup,2026-06-20T20:00:00Z,Germany,Ivory Coast,1.57,4.5,6.0,the-odds-api
+soccer_fifa_world_cup,2026-06-21T00:00:00Z,Ecuador,Curaçao,1.22,7.0,17.0,the-odds-api
+soccer_fifa_world_cup,2026-06-21T04:00:00Z,Tunisia,Japan,5.5,3.6,1.8,the-odds-api
+soccer_fifa_world_cup,2026-06-21T16:00:00Z,Spain,Saudi Arabia,1.13,10.5,26.0,the-odds-api
+soccer_fifa_world_cup,2026-06-21T19:00:00Z,Belgium,Iran,1.44,4.8,8.6,the-odds-api
+soccer_fifa_world_cup,2026-06-21T22:00:00Z,Uruguay,Cape Verde,1.45,4.9,8.2,the-odds-api
+soccer_fifa_world_cup,2026-06-22T01:00:00Z,New Zealand,Egypt,5.2,3.75,1.78,the-odds-api
+soccer_fifa_world_cup,2026-06-22T17:00:00Z,Argentina,Austria,1.67,4.0,6.0,the-odds-api
+soccer_fifa_world_cup,2026-06-22T21:00:00Z,France,Iraq,1.15,9.5,26.0,the-odds-api
+soccer_fifa_world_cup,2026-06-23T00:00:00Z,Norway,Senegal,2.24,3.65,3.5,the-odds-api
+soccer_fifa_world_cup,2026-06-23T03:00:00Z,Jordan,Algeria,6.6,4.5,1.57,the-odds-api
+soccer_fifa_world_cup,2026-06-23T17:00:00Z,Portugal,Uzbekistan,1.29,6.4,13.5,the-odds-api
+soccer_fifa_world_cup,2026-06-23T20:00:00Z,England,Ghana,1.35,5.8,10.0,the-odds-api
 soccer_fifa_world_cup,2026-06-23T23:00:00Z,Panama,Croatia,7.5,4.3,1.51,the-odds-api
-soccer_fifa_world_cup,2026-06-24T02:00:00Z,Colombia,DR Congo,1.5,4.3,8.2,the-odds-api
-soccer_fifa_world_cup,2026-06-24T19:00:00Z,Bosnia & Herzegovina,Qatar,1.58,4.2,6.8,the-odds-api
-soccer_fifa_world_cup,2026-06-24T19:00:00Z,Switzerland,Canada,2.26,3.4,3.8,the-odds-api
-soccer_fifa_world_cup,2026-06-24T22:00:00Z,Morocco,Haiti,1.34,5.6,10.0,the-odds-api
-soccer_fifa_world_cup,2026-06-24T22:00:00Z,Scotland,Brazil,7.5,4.7,1.46,the-odds-api
-soccer_fifa_world_cup,2026-06-25T01:00:00Z,Czech Republic,Mexico,4.75,3.5,1.91,the-odds-api
-soccer_fifa_world_cup,2026-06-25T01:00:00Z,South Africa,South Korea,3.9,3.4,2.08,the-odds-api
-soccer_fifa_world_cup,2026-06-25T20:00:00Z,Curaçao,Ivory Coast,14.01,6.5,1.25,the-odds-api
-soccer_fifa_world_cup,2026-06-25T20:00:00Z,Ecuador,Germany,5.0,3.9,1.74,the-odds-api
-soccer_fifa_world_cup,2026-06-25T23:00:00Z,Japan,Sweden,2.1,3.4,3.6,the-odds-api
-soccer_fifa_world_cup,2026-06-25T23:00:00Z,Tunisia,Netherlands,7.0,4.2,1.53,the-odds-api
-soccer_fifa_world_cup,2026-06-26T02:00:00Z,Paraguay,Australia,2.2,3.3,3.4,the-odds-api
-soccer_fifa_world_cup,2026-06-26T02:00:00Z,Turkey,USA,2.75,3.5,2.5,the-odds-api
-soccer_fifa_world_cup,2026-06-26T19:00:00Z,Norway,France,4.33,3.7,1.88,the-odds-api
-soccer_fifa_world_cup,2026-06-26T19:00:00Z,Senegal,Iraq,1.48,4.5,8.0,the-odds-api
-soccer_fifa_world_cup,2026-06-27T00:00:00Z,Cape Verde,Saudi Arabia,2.63,3.45,2.75,the-odds-api
-soccer_fifa_world_cup,2026-06-27T00:00:00Z,Uruguay,Spain,5.5,3.9,1.67,the-odds-api
-soccer_fifa_world_cup,2026-06-27T03:00:00Z,Egypt,Iran,2.4,3.1,3.55,the-odds-api
-soccer_fifa_world_cup,2026-06-27T03:00:00Z,New Zealand,Belgium,11.0,6.0,1.32,the-odds-api
-soccer_fifa_world_cup,2026-06-27T21:00:00Z,Croatia,Ghana,1.72,3.8,5.8,the-odds-api
-soccer_fifa_world_cup,2026-06-27T21:00:00Z,Panama,England,10.5,6.4,1.3,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,3.45,3.4,2.15,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,DR Congo,Uzbekistan,2.4,3.25,3.3,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,3.5,3.3,2.3,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Jordan,Argentina,15.0,7.5,1.2,the-odds-api
-soccer_international_friendlies,2026-06-08T11:30:00Z,Sri Lanka,Bhutan,1.36,4.75,5.75,verified-web-fallback
-soccer_international_friendlies,2026-06-08T18:45:00Z,Netherlands,Uzbekistan,1.25,6.0,11.0,verified-web-fallback
-soccer_international_friendlies,2026-06-08T19:00:00Z,Mauritania,Niger,2.6,2.7,2.8,verified-web-fallback
-soccer_international_friendlies,2026-06-08T19:10:00Z,France,Northern Ireland,1.11,7.5,17.0,verified-web-fallback
+soccer_fifa_world_cup,2026-06-24T02:00:00Z,Colombia,DR Congo,1.5,4.3,8.6,the-odds-api
+soccer_fifa_world_cup,2026-06-24T19:00:00Z,Bosnia & Herzegovina,Qatar,1.58,4.1,6.8,the-odds-api
+soccer_fifa_world_cup,2026-06-24T19:00:00Z,Switzerland,Canada,2.28,3.4,3.8,the-odds-api
+soccer_fifa_world_cup,2026-06-24T22:00:00Z,Morocco,Haiti,1.33,5.5,10.5,the-odds-api
+soccer_fifa_world_cup,2026-06-24T22:00:00Z,Scotland,Brazil,7.8,4.7,1.46,the-odds-api
+soccer_fifa_world_cup,2026-06-25T01:00:00Z,Czech Republic,Mexico,4.75,3.45,1.91,the-odds-api
+soccer_fifa_world_cup,2026-06-25T01:00:00Z,South Africa,South Korea,4.2,3.4,2.08,the-odds-api
+soccer_fifa_world_cup,2026-06-25T20:00:00Z,Curaçao,Ivory Coast,15.0,6.2,1.25,the-odds-api
+soccer_fifa_world_cup,2026-06-25T20:00:00Z,Ecuador,Germany,5.1,3.9,1.75,the-odds-api
+soccer_fifa_world_cup,2026-06-25T23:00:00Z,Japan,Sweden,2.1,3.4,3.65,the-odds-api
+soccer_fifa_world_cup,2026-06-25T23:00:00Z,Tunisia,Netherlands,6.75,4.35,1.53,the-odds-api
+soccer_fifa_world_cup,2026-06-26T02:00:00Z,Paraguay,Australia,2.2,3.3,3.6,the-odds-api
+soccer_fifa_world_cup,2026-06-26T02:00:00Z,Turkey,USA,2.75,3.5,2.6,the-odds-api
+soccer_fifa_world_cup,2026-06-26T19:00:00Z,Norway,France,4.33,3.6,1.86,the-odds-api
+soccer_fifa_world_cup,2026-06-26T19:00:00Z,Senegal,Iraq,1.44,4.5,8.2,the-odds-api
+soccer_fifa_world_cup,2026-06-27T00:00:00Z,Cape Verde,Saudi Arabia,2.62,3.45,2.75,the-odds-api
+soccer_fifa_world_cup,2026-06-27T00:00:00Z,Uruguay,Spain,5.5,3.9,1.65,the-odds-api
+soccer_fifa_world_cup,2026-06-27T03:00:00Z,Egypt,Iran,2.4,3.1,3.6,the-odds-api
+soccer_fifa_world_cup,2026-06-27T03:00:00Z,New Zealand,Belgium,11.49,6.0,1.3,the-odds-api
+soccer_fifa_world_cup,2026-06-27T21:00:00Z,Croatia,Ghana,1.7,3.75,5.9,the-odds-api
+soccer_fifa_world_cup,2026-06-27T21:00:00Z,Panama,England,11.0,6.0,1.32,the-odds-api
+soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,3.55,3.4,2.15,the-odds-api
+soccer_fifa_world_cup,2026-06-27T23:30:00Z,DR Congo,Uzbekistan,2.4,3.4,3.2,the-odds-api
+soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,3.6,3.3,2.2,the-odds-api
+soccer_fifa_world_cup,2026-06-28T02:00:00Z,Jordan,Argentina,15.0,7.0,1.23,the-odds-api
 soccer_international_friendlies,2026-06-09T10:30:00Z,Philippines,Myanmar,1.52,4.2,5.75,verified-web-fallback
 soccer_international_friendlies,2026-06-09T10:35:00Z,China PR,Thailand,2.18,3.46,3.63,verified-web-fallback
 soccer_international_friendlies,2026-06-09T11:00:00Z,Cambodia,Hong Kong,4.15,3.68,1.67,verified-web-fallback
@@ -95,23 +90,11 @@ soccer_international_friendlies,2026-06-10T16:00:00Z,Saudi Arabia,Senegal,5.25,3
 soccer_international_friendlies,2026-06-10T17:00:00Z,Iraq,Venezuela,3.75,3.3,1.95,verified-web-fallback
 soccer_international_friendlies,2026-06-10T18:45:00Z,Portugal,Nigeria,1.26,5.75,13.0,verified-web-fallback
 soccer_international_friendlies,2026-06-10T19:00:00Z,England,Costa Rica,1.17,9.0,19.0,verified-web-fallback
-soccer_morocco_gnf_1,2026-06-08T16:00:00Z,FUS Rabat,Difaa El Jadida,1.73,3.2,4.5,verified-web-fallback
-soccer_morocco_gnf_1,2026-06-08T18:00:00Z,RSB Berkane,Ittihad Tanger,1.65,3.4,5.0,verified-web-fallback
-soccer_morocco_gnf_1,2026-06-08T18:00:00Z,WAC Casablanca,OC Safi,1.45,3.8,6.0,verified-web-fallback
-soccer_morocco_gnf_1,2026-06-08T20:00:00Z,Olympique Dcheira,HUSA Agadir,2.88,3.0,2.3,verified-web-fallback
-soccer_spain_segunda_division,2026-06-09T19:00:00Z,Almería,CD Castellón,2.46,3.8,2.9,the-odds-api
-soccer_spain_segunda_division,2026-06-10T19:00:00Z,Málaga,Las Palmas,2.2,3.4,3.5,the-odds-api
-soccer_u21_international_friendlies,2026-06-08T13:00:00Z,Japan U21,Ukraine U21,2.15,3.4,2.8,verified-web-fallback
-soccer_u21_international_friendlies,2026-06-08T16:00:00Z,Norway U21,Finland U21,1.67,3.8,4.33,verified-web-fallback
-soccer_u21_international_friendlies,2026-06-08T16:15:00Z,Italy U21,Albania U21,1.3,5.25,7.0,verified-web-fallback
-tennis_wta_queens_club_champ,2026-06-08T14:00:00Z,Harriet Dart,Liudmila Samsonova,3.0,,1.5,the-odds-api
-tennis_wta_queens_club_champ,2026-06-08T14:00:00Z,Karolina Pliskova,McCartney Kessler,1.86,,2.2,the-odds-api
-tennis_wta_queens_club_champ,2026-06-08T14:00:00Z,Qinwen Zheng,Jaqueline Cristian,1.37,,3.65,the-odds-api
-tennis_wta_queens_club_champ,2026-06-08T14:45:00Z,Katie Boulter,Leylah Fernandez,1.91,,2.06,the-odds-api
-tennis_wta_queens_club_champ,2026-06-08T15:45:00Z,Laura Siegemund,Francesca Jones,1.41,,3.35,the-odds-api
-tennis_wta_queens_club_champ,2026-06-09T09:00:00Z,Emma Raducanu,Anna Blinkova,1.46,,3.0,the-odds-api
-tennis_wta_queens_club_champ,2026-06-09T09:00:00Z,Iva Jović,Antonia Ruzic,1.3,,3.7,the-odds-api
-tennis_wta_queens_club_champ,2026-06-09T09:00:00Z,Maria Sakkari,Tatjana Maria,1.78,,2.25,the-odds-api
-tennis_wta_queens_club_champ,2026-06-09T09:00:00Z,Marie Bouzkova,Polina Kudermetova,1.39,,3.25,the-odds-api
-tennis_wta_queens_club_champ,2026-06-09T09:00:00Z,Shuai Zhang,Alexandra Eala,2.56,,1.55,the-odds-api
-tennis_wta_queens_club_champ,2026-06-09T09:00:00Z,Sorana Cirstea,Maddison Inglis,1.22,,4.7,the-odds-api
+soccer_spain_segunda_division,2026-06-09T19:00:00Z,Almería,CD Castellón,2.5,3.7,2.94,the-odds-api
+soccer_spain_segunda_division,2026-06-10T19:00:00Z,Málaga,Las Palmas,2.38,3.5,3.35,the-odds-api
+tennis_wta_queens_club_champ,2026-06-09T11:00:00Z,Emma Raducanu,Anna Blinkova,1.57,,2.74,the-odds-api
+tennis_wta_queens_club_champ,2026-06-09T11:00:00Z,Laura Siegemund,Francesca Jones,1.42,,3.35,the-odds-api
+tennis_wta_queens_club_champ,2026-06-09T12:30:00Z,Shuai Zhang,Alexandra Eala,2.55,,1.64,the-odds-api
+tennis_wta_queens_club_champ,2026-06-09T13:30:00Z,Mika Stojsavljevic,Marta Kostyuk,6.0,,1.19,the-odds-api
+tennis_wta_queens_club_champ,2026-06-09T14:00:00Z,Maria Sakkari,Tatjana Maria,2.02,,2.0,the-odds-api
+tennis_wta_queens_club_champ,2026-06-09T14:00:00Z,Marie Bouzkova,Polina Kudermetova,1.48,,3.0,the-odds-api
