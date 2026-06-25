@@ -1,46 +1,23 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
-soccer_fifa_world_cup,2026-06-24T22:00:00Z,Morocco,Haiti,1.57,4.0,9.0,the-odds-api
-soccer_fifa_world_cup,2026-06-24T22:01:00Z,Scotland,Brazil,170.0,44.0,1.03,the-odds-api
-soccer_fifa_world_cup,2026-06-25T01:00:00Z,Czech Republic,Mexico,4.1,4.1,1.93,the-odds-api
-soccer_fifa_world_cup,2026-06-25T01:00:00Z,South Africa,South Korea,6.6,4.1,1.65,the-odds-api
-soccer_fifa_world_cup,2026-06-25T20:00:00Z,Curaçao,Ivory Coast,21.0,8.8,1.19,the-odds-api
-soccer_fifa_world_cup,2026-06-25T20:00:00Z,Ecuador,Germany,4.2,4.5,1.85,the-odds-api
-soccer_fifa_world_cup,2026-06-25T23:00:00Z,Japan,Sweden,1.94,3.65,4.7,the-odds-api
-soccer_fifa_world_cup,2026-06-25T23:00:00Z,Tunisia,Netherlands,30.03,10.5,1.14,the-odds-api
-soccer_fifa_world_cup,2026-06-26T02:00:00Z,Paraguay,Australia,3.0,2.34,4.1,the-odds-api
-soccer_fifa_world_cup,2026-06-26T02:00:00Z,Turkey,USA,3.8,4.2,1.97,the-odds-api
-soccer_fifa_world_cup,2026-06-26T19:00:00Z,Norway,France,4.9,4.7,1.7,the-odds-api
-soccer_fifa_world_cup,2026-06-26T19:00:00Z,Senegal,Iraq,1.25,7.2,14.5,the-odds-api
-soccer_fifa_world_cup,2026-06-27T00:00:00Z,Cape Verde,Saudi Arabia,2.6,3.55,3.0,the-odds-api
-soccer_fifa_world_cup,2026-06-27T00:00:00Z,Uruguay,Spain,7.6,4.3,1.55,the-odds-api
-soccer_fifa_world_cup,2026-06-27T03:00:00Z,Egypt,Iran,2.58,2.75,4.0,the-odds-api
-soccer_fifa_world_cup,2026-06-27T03:00:00Z,New Zealand,Belgium,20.0,8.4,1.21,the-odds-api
-soccer_fifa_world_cup,2026-06-27T21:00:00Z,Croatia,Ghana,1.85,3.4,6.2,the-odds-api
-soccer_fifa_world_cup,2026-06-27T21:00:00Z,Panama,England,18.5,8.4,1.2,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,4.33,3.9,1.93,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,DR Congo,Uzbekistan,1.81,4.2,4.6,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,4.1,2.34,2.94,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Jordan,Argentina,18.5,8.2,1.21,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Clement Tabur,Shintaro Mochizuki,2.1,,1.75,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Colton Smith,Michael Zheng,2.2,,1.73,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Dane Sweeny,Marcelo Tomas Barrios Vera,2.4,,1.6,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Mackenzie McDonald,Christopher O'Connell,2.2,,1.7,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Nicolas Mejia,Tristan Schoolkate,3.55,,1.33,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Pablo Llamas Ruiz,Tristan Boyer,1.65,,2.3,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Roman Safiullin,Jerome Kym,1.5,,2.62,the-odds-api
-tennis_atp_wimbledon,2026-06-25T10:05:00Z,Yi Zhou,Billy Harris,2.8,,1.5,the-odds-api
-tennis_atp_wimbledon,2026-06-25T12:00:00Z,Alejandro Moro Canas,Soonwoo Kwon,2.75,,1.44,the-odds-api
-tennis_atp_wimbledon,2026-06-25T12:00:00Z,Hugo Gaston,Moez Echargui,1.3,,3.5,the-odds-api
-tennis_atp_wimbledon,2026-06-25T12:00:00Z,Jaime Faria,Rei Sakamoto,1.55,,2.68,the-odds-api
-tennis_atp_wimbledon,2026-06-25T12:00:00Z,Nicolai Budkov Kjaer,Otto Virtanen,3.65,,1.3,the-odds-api
-tennis_atp_wimbledon,2026-06-25T12:00:00Z,Timofey Skatov,Kyrian Jacquet,3.0,,1.4,the-odds-api
-tennis_atp_wimbledon,2026-06-25T12:00:00Z,Vilius Gaubas,Dusan Lajovic,2.05,,1.8,the-odds-api
-tennis_wta_bad_homburg_open,2026-06-25T09:00:00Z,Naomi Osaka,Ekaterina Alexandrova,1.77,,2.2,the-odds-api
-tennis_wta_bad_homburg_open,2026-06-25T13:30:00Z,Emma Navarro,Elena Gabriela Ruse,1.68,,2.42,the-odds-api
-tennis_wta_bad_homburg_open,2026-06-25T15:00:00Z,Karolina Muchova,Clara Tauson,1.48,,3.0,the-odds-api
-tennis_wta_wimbledon,2026-06-25T10:05:00Z,Alina Korneeva,Fiona Crawley,1.25,,4.6,the-odds-api
-tennis_wta_wimbledon,2026-06-25T10:05:00Z,Claire Liu,Elena Pridankina,1.61,,2.48,the-odds-api
-tennis_wta_wimbledon,2026-06-25T10:05:00Z,Harmony Tan,Tyra Caterina Grant,1.94,,2.0,the-odds-api
-tennis_wta_wimbledon,2026-06-25T10:05:00Z,Iryna Shymanovich,Katherine Sebov,1.48,,2.92,the-odds-api
-tennis_wta_wimbledon,2026-06-25T10:05:00Z,Katarzyna Kawa,Kayla Day,2.3,,1.69,the-odds-api
-tennis_wta_wimbledon,2026-06-25T10:05:00Z,Oceane Dodin,Mananchaya Sawangkaew,2.92,,1.48,the-odds-api
+soccer_brazil_campeonato,2026-07-16T22:30:00Z,Botafogo,Santos,1.95,3.5,3.85,the-odds-api
+soccer_brazil_campeonato,2026-07-16T22:30:00Z,Vitoria,Vasco da Gama,2.4,3.1,2.88,the-odds-api
+soccer_fifa_world_cup,2026-06-25T23:00:00Z,Japan,Sweden,2.66,3.6,4.6,the-odds-api
+soccer_fifa_world_cup,2026-06-25T23:00:00Z,Tunisia,Netherlands,270.0,80.0,1.12,the-odds-api
+soccer_fifa_world_cup,2026-06-26T02:00:00Z,Paraguay,Australia,2.84,2.36,4.6,the-odds-api
+soccer_fifa_world_cup,2026-06-26T02:00:00Z,Turkey,USA,4.1,4.4,1.95,the-odds-api
+soccer_fifa_world_cup,2026-06-26T19:00:00Z,Norway,France,5.5,4.8,1.65,the-odds-api
+soccer_fifa_world_cup,2026-06-26T19:00:00Z,Senegal,Iraq,1.26,7.2,14.49,the-odds-api
+soccer_fifa_world_cup,2026-06-27T00:00:00Z,Cape Verde,Saudi Arabia,2.82,3.55,2.9,the-odds-api
+soccer_fifa_world_cup,2026-06-27T00:00:00Z,Uruguay,Spain,8.4,4.5,1.52,the-odds-api
+soccer_fifa_world_cup,2026-06-27T03:00:00Z,Egypt,Iran,2.56,2.75,4.1,the-odds-api
+soccer_fifa_world_cup,2026-06-27T03:00:00Z,New Zealand,Belgium,19.49,8.6,1.2,the-odds-api
+soccer_fifa_world_cup,2026-06-27T21:00:00Z,Croatia,Ghana,1.84,3.4,6.0,the-odds-api
+soccer_fifa_world_cup,2026-06-27T21:00:00Z,Panama,England,21.0,8.8,1.19,the-odds-api
+soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,4.4,3.9,1.93,the-odds-api
+soccer_fifa_world_cup,2026-06-27T23:30:00Z,DR Congo,Uzbekistan,1.8,4.2,4.8,the-odds-api
+soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,4.1,2.38,3.0,the-odds-api
+soccer_fifa_world_cup,2026-06-28T02:00:00Z,Jordan,Argentina,18.5,8.6,1.2,the-odds-api
+soccer_fifa_world_cup,2026-06-28T19:00:00Z,South Africa,Canada,6.0,3.75,1.73,the-odds-api
+soccer_fifa_world_cup,2026-07-02T00:00:00Z,USA,Bosnia & Herzegovina,1.6,3.85,7.5,the-odds-api
+tennis_wta_bad_homburg_open,2026-06-26T11:00:00Z,Xinyu Wang,Naomi Osaka,3.85,,1.34,the-odds-api
+tennis_wta_bad_homburg_open,2026-06-26T13:00:00Z,Elena Gabriela Ruse,Karolina Muchova,2.8,,1.54,the-odds-api
