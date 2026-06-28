@@ -3,145 +3,145 @@ soccer_brazil_campeonato,2026-07-16T22:30:00Z,Botafogo,Santos,1.95,3.5,3.85,the-
 soccer_brazil_campeonato,2026-07-16T22:30:00Z,Vitoria,Vasco da Gama,2.54,3.2,2.98,the-odds-api
 soccer_brazil_campeonato,2026-07-17T00:30:00Z,Mirassol,Grêmio,2.1,3.2,3.5,the-odds-api
 soccer_brazil_campeonato,2026-07-18T00:30:00Z,Fluminense,Bragantino-SP,1.96,3.45,4.5,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,Colombia,Portugal,4.3,4.2,1.91,the-odds-api
-soccer_fifa_world_cup,2026-06-27T23:30:00Z,DR Congo,Uzbekistan,1.73,4.0,5.8,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Algeria,Austria,3.7,2.1,3.95,the-odds-api
-soccer_fifa_world_cup,2026-06-28T02:00:00Z,Jordan,Argentina,23.0,10.0,1.17,the-odds-api
-soccer_fifa_world_cup,2026-06-28T19:00:00Z,South Africa,Canada,6.2,3.7,1.75,the-odds-api
-soccer_fifa_world_cup,2026-06-29T17:00:00Z,Brazil,Japan,1.73,4.1,5.5,the-odds-api
-soccer_fifa_world_cup,2026-06-29T20:30:00Z,Germany,Paraguay,1.4,5.3,10.0,the-odds-api
-soccer_fifa_world_cup,2026-06-30T01:00:00Z,Netherlands,Morocco,2.2,3.3,4.1,the-odds-api
-soccer_fifa_world_cup,2026-06-30T17:00:00Z,Ivory Coast,Norway,3.85,3.6,2.18,the-odds-api
-soccer_fifa_world_cup,2026-06-30T21:00:00Z,France,Sweden,1.32,6.0,12.0,the-odds-api
-soccer_fifa_world_cup,2026-07-01T01:00:00Z,Mexico,Ecuador,2.2,3.2,3.5,the-odds-api
-soccer_fifa_world_cup,2026-07-02T00:00:00Z,USA,Bosnia & Herzegovina,1.41,5.1,10.0,the-odds-api
-soccer_fifa_world_cup,2026-07-03T18:00:00Z,Australia,Egypt,3.5,3.0,2.6,the-odds-api
-soccer_fifa_world_cup,2026-07-03T22:00:00Z,Argentina,Cape Verde,1.17,9.2,23.0,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Aleksandar Kovacevic,Botic van de Zandschulp,2.58,,1.61,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Aleksandar Vukic,Jenson Brooksby,2.88,,1.49,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Andrey Rublev,Roman Safiullin,1.54,,2.8,the-odds-api
+soccer_fifa_world_cup,2026-06-29T17:00:00Z,Brazil,Japan,1.77,4.1,5.7,the-odds-api
+soccer_fifa_world_cup,2026-06-29T20:30:00Z,Germany,Paraguay,1.39,5.5,12.0,the-odds-api
+soccer_fifa_world_cup,2026-06-30T01:00:00Z,Netherlands,Morocco,2.34,3.25,4.0,the-odds-api
+soccer_fifa_world_cup,2026-06-30T17:00:00Z,Ivory Coast,Norway,3.9,3.7,2.1,the-odds-api
+soccer_fifa_world_cup,2026-06-30T21:00:00Z,France,Sweden,1.31,6.4,13.0,the-odds-api
+soccer_fifa_world_cup,2026-07-01T01:00:00Z,Mexico,Ecuador,2.34,3.1,3.95,the-odds-api
+soccer_fifa_world_cup,2026-07-01T16:00:00Z,England,DR Congo,1.29,6.0,16.0,the-odds-api
+soccer_fifa_world_cup,2026-07-01T20:00:00Z,Belgium,Senegal,2.26,3.3,3.9,the-odds-api
+soccer_fifa_world_cup,2026-07-02T00:00:00Z,USA,Bosnia & Herzegovina,1.39,5.4,10.0,the-odds-api
+soccer_fifa_world_cup,2026-07-02T19:00:00Z,Spain,Austria,1.32,5.6,13.5,the-odds-api
+soccer_fifa_world_cup,2026-07-02T23:00:00Z,Portugal,Croatia,1.83,3.7,5.2,the-odds-api
+soccer_fifa_world_cup,2026-07-03T03:00:00Z,Switzerland,Algeria,2.1,3.4,4.2,the-odds-api
+soccer_fifa_world_cup,2026-07-03T18:00:00Z,Australia,Egypt,3.45,3.0,2.62,the-odds-api
+soccer_fifa_world_cup,2026-07-03T22:00:00Z,Argentina,Cape Verde,1.17,9.0,25.97,the-odds-api
+soccer_fifa_world_cup,2026-07-04T01:30:00Z,Colombia,Ghana,1.6,4.0,7.8,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Aleksandar Kovacevic,Botic van de Zandschulp,2.7,,1.58,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Aleksandar Vukic,Jenson Brooksby,2.92,,1.49,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Andrey Rublev,Roman Safiullin,1.53,,2.92,the-odds-api
 tennis_atp_wimbledon,2026-06-29T10:00:00Z,Dalibor Svrcina,Learner Tien,8.0,,1.13,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Denis Shapovalov,Pablo Carreno Busta,1.33,,4.0,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Emilio Nava,Ignacio Buse,2.42,,1.7,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Luca Van Assche,Marton Fucsovics,3.1,,1.46,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Marco Trungelliti,Martin Damm Jr.,4.2,,1.29,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Rafael Jodar,Felix Gill,1.23,,5.0,the-odds-api
-tennis_atp_wimbledon,2026-06-29T10:00:00Z,Shintaro Mochizuki,Max Basing,1.45,,3.1,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:10:00Z,Alexandre Muller,Tommy Paul,22.0,,1.03,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:10:00Z,Michael Zheng,Cameron Norrie,2.38,,1.67,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:40:00Z,Camilo Ugo Carabelli,Daniel Merida Aguilar,2.02,,1.92,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:40:00Z,Casper Ruud,Hubert Hurkacz,3.0,,1.48,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:40:00Z,Hamad Medjedovic,Sebastian Ofner,1.53,,2.8,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:40:00Z,Hugo Gaston,Stefanos Tsitsipas,3.0,,1.49,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:40:00Z,Nuno Borges,Tristan Boyer,1.34,,3.85,the-odds-api
-tennis_atp_wimbledon,2026-06-29T11:40:00Z,Soonwoo Kwon,Martin Landaluce,2.44,,1.65,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:00:00Z,Arthur Rinderknech,Oliver Tarvet,1.79,,2.18,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:20:00Z,Adam Walton,Dino Prizmic,2.3,,1.75,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:30:00Z,Jannik Sinner,Miomir Kecmanovic,1.02,,42.0,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:50:00Z,Adolfo Daniel Vallejo,Nicolas Mejia,1.69,,2.38,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:50:00Z,Felix Auger-Aliassime,Alexander Shevchenko,1.05,,21.0,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:50:00Z,Roberto Bautista Agut,Joao Fonseca,5.1,,1.22,the-odds-api
-tennis_atp_wimbledon,2026-06-29T12:50:00Z,Thiago Agustin Tirante,Fabian Marozsan,3.2,,1.45,the-odds-api
-tennis_atp_wimbledon,2026-06-29T13:10:00Z,Jan-Lennard Struff,Sebastian Baez,1.43,,3.25,the-odds-api
-tennis_atp_wimbledon,2026-06-29T13:10:00Z,Marin Cilic,Daniil Medvedev,3.4,,1.39,the-odds-api
-tennis_atp_wimbledon,2026-06-29T14:00:00Z,Alejandro Davidovich Fokina,Juan Manuel Cerundolo,1.25,,4.8,the-odds-api
-tennis_atp_wimbledon,2026-06-29T14:00:00Z,Ethan Quinn,Luciano Darderi,1.67,,2.58,the-odds-api
-tennis_atp_wimbledon,2026-06-29T14:00:00Z,Jesper De Jong,Rinky Hijikata,3.5,,1.37,the-odds-api
-tennis_atp_wimbledon,2026-06-29T15:20:00Z,Wu Yibing,Novak Djokovic,17.0,,1.06,the-odds-api
-tennis_atp_wimbledon,2026-06-29T16:00:00Z,Brandon Nakashima,Jack Pinnington Jones,1.29,,4.33,the-odds-api
-tennis_atp_wimbledon,2026-06-30T09:00:00Z,Alex Molcan,Daniel Altmaier,2.06,,1.91,the-odds-api
-tennis_atp_wimbledon,2026-06-30T09:00:00Z,Alexander Blockx,Alexander Zverev,9.5,,1.11,the-odds-api
-tennis_atp_wimbledon,2026-06-30T09:00:00Z,Raphael Collignon,Arthur Fils,2.24,,1.77,the-odds-api
-tennis_atp_wimbledon,2026-06-30T09:00:00Z,Stan Wawrinka,Matteo Berrettini,4.1,,1.3,the-odds-api
-tennis_atp_wimbledon,2026-06-30T09:00:00Z,Ugo Humbert,Zizou Bergs,1.41,,3.25,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Adrian Mannarino,Titouan Droguet,1.61,,2.63,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Alex Michelsen,Jacob Fearnley,1.85,,2.12,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Alex de Minaur,Roman Andres Burruchaga,1.05,,21.0,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Benjamin Bonzi,Gabriel Diallo,2.12,,1.84,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Corentin Moutet,Marcos Giron,2.1,,1.85,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Damir Dzumhur,Arthur Fery,4.6,,1.25,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Dane Sweeny,Grigor Dimitrov,4.4,,1.27,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Frances Tiafoe,Terence Atmane,1.27,,4.8,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Jakub Mensik,Toby Samuel,1.45,,3.1,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Jaume Munar,Francisco Cerundolo,4.1,,1.3,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Jiri Lehecka,Alexei Popyrin,1.3,,4.2,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Kamil Majchrzak,Alejandro Tabilo,1.49,,2.9,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Karen Khachanov,Billy Harris,1.37,,3.6,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Kyrian Jacquet,Vilius Gaubas,1.46,,3.0,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Lorenzo Sonego,Tomas Martin Etcheverry,1.81,,2.16,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Mariano Navone,Flavio Cobolli,4.2,,1.29,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Matteo Arnaldi,Quentin Halys,2.16,,1.82,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Mattia Bellucci,Zachary Svajda,1.77,,2.24,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Otto Virtanen,Ben Shelton,4.0,,1.31,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Patrick Kypson,Mackenzie McDonald,3.4,,1.38,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Sho Shimabukuro,Jaime Faria,1.9,,2.04,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Tallon Griekspoor,James Duckworth,1.44,,3.0,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Taylor Fritz,Jack Draper,1.7,,2.4,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Thanasi Kokkinakis,Alexander Bublik,3.15,,1.43,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Valentin Royer,Harry Wendelken,1.79,,2.16,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Vit Kopriva,Jan Choinski,1.7,,2.3,the-odds-api
-tennis_atp_wimbledon,2026-06-30T10:00:00Z,Yannick Hanfmann,Giovanni Mpetshi Perricard,2.25,,1.73,the-odds-api
-tennis_wta_wimbledon,2026-06-29T10:00:00Z,Belinda Bencic,Mika Stojsavljevic,1.12,,8.2,the-odds-api
-tennis_wta_wimbledon,2026-06-29T10:00:00Z,Jaqueline Cristian,Iva Jović,5.2,,1.22,the-odds-api
-tennis_wta_wimbledon,2026-06-29T10:00:00Z,Jessica Pegula,Darja Vidmanova,1.1,,12.5,the-odds-api
-tennis_wta_wimbledon,2026-06-29T10:00:00Z,Mananchaya Sawangkaew,Maja Chwalinska,2.04,,1.95,the-odds-api
-tennis_wta_wimbledon,2026-06-29T10:00:00Z,Sara Sorribes Tormo,Victoria Jimenez Kasintseva,1.73,,2.26,the-odds-api
-tennis_wta_wimbledon,2026-06-29T12:00:00Z,Alycia Parks,Alicia Dudeney,1.56,,2.7,the-odds-api
-tennis_wta_wimbledon,2026-06-29T12:00:00Z,Ann Li,Zeynep Sonmez,2.12,,1.82,the-odds-api
-tennis_wta_wimbledon,2026-06-29T12:00:00Z,Antonia Ruzic,Emma Raducanu,2.5,,1.67,the-odds-api
-tennis_wta_wimbledon,2026-06-29T12:00:00Z,Bianca Andreescu,Shuai Zhang,1.63,,2.5,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Denis Shapovalov,Pablo Carreno Busta,1.37,,3.55,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Emilio Nava,Ignacio Buse,2.46,,1.72,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Luca Van Assche,Marton Fucsovics,3.15,,1.45,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Marco Trungelliti,Martin Damm Jr.,4.33,,1.29,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Rafael Jodar,Felix Gill,1.2,,5.8,the-odds-api
+tennis_atp_wimbledon,2026-06-29T10:00:00Z,Shintaro Mochizuki,Max Basing,1.47,,3.05,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:10:00Z,Alexandre Muller,Tommy Paul,21.0,,1.04,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:10:00Z,Michael Zheng,Cameron Norrie,2.58,,1.62,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:40:00Z,Camilo Ugo Carabelli,Daniel Merida Aguilar,2.06,,1.91,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:40:00Z,Casper Ruud,Hubert Hurkacz,2.88,,1.52,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:40:00Z,Hamad Medjedovic,Sebastian Ofner,1.51,,2.88,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:40:00Z,Hugo Gaston,Stefanos Tsitsipas,3.05,,1.48,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:40:00Z,Nuno Borges,Tristan Boyer,1.32,,3.95,the-odds-api
+tennis_atp_wimbledon,2026-06-29T11:40:00Z,Soonwoo Kwon,Martin Landaluce,2.5,,1.65,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:00:00Z,Arthur Rinderknech,Oliver Tarvet,1.74,,2.4,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:20:00Z,Adam Walton,Dino Prizmic,2.24,,1.79,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:30:00Z,Jannik Sinner,Miomir Kecmanovic,1.02,,34.0,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:50:00Z,Adolfo Daniel Vallejo,Nicolas Mejia,1.71,,2.4,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:50:00Z,Felix Auger-Aliassime,Alexander Shevchenko,1.04,,21.0,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:50:00Z,Roberto Bautista Agut,Joao Fonseca,5.1,,1.23,the-odds-api
+tennis_atp_wimbledon,2026-06-29T12:50:00Z,Thiago Agustin Tirante,Fabian Marozsan,3.0,,1.47,the-odds-api
+tennis_atp_wimbledon,2026-06-29T13:10:00Z,Jan-Lennard Struff,Sebastian Baez,1.42,,3.3,the-odds-api
+tennis_atp_wimbledon,2026-06-29T13:10:00Z,Marin Cilic,Daniil Medvedev,3.4,,1.4,the-odds-api
+tennis_atp_wimbledon,2026-06-29T14:00:00Z,Alejandro Davidovich Fokina,Juan Manuel Cerundolo,1.3,,4.2,the-odds-api
+tennis_atp_wimbledon,2026-06-29T14:00:00Z,Ethan Quinn,Luciano Darderi,1.66,,2.48,the-odds-api
+tennis_atp_wimbledon,2026-06-29T14:00:00Z,Jesper De Jong,Rinky Hijikata,3.4,,1.4,the-odds-api
+tennis_atp_wimbledon,2026-06-29T15:20:00Z,Wu Yibing,Novak Djokovic,18.0,,1.05,the-odds-api
+tennis_atp_wimbledon,2026-06-29T16:00:00Z,Brandon Nakashima,Jack Pinnington Jones,1.27,,4.5,the-odds-api
+tennis_atp_wimbledon,2026-06-30T09:00:00Z,Alex Molcan,Daniel Altmaier,2.06,,1.92,the-odds-api
+tennis_atp_wimbledon,2026-06-30T09:00:00Z,Alexander Blockx,Alexander Zverev,8.0,,1.12,the-odds-api
+tennis_atp_wimbledon,2026-06-30T09:00:00Z,Raphael Collignon,Arthur Fils,2.28,,1.78,the-odds-api
+tennis_atp_wimbledon,2026-06-30T09:00:00Z,Stan Wawrinka,Matteo Berrettini,4.2,,1.3,the-odds-api
+tennis_atp_wimbledon,2026-06-30T09:00:00Z,Ugo Humbert,Zizou Bergs,1.6,,2.62,the-odds-api
+tennis_atp_wimbledon,2026-06-30T10:00:00Z,Adrian Mannarino,Titouan Droguet,1.61,,2.6,the-odds-api
+tennis_atp_wimbledon,2026-06-30T10:00:00Z,Kamil Majchrzak,Alejandro Tabilo,1.49,,2.96,the-odds-api
+tennis_atp_wimbledon,2026-06-30T10:00:00Z,Sho Shimabukuro,Jaime Faria,1.9,,2.06,the-odds-api
+tennis_atp_wimbledon,2026-06-30T10:00:00Z,Valentin Royer,Harry Wendelken,1.8,,2.16,the-odds-api
+tennis_atp_wimbledon,2026-06-30T10:00:00Z,Yannick Hanfmann,Giovanni Mpetshi Perricard,2.25,,1.77,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Alex Michelsen,Jacob Fearnley,1.8,,2.24,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Alex de Minaur,Roman Andres Burruchaga,1.06,,17.0,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Damir Dzumhur,Arthur Fery,4.6,,1.25,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Karen Khachanov,Billy Harris,1.35,,3.75,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Kyrian Jacquet,Vilius Gaubas,1.46,,3.05,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Matteo Arnaldi,Quentin Halys,2.18,,1.82,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Mattia Bellucci,Zachary Svajda,1.79,,2.12,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Otto Virtanen,Ben Shelton,4.3,,1.3,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:10:00Z,Thanasi Kokkinakis,Alexander Bublik,3.1,,1.46,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:40:00Z,Benjamin Bonzi,Gabriel Diallo,1.98,,1.96,the-odds-api
+tennis_atp_wimbledon,2026-06-30T11:40:00Z,Jaume Munar,Francisco Cerundolo,4.1,,1.29,the-odds-api
+tennis_atp_wimbledon,2026-06-30T12:50:00Z,Corentin Moutet,Marcos Giron,2.08,,1.85,the-odds-api
+tennis_atp_wimbledon,2026-06-30T12:50:00Z,Dane Sweeny,Grigor Dimitrov,4.3,,1.27,the-odds-api
+tennis_atp_wimbledon,2026-06-30T12:50:00Z,Jakub Mensik,Toby Samuel,1.44,,3.15,the-odds-api
+tennis_atp_wimbledon,2026-06-30T12:50:00Z,Lorenzo Sonego,Tomas Martin Etcheverry,1.84,,2.12,the-odds-api
+tennis_atp_wimbledon,2026-06-30T12:50:00Z,Patrick Kypson,Mackenzie McDonald,3.45,,1.37,the-odds-api
+tennis_atp_wimbledon,2026-06-30T13:40:00Z,Taylor Fritz,Jack Draper,1.67,,2.5,the-odds-api
+tennis_atp_wimbledon,2026-06-30T14:00:00Z,Frances Tiafoe,Terence Atmane,1.25,,4.7,the-odds-api
+tennis_atp_wimbledon,2026-06-30T14:00:00Z,Mariano Navone,Flavio Cobolli,4.33,,1.29,the-odds-api
+tennis_atp_wimbledon,2026-06-30T14:00:00Z,Tallon Griekspoor,James Duckworth,1.44,,3.2,the-odds-api
+tennis_atp_wimbledon,2026-06-30T14:00:00Z,Vit Kopriva,Jan Choinski,1.69,,2.34,the-odds-api
+tennis_atp_wimbledon,2026-06-30T14:50:00Z,Jiri Lehecka,Alexei Popyrin,1.3,,4.2,the-odds-api
+tennis_wta_wimbledon,2026-06-29T10:00:00Z,Belinda Bencic,Mika Stojsavljevic,1.13,,8.2,the-odds-api
+tennis_wta_wimbledon,2026-06-29T10:00:00Z,Jaqueline Cristian,Iva Jović,5.5,,1.2,the-odds-api
+tennis_wta_wimbledon,2026-06-29T10:00:00Z,Jessica Pegula,Darja Vidmanova,1.06,,15.5,the-odds-api
+tennis_wta_wimbledon,2026-06-29T10:00:00Z,Mananchaya Sawangkaew,Maja Chwalinska,2.12,,1.91,the-odds-api
+tennis_wta_wimbledon,2026-06-29T10:00:00Z,Sara Sorribes Tormo,Victoria Jimenez Kasintseva,1.75,,2.3,the-odds-api
+tennis_wta_wimbledon,2026-06-29T12:00:00Z,Alycia Parks,Alicia Dudeney,1.56,,2.72,the-odds-api
+tennis_wta_wimbledon,2026-06-29T12:00:00Z,Ann Li,Zeynep Sonmez,2.28,,1.8,the-odds-api
+tennis_wta_wimbledon,2026-06-29T12:00:00Z,Bianca Andreescu,Shuai Zhang,1.67,,2.46,the-odds-api
 tennis_wta_wimbledon,2026-06-29T12:00:00Z,Jelena Ostapenko,Harriet Dart,1.29,,4.1,the-odds-api
-tennis_wta_wimbledon,2026-06-29T12:00:00Z,Xinyu Wang,Elisabetta Cocciaretto,1.73,,2.34,the-odds-api
-tennis_wta_wimbledon,2026-06-29T12:00:00Z,Yulia Putintseva,Tatjana Maria,2.94,,1.5,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Claire Liu,Hanne Vandewinkel,1.7,,2.3,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Elsa Jacquemot,Naomi Osaka,8.0,,1.14,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Karolina Muchova,Anastasia Zakharova,1.15,,7.2,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Lanlana Tararudee,Lilli Tagger,2.4,,1.7,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Mingge Xu,Daria Kasatkina,7.4,,1.15,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Oleksandra Oliynykova,McCartney Kessler,7.0,,1.16,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:00:00Z,Peyton Stearns,Nikola Bartunkova,3.15,,1.44,the-odds-api
-tennis_wta_wimbledon,2026-06-29T14:30:00Z,Aryna Sabalenka,Teodora Kostovic,1.04,,21.0,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Anastasia Gasanova,Emiliana Arango,2.22,,1.83,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Barbora Krejcikova,Hannah Klugman,1.08,,12.0,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Dayana Yastremska,Aoi Ito,1.21,,5.3,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Ekaterina Alexandrova,Panna Udvardy,1.24,,4.9,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Francesca Jones,Diane Parry,3.85,,1.33,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Jessica Bouzas Maneiro,Anastasia Potapova,2.38,,1.74,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Katerina Siniakova,Qinwen Zheng,1.79,,2.2,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Leylah Fernandez,Janice Tjen,1.41,,3.25,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Magda Linette,Mirra Andreeva,5.3,,1.22,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Magdalena Frech,Anna Kalinskaya,3.25,,1.43,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Solana Sierra,Anna Bondár,1.58,,2.68,the-odds-api
-tennis_wta_wimbledon,2026-06-29T16:00:00Z,Tamara Korpatsch,Coco Gauff,21.0,,1.04,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Ajla Tomljanovic,Mariam Bolkvadze,1.16,,6.2,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Alexandra Eala,Renata Zarazua,1.17,,6.0,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Amanda Anisimova,Lina Gjorcheska,1.06,,15.0,the-odds-api
+tennis_wta_wimbledon,2026-06-29T12:00:00Z,Xinyu Wang,Elisabetta Cocciaretto,1.73,,2.36,the-odds-api
+tennis_wta_wimbledon,2026-06-29T12:00:00Z,Yulia Putintseva,Tatjana Maria,2.92,,1.5,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Claire Liu,Hanne Vandewinkel,1.71,,2.36,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Elsa Jacquemot,Naomi Osaka,7.2,,1.15,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Karolina Muchova,Anastasia Zakharova,1.15,,7.4,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Lanlana Tararudee,Lilli Tagger,2.38,,1.7,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Mingge Xu,Daria Kasatkina,7.4,,1.14,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Oleksandra Oliynykova,McCartney Kessler,6.8,,1.16,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:00:00Z,Peyton Stearns,Nikola Bartunkova,3.05,,1.47,the-odds-api
+tennis_wta_wimbledon,2026-06-29T14:30:00Z,Aryna Sabalenka,Teodora Kostovic,1.04,,22.0,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Anastasia Gasanova,Emiliana Arango,2.16,,1.83,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Barbora Krejcikova,Hannah Klugman,1.1,,10.5,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Dayana Yastremska,Aoi Ito,1.2,,5.6,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Ekaterina Alexandrova,Panna Udvardy,1.24,,5.0,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Francesca Jones,Diane Parry,3.95,,1.33,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Jessica Bouzas Maneiro,Anastasia Potapova,2.28,,1.75,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Katerina Siniakova,Qinwen Zheng,1.75,,2.3,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Leylah Fernandez,Janice Tjen,1.41,,3.35,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Magda Linette,Mirra Andreeva,5.2,,1.22,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Magdalena Frech,Anna Kalinskaya,3.1,,1.44,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Solana Sierra,Anna Bondár,1.56,,2.74,the-odds-api
+tennis_wta_wimbledon,2026-06-29T16:00:00Z,Tamara Korpatsch,Coco Gauff,18.0,,1.05,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Ajla Tomljanovic,Mariam Bolkvadze,1.17,,6.4,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Alexandra Eala,Renata Zarazua,1.17,,6.6,the-odds-api
 tennis_wta_wimbledon,2026-06-30T09:00:00Z,Anhelina Kalinina,Kamilla Rakhimova,1.57,,2.6,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Ashlyn Krueger,Donna Vekic,2.38,,1.73,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Beatriz Haddad Maia,Maria Timofeeva,3.6,,1.37,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Diana Shnaider,Eva Lys,1.51,,2.84,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Elena Gabriela Ruse,Caty McNally,1.75,,2.12,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Elina Svitolina,Daria Snigur,1.36,,3.6,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Elise Mertens,Laura Siegemund,1.33,,3.6,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Ella Seidel,Linda Noskova,9.4,,1.1,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Emma Navarro,Paula Badosa,1.7,,2.34,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Irina-Camelia Begu,Katie Swan,1.91,,1.95,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Iryna Shymanovich,Viktorija Golubic,4.1,,1.29,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Jasmine Paolini,Robin Montgomery,2.63,,1.62,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Katie Boulter,Tyra Caterina Grant,1.4,,3.25,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Ashlyn Krueger,Donna Vekic,2.36,,1.71,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Beatriz Haddad Maia,Maria Timofeeva,3.55,,1.39,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Diana Shnaider,Eva Lys,1.53,,2.75,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Elena Gabriela Ruse,Caty McNally,1.79,,2.2,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Elina Svitolina,Daria Snigur,1.37,,3.55,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Elise Mertens,Laura Siegemund,1.34,,3.65,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Ella Seidel,Linda Noskova,8.2,,1.13,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Emma Navarro,Paula Badosa,1.67,,2.42,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Irina-Camelia Begu,Katie Swan,1.98,,1.99,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Iryna Shymanovich,Viktorija Golubic,3.95,,1.31,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Jasmine Paolini,Robin Montgomery,2.52,,1.64,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Katie Boulter,Tyra Caterina Grant,1.4,,3.3,the-odds-api
 tennis_wta_wimbledon,2026-06-30T09:00:00Z,Kayla Day,Madison Keys,11.0,,1.08,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Kimberly Birrell,Alina Korneeva,1.82,,2.16,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Lois Boisson,Elena Rybakina,34.0,,1.03,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Maria Camila Osorio Serrano,Simona Waltert,1.55,,2.62,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Maria Sakkari,Clara Tauson,2.5,,1.62,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Nadia Podoroska,Marta Kostyuk,38.02,,1.03,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Kimberly Birrell,Alina Korneeva,1.83,,2.14,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Maria Camila Osorio Serrano,Simona Waltert,1.55,,2.68,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Maria Sakkari,Clara Tauson,2.68,,1.57,the-odds-api
 tennis_wta_wimbledon,2026-06-30T09:00:00Z,Oksana Selekhmeteva,Sinja Kraus,2.15,,1.85,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Petra Marcinko,Sofia Kenin,1.73,,2.3,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Polina Kudermetova,Liudmila Samsonova,2.8,,1.53,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Serena Williams,Maya Joint,2.38,,1.7,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Sorana Cirstea,Sara Bejlek,1.37,,3.4,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Talia Gibson,Marie Bouzkova,3.5,,1.36,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Taylor Townsend,Iga Swiatek,6.8,,1.17,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Tereza Valentova,Karolina Pliskova,2.15,,1.82,the-odds-api
-tennis_wta_wimbledon,2026-06-30T09:00:00Z,Veronika Erjavec,Leolia Jeanjean,2.6,,1.57,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Petra Marcinko,Sofia Kenin,1.74,,2.3,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Polina Kudermetova,Liudmila Samsonova,2.82,,1.5,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Serena Williams,Maya Joint,2.3,,1.75,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Sorana Cirstea,Sara Bejlek,1.38,,3.5,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Talia Gibson,Marie Bouzkova,3.6,,1.36,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Taylor Townsend,Iga Swiatek,6.4,,1.18,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Tereza Valentova,Karolina Pliskova,2.2,,1.81,the-odds-api
+tennis_wta_wimbledon,2026-06-30T09:00:00Z,Veronika Erjavec,Leolia Jeanjean,2.62,,1.58,the-odds-api
+tennis_wta_wimbledon,2026-06-30T10:00:00Z,Amanda Anisimova,Lina Gjorcheska,1.06,,15.5,the-odds-api
 tennis_wta_wimbledon,2026-06-30T10:00:00Z,Yuliia Starodubtseva,Anna Blinkova,1.73,,2.38,the-odds-api
+tennis_wta_wimbledon,2026-06-30T14:00:00Z,Lois Boisson,Elena Rybakina,38.0,,1.03,the-odds-api
+tennis_wta_wimbledon,2026-06-30T16:00:00Z,Nadia Podoroska,Marta Kostyuk,44.05,,1.03,the-odds-api
