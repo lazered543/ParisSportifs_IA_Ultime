@@ -13,7 +13,7 @@ soccer_argentina_primera_division,2026-07-25T22:15:00Z,River Plate,Barracas Cent
 soccer_argentina_primera_division,2026-07-26T00:30:00Z,Lanus,San Lorenzo,1.95,2.88,4.8,the-odds-api
 soccer_argentina_primera_division,2026-07-26T18:00:00Z,Atlético Tucuman,Independiente Rivadavia,2.45,3.0,3.0,the-odds-api
 soccer_argentina_primera_division,2026-07-26T20:15:00Z,Estudiantes,Independiente,2.15,2.9,3.8,the-odds-api
-soccer_argentina_primera_division,2026-07-26T22:30:00Z,Deportivo Riestra,Boca Juniors,4.33,2.9,2.1,the-odds-api
+soccer_argentina_primera_division,2026-07-26T22:30:00Z,Deportivo Riestra,Boca Juniors,4.33,2.88,2.1,the-odds-api
 soccer_brazil_campeonato,2026-07-16T22:30:00Z,Botafogo,Santos,2.06,3.65,4.0,the-odds-api
 soccer_brazil_campeonato,2026-07-16T22:30:00Z,Vitoria,Vasco da Gama,2.5,3.3,3.2,the-odds-api
 soccer_brazil_campeonato,2026-07-17T22:30:00Z,Bahia,Chapecoense,1.46,4.8,7.5,the-odds-api
@@ -34,7 +34,7 @@ soccer_conmebol_copa_sudamericana,2026-07-22T00:00:00Z,Lanus,Club Cienciano,1.36
 soccer_conmebol_copa_sudamericana,2026-07-22T00:00:00Z,Sporting Cristal,Bragantino-SP,3.35,3.4,2.25,the-odds-api
 soccer_conmebol_copa_sudamericana,2026-07-22T00:30:00Z,UCV FC,Santos,4.0,4.0,1.91,the-odds-api
 soccer_conmebol_copa_sudamericana,2026-07-24T00:30:00Z,Boca Juniors,O'Higgins,1.25,5.2,13.0,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-07-24T00:30:00Z,Independiente Santa Fe,Caracas FC,1.4,4.15,8.5,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-07-24T00:30:00Z,Independiente Santa Fe,Caracas FC,1.4,4.15,9.0,the-odds-api
 soccer_fifa_world_cup,2026-07-14T19:00:00Z,France,Spain,2.42,3.3,3.45,the-odds-api
 soccer_fifa_world_cup,2026-07-15T19:00:00Z,England,Argentina,2.76,3.12,3.15,the-odds-api
 soccer_mexico_ligamx,2026-07-17T01:00:00Z,Necaxa,Atlante FC,1.93,3.8,3.85,the-odds-api
@@ -49,7 +49,7 @@ soccer_mexico_ligamx,2026-07-19T03:00:00Z,Querétaro,América,3.7,3.6,2.02,the-o
 soccer_mexico_ligamx,2026-07-22T01:00:00Z,Cruz Azul,Puebla,1.33,4.75,7.5,the-odds-api
 soccer_mexico_ligamx,2026-07-22T03:00:00Z,Toluca,Pumas,1.7,3.8,4.15,the-odds-api
 soccer_mexico_ligamx,2026-07-25T01:00:00Z,Tigres,Atlético San Luis,1.35,4.75,7.5,the-odds-api
-soccer_mexico_ligamx,2026-07-25T03:00:00Z,Atlante FC,América,4.2,3.6,1.7,the-odds-api
+soccer_mexico_ligamx,2026-07-25T03:00:00Z,Atlante FC,América,4.2,3.6,1.73,the-odds-api
 soccer_mexico_ligamx,2026-07-25T03:00:00Z,Tijuana,León,2.05,3.6,3.1,the-odds-api
 soccer_mexico_ligamx,2026-07-25T23:07:00Z,Guadalajara,FC Juárez,1.6,4.0,4.4,the-odds-api
 soccer_mexico_ligamx,2026-07-26T03:00:00Z,Santos Laguna,Atlas,2.2,3.3,2.9,the-odds-api
@@ -64,7 +64,7 @@ soccer_usa_mls,2026-07-18T02:25:00Z,LA Galaxy,Los Angeles FC,2.8,3.85,2.38,the-o
 soccer_usa_mls,2026-07-22T23:30:00Z,Columbus Crew SC,New York City FC,1.95,3.8,3.5,the-odds-api
 soccer_usa_mls,2026-07-22T23:30:00Z,FC Cincinnati,Vancouver Whitecaps FC,3.4,4.33,1.85,the-odds-api
 soccer_usa_mls,2026-07-22T23:30:00Z,Inter Miami CF,Chicago Fire,1.55,5.0,5.0,the-odds-api
-soccer_usa_mls,2026-07-22T23:30:00Z,New England Revolution,Toronto FC,1.75,3.8,4.33,the-odds-api
+soccer_usa_mls,2026-07-22T23:30:00Z,New England Revolution,Toronto FC,1.75,3.8,4.2,the-odds-api
 soccer_usa_mls,2026-07-22T23:30:00Z,Philadelphia Union,New York Red Bulls,1.67,4.2,4.33,the-odds-api
 soccer_usa_mls,2026-07-23T00:15:00Z,Charlotte FC,Atlanta United FC,1.67,4.0,4.75,the-odds-api
 soccer_usa_mls,2026-07-23T00:30:00Z,Austin FC,Seattle Sounders FC,3.3,3.6,2.05,the-odds-api
