@@ -1,11 +1,11 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
-soccer_argentina_primera_division,2026-08-02T22:15:00Z,River Plate,Rosario Central,6.0,3.25,1.85,the-odds-api
-soccer_argentina_primera_division,2026-08-03T00:30:00Z,Lanus,Instituto de Córdoba,2.2,3.05,4.3,the-odds-api
-soccer_argentina_primera_division,2026-08-03T19:45:00Z,Sarmiento de Junin,Independiente Rivadavia,3.7,3.2,2.36,the-odds-api
-soccer_argentina_primera_division,2026-08-03T22:00:00Z,Platense,Talleres,2.66,2.9,3.35,the-odds-api
-soccer_argentina_primera_division,2026-08-03T22:00:00Z,Velez Sarsfield BA,Independiente,2.68,3.05,3.2,the-odds-api
+soccer_argentina_primera_division,2026-08-02T22:15:00Z,River Plate,Rosario Central,29.0,4.3,1.41,the-odds-api
+soccer_argentina_primera_division,2026-08-03T00:30:00Z,Lanus,Instituto de Córdoba,2.24,3.05,4.2,the-odds-api
+soccer_argentina_primera_division,2026-08-03T19:45:00Z,Sarmiento de Junin,Independiente Rivadavia,3.65,3.2,2.36,the-odds-api
+soccer_argentina_primera_division,2026-08-03T22:00:00Z,Platense,Talleres,2.68,2.94,3.3,the-odds-api
+soccer_argentina_primera_division,2026-08-03T22:00:00Z,Velez Sarsfield BA,Independiente,2.68,3.0,3.2,the-odds-api
 soccer_argentina_primera_division,2026-08-04T00:15:00Z,Atlético Huracán,Atlético Tucuman,2.1,3.1,4.4,the-odds-api
-soccer_argentina_primera_division,2026-08-04T00:15:00Z,Central Córdoba,San Lorenzo,3.35,3.0,2.6,the-odds-api
+soccer_argentina_primera_division,2026-08-04T00:15:00Z,Central Córdoba,San Lorenzo,3.4,3.0,2.64,the-odds-api
 soccer_argentina_primera_division,2026-08-05T22:00:00Z,Boca Juniors,Estudiantes,2.15,3.0,3.9,the-odds-api
 soccer_argentina_primera_division,2026-08-06T00:15:00Z,CA Tigre BA,Belgrano de Cordoba,2.7,2.9,3.1,the-odds-api
 soccer_argentina_primera_division,2026-08-06T22:00:00Z,Union Santa Fe,Lanus,2.25,2.9,3.6,the-odds-api
@@ -30,7 +30,7 @@ soccer_argentina_primera_division,2026-08-15T19:45:00Z,Estudiantes,Gimnasia La P
 soccer_argentina_primera_division,2026-08-15T22:00:00Z,Belgrano de Cordoba,Independiente Rivadavia,1.91,3.0,3.8,the-odds-api
 soccer_argentina_primera_division,2026-08-15T22:00:00Z,Newells Old Boys,Deportivo Riestra,2.0,2.88,3.8,the-odds-api
 soccer_argentina_primera_division,2026-08-16T00:15:00Z,Platense,Boca Juniors,3.0,2.8,2.3,the-odds-api
-soccer_argentina_primera_division,2026-08-16T18:00:00Z,Central Córdoba,Instituto de Córdoba,3.0,2.8,2.3,the-odds-api
+soccer_argentina_primera_division,2026-08-16T18:00:00Z,Central Córdoba,Instituto de Córdoba,3.25,2.88,2.2,the-odds-api
 soccer_argentina_primera_division,2026-08-16T18:00:00Z,Sarmiento de Junin,Atlético Huracán,3.0,2.62,2.5,the-odds-api
 soccer_argentina_primera_division,2026-08-16T21:00:00Z,River Plate,Argentinos Juniors,2.3,2.8,3.0,the-odds-api
 soccer_argentina_primera_division,2026-08-16T23:15:00Z,Barracas Central,Rosario Central,3.25,2.9,2.2,the-odds-api
@@ -38,12 +38,12 @@ soccer_argentina_primera_division,2026-08-17T17:45:00Z,Estudiantes de Río Cuart
 soccer_argentina_primera_division,2026-08-17T20:00:00Z,Lanus,Independiente,2.2,2.8,3.25,the-odds-api
 soccer_argentina_primera_division,2026-08-17T22:15:00Z,Velez Sarsfield BA,Defensa y Justicia,1.67,3.25,5.0,the-odds-api
 soccer_argentina_primera_division,2026-08-18T00:30:00Z,Gimnasia Mendoza,Talleres,2.7,2.7,2.7,the-odds-api
-soccer_belgium_first_div,2026-08-07T18:45:00Z,Club Brugge,KV Kortrijk,1.28,6.4,11.5,the-odds-api
+soccer_belgium_first_div,2026-08-07T18:45:00Z,Club Brugge,KV Kortrijk,1.28,6.0,11.5,the-odds-api
 soccer_belgium_first_div,2026-08-08T16:15:00Z,Standard Liege,Cercle Brugge KSV,2.4,3.3,3.1,the-odds-api
 soccer_belgium_first_div,2026-08-08T18:45:00Z,Sint Truiden,Lommel SK,1.7,4.0,5.25,the-odds-api
 soccer_belgium_first_div,2026-08-08T18:45:00Z,Westerlo,Union Saint-Gilloise,4.6,3.85,1.75,the-odds-api
 soccer_belgium_first_div,2026-08-09T11:30:00Z,Gent,KV Mechelen,2.1,3.55,3.85,the-odds-api
-soccer_belgium_first_div,2026-08-09T14:00:00Z,Charleroi,Leuven,1.91,3.45,4.6,the-odds-api
+soccer_belgium_first_div,2026-08-09T14:00:00Z,Charleroi,Leuven,1.89,3.55,4.6,the-odds-api
 soccer_belgium_first_div,2026-08-09T14:00:00Z,SV Zulte-Waregem,Genk,3.3,3.65,2.22,the-odds-api
 soccer_belgium_first_div,2026-08-09T16:30:00Z,Anderlecht,RAAL La Louvière,1.8,3.65,4.7,the-odds-api
 soccer_belgium_first_div,2026-08-09T17:15:00Z,Royal Antwerp,SK Beveren,1.68,3.6,5.6,the-odds-api
@@ -150,9 +150,9 @@ soccer_italy_serie_b,2026-08-22T15:00:00Z,Palermo,Juve Stabia,1.5,3.6,6.5,the-od
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Pisa,Padova,1.67,3.2,5.0,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Südtirol,Virtus Entella,1.95,3.1,3.5,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Vicenza,US Catanzaro 1929,2.55,3.0,2.63,the-odds-api
-soccer_mexico_ligamx,2026-08-02T23:00:00Z,América,Santos Laguna,1.42,5.6,8.6,the-odds-api
-soccer_mexico_ligamx,2026-08-03T01:05:00Z,Toluca,Necaxa,1.51,5.1,6.6,the-odds-api
-soccer_mexico_ligamx,2026-08-15T23:00:00Z,Atlante FC,Toluca,5.1,3.9,1.55,the-odds-api
+soccer_mexico_ligamx,2026-08-02T23:00:00Z,América,Santos Laguna,1.28,6.0,15.5,the-odds-api
+soccer_mexico_ligamx,2026-08-03T01:05:00Z,Toluca,Necaxa,1.52,5.1,6.8,the-odds-api
+soccer_mexico_ligamx,2026-08-15T23:00:00Z,Atlante FC,Toluca,5.1,3.9,1.53,the-odds-api
 soccer_mexico_ligamx,2026-08-16T01:00:00Z,Monterrey,FC Juárez,1.53,4.2,5.0,the-odds-api
 soccer_mexico_ligamx,2026-08-16T03:00:00Z,Atlas,Tigres,3.2,3.25,2.1,the-odds-api
 soccer_mexico_ligamx,2026-08-16T18:00:00Z,Pumas,Querétaro,1.6,4.0,4.75,the-odds-api
@@ -169,7 +169,7 @@ soccer_netherlands_eredivisie,2026-08-08T19:00:00Z,AZ Alkmaar,ADO Den Haag,1.55,
 soccer_netherlands_eredivisie,2026-08-09T10:15:00Z,Sparta Rotterdam,Feyenoord,4.6,4.2,1.72,the-odds-api
 soccer_netherlands_eredivisie,2026-08-09T12:30:00Z,FC Zwolle,Ajax,6.4,4.7,1.5,the-odds-api
 soccer_netherlands_eredivisie,2026-08-09T12:30:00Z,Groningen,FC Utrecht,2.37,3.6,2.95,the-odds-api
-soccer_netherlands_eredivisie,2026-08-09T14:45:00Z,Heerenveen,FC Twente Enschede,3.1,4.0,2.15,the-odds-api
+soccer_netherlands_eredivisie,2026-08-09T14:45:00Z,Heerenveen,FC Twente Enschede,3.1,3.9,2.15,the-odds-api
 soccer_portugal_primeira_liga,2026-08-07T19:15:00Z,Estoril,Famalicão,3.25,3.4,2.25,the-odds-api
 soccer_portugal_primeira_liga,2026-08-08T14:30:00Z,CS Maritimo,Casa Pia,2.5,3.4,2.88,the-odds-api
 soccer_portugal_primeira_liga,2026-08-08T17:00:00Z,Vitória SC,Arouca,1.91,3.6,4.0,the-odds-api
@@ -182,14 +182,14 @@ soccer_portugal_primeira_liga,2026-08-10T19:15:00Z,Santa Clara,Nacional,1.95,3.4
 soccer_spain_la_liga,2026-08-15T17:30:00Z,Alavés,Getafe,2.48,3.0,3.7,the-odds-api
 soccer_spain_la_liga,2026-08-15T19:30:00Z,Sevilla,Rayo Vallecano,2.25,3.3,3.55,the-odds-api
 soccer_spain_la_liga,2026-08-16T15:00:00Z,Real Racing Club de Santander,Villarreal,3.5,3.65,2.28,the-odds-api
-soccer_spain_la_liga,2026-08-16T17:00:00Z,Espanyol,Levante,2.05,3.45,4.0,the-odds-api
+soccer_spain_la_liga,2026-08-16T17:00:00Z,Espanyol,Levante,2.06,3.45,4.0,the-odds-api
 soccer_spain_la_liga,2026-08-16T19:30:00Z,Celta Vigo,CA Osasuna,2.05,3.4,3.9,the-odds-api
-soccer_spain_la_liga,2026-08-17T19:00:00Z,Deportivo La Coruña,Elche CF,2.33,3.25,3.5,the-odds-api
+soccer_spain_la_liga,2026-08-17T19:00:00Z,Deportivo La Coruña,Elche CF,2.33,3.25,3.35,the-odds-api
 soccer_spain_la_liga,2026-08-19T19:00:00Z,Atlético Madrid,Málaga,1.32,5.5,13.0,the-odds-api
 soccer_spain_la_liga,2026-08-20T19:00:00Z,Rayo Vallecano,Alavés,2.1,3.2,4.2,the-odds-api
 soccer_spain_la_liga,2026-08-21T19:00:00Z,Real Betis,Real Sociedad,2.16,3.4,3.5,the-odds-api
 soccer_spain_la_liga,2026-08-22T15:00:00Z,Athletic Bilbao,Sevilla,1.62,3.75,6.0,the-odds-api
-soccer_spain_la_liga,2026-08-22T17:30:00Z,Valencia,Celta Vigo,2.42,3.3,3.15,the-odds-api
+soccer_spain_la_liga,2026-08-22T17:30:00Z,Valencia,Celta Vigo,2.42,3.3,3.1,the-odds-api
 soccer_spain_la_liga,2026-08-22T19:30:00Z,Espanyol,Real Madrid,5.0,4.2,1.67,the-odds-api
 soccer_spain_la_liga,2026-08-23T15:00:00Z,Atlético Madrid,Villarreal,1.95,3.4,4.2,the-odds-api
 soccer_spain_la_liga,2026-08-23T17:30:00Z,Getafe,Real Racing Club de Santander,1.94,3.1,5.0,the-odds-api
@@ -225,60 +225,59 @@ soccer_usa_mls,2026-08-20T01:30:00Z,Seattle Sounders FC,Austin FC,1.62,4.0,4.5,t
 soccer_usa_mls,2026-08-20T02:30:00Z,LA Galaxy,San Jose Earthquakes,2.4,3.9,2.45,the-odds-api
 soccer_usa_mls,2026-08-20T02:30:00Z,Portland Timbers,San Diego FC,1.95,4.2,3.1,the-odds-api
 soccer_usa_mls,2026-08-20T02:30:00Z,Vancouver Whitecaps FC,Houston Dynamo,1.44,4.75,5.5,the-odds-api
-tennis_atp_canadian_open,2026-08-02T23:00:00Z,Gabriel Diallo,Kyrian Jacquet,1.89,,2.12,the-odds-api
-tennis_atp_canadian_open,2026-08-02T23:10:00Z,Aleksandar Vukic,Daniel Altmaier,1.67,,2.48,the-odds-api
-tennis_atp_canadian_open,2026-08-02T23:10:00Z,Benjamin Bonzi,Yannick Hanfmann,2.16,,1.84,the-odds-api
-tennis_atp_canadian_open,2026-08-02T23:10:00Z,Matteo Berrettini,Mariano Navone,1.58,,2.72,the-odds-api
-tennis_atp_canadian_open,2026-08-02T23:10:00Z,Sho Shimabukuro,Marin Cilic,2.28,,1.77,the-odds-api
-tennis_atp_canadian_open,2026-08-03T00:10:00Z,Alexis Galarneau,Vit Kopriva,1.94,,2.04,the-odds-api
-tennis_atp_canadian_open,2026-08-03T00:20:00Z,Marton Fucsovics,Corentin Moutet,2.0,,1.98,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Adam Walton,Jenson Brooksby,2.18,,1.76,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Alex Michelsen,Jan-Lennard Struff,1.37,,3.5,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Alexei Popyrin,Roman Andres Burruchaga,1.66,,2.4,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Camilo Ugo Carabelli,Cameron Norrie,4.4,,1.27,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Daniel Merida Aguilar,Liam Draxl,1.72,,2.36,the-odds-api
+tennis_atp_canadian_open,2026-08-03T15:00:00Z,Alexis Galarneau,Vit Kopriva,1.94,,2.04,the-odds-api
 tennis_atp_canadian_open,2026-08-03T15:00:00Z,Duncan Chan,Thiago Agustin Tirante,3.6,,1.35,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Giovanni Mpetshi Perricard,Botic van de Zandschulp,2.12,,1.85,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Hubert Hurkacz,Marcos Giron,1.58,,2.7,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Jacob Fearnley,Adrian Mannarino,1.61,,2.52,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Juan Manuel Cerundolo,Hamad Medjedovic,2.48,,1.65,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Juncheng Shang,Andrey Rublev,5.0,,1.2,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Kamil Majchrzak,Gael Monfils,1.34,,3.8,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Lorenzo Sonego,Tallon Griekspoor,2.02,,1.95,the-odds-api
+tennis_atp_canadian_open,2026-08-03T15:00:00Z,Jaume Munar,Alexander Blockx,2.25,,1.63,the-odds-api
+tennis_atp_canadian_open,2026-08-03T15:00:00Z,Juncheng Shang,Andrey Rublev,4.5,,1.2,the-odds-api
 tennis_atp_canadian_open,2026-08-03T15:00:00Z,Luca Van Assche,Titouan Droguet,1.91,,2.08,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Martin Damm Jr.,Stefanos Tsitsipas,2.76,,1.52,the-odds-api
+tennis_atp_canadian_open,2026-08-03T15:00:00Z,Matteo Berrettini,Mariano Navone,1.58,,2.7,the-odds-api
 tennis_atp_canadian_open,2026-08-03T15:00:00Z,Nicolas Mejia,Martin Landaluce,3.15,,1.44,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Pablo Carreno Busta,Valentin Royer,1.52,,2.88,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Sebastian Baez,Mattia Bellucci,1.89,,2.1,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Shintaro Mochizuki,Fabian Marozsan,2.66,,1.58,the-odds-api
-tennis_atp_canadian_open,2026-08-03T15:00:00Z,Terence Atmane,Jack Draper,3.0,,1.49,the-odds-api
 tennis_atp_canadian_open,2026-08-03T15:00:00Z,Zachary Svajda,Denis Shapovalov,2.24,,1.76,the-odds-api
-tennis_atp_canadian_open,2026-08-04T16:10:00Z,Jaume Munar,Alexander Blockx,2.25,,1.62,the-odds-api
-tennis_atp_washington_open,2026-08-02T23:10:00Z,Taylor Fritz,Rafael Jodar,1.62,,2.66,the-odds-api
-tennis_wta_canadian_open,2026-08-02T21:05:00Z,Lucrezia Stefanini,Maria Camila Osorio Serrano,101.0,,1.02,the-odds-api
-tennis_wta_canadian_open,2026-08-02T22:16:00Z,Magdalena Frech,Leolia Jeanjean,2.35,,2.0,the-odds-api
-tennis_wta_canadian_open,2026-08-02T22:24:00Z,Lois Boisson,Antonia Ruzic,1.58,,2.9,the-odds-api
-tennis_wta_canadian_open,2026-08-02T23:09:00Z,Emerson Jones,Lanlana Tararudee,3.1,,1.46,the-odds-api
-tennis_wta_canadian_open,2026-08-02T23:09:00Z,Nikola Bartunkova,Bianca Andreescu,1.69,,2.42,the-odds-api
-tennis_wta_canadian_open,2026-08-02T23:20:00Z,McCartney Kessler,Cadence Brace,1.19,,6.2,the-odds-api
-tennis_wta_canadian_open,2026-08-02T23:25:00Z,Rebecca Sramkova,Anna Blinkova,2.32,,1.75,the-odds-api
-tennis_wta_canadian_open,2026-08-03T00:10:00Z,Talia Gibson,Elisabetta Cocciaretto,2.4,,1.69,the-odds-api
-tennis_wta_canadian_open,2026-08-03T00:10:00Z,Yulia Putintseva,Shuai Zhang,1.52,,2.84,the-odds-api
-tennis_wta_canadian_open,2026-08-03T00:35:00Z,Elena Gabriela Ruse,Peyton Stearns,2.2,,1.8,the-odds-api
-tennis_wta_canadian_open,2026-08-03T14:00:00Z,Diane Parry,Kayla Day,2.22,,1.8,the-odds-api
-tennis_wta_canadian_open,2026-08-03T14:00:00Z,Solana Sierra,Sloane Stephens,2.02,,1.9,the-odds-api
-tennis_wta_canadian_open,2026-08-03T14:00:00Z,Tatjana Maria,Caty McNally,2.4,,1.67,the-odds-api
-tennis_wta_canadian_open,2026-08-03T14:00:00Z,Victoria Jimenez Kasintseva,Alycia Parks,2.32,,1.69,the-odds-api
-tennis_wta_canadian_open,2026-08-03T14:00:00Z,Yuliia Starodubtseva,Maya Joint,1.73,,2.28,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Alina Korneeva,Polina Kudermetova,1.53,,2.86,the-odds-api
+tennis_atp_canadian_open,2026-08-03T16:10:00Z,Aleksandar Vukic,Daniel Altmaier,1.65,,2.48,the-odds-api
+tennis_atp_canadian_open,2026-08-03T16:10:00Z,Benjamin Bonzi,Yannick Hanfmann,2.18,,1.83,the-odds-api
+tennis_atp_canadian_open,2026-08-03T16:10:00Z,Sho Shimabukuro,Marin Cilic,2.28,,1.77,the-odds-api
+tennis_atp_canadian_open,2026-08-03T16:50:00Z,Marton Fucsovics,Corentin Moutet,2.02,,1.97,the-odds-api
+tennis_atp_canadian_open,2026-08-03T16:50:00Z,Terence Atmane,Jack Draper,3.0,,1.49,the-odds-api
+tennis_atp_canadian_open,2026-08-03T17:00:00Z,Gabriel Diallo,Kyrian Jacquet,1.87,,2.12,the-odds-api
+tennis_atp_canadian_open,2026-08-03T17:20:00Z,Alex Michelsen,Jan-Lennard Struff,1.37,,3.55,the-odds-api
+tennis_atp_canadian_open,2026-08-03T17:20:00Z,Camilo Ugo Carabelli,Cameron Norrie,4.5,,1.27,the-odds-api
+tennis_atp_canadian_open,2026-08-03T17:20:00Z,Jacob Fearnley,Adrian Mannarino,1.61,,2.52,the-odds-api
+tennis_atp_canadian_open,2026-08-03T18:00:00Z,Hubert Hurkacz,Marcos Giron,1.58,,2.7,the-odds-api
+tennis_atp_canadian_open,2026-08-03T18:30:00Z,Adam Walton,Jenson Brooksby,2.18,,1.76,the-odds-api
+tennis_atp_canadian_open,2026-08-03T18:30:00Z,Sebastian Baez,Mattia Bellucci,1.89,,2.08,the-odds-api
+tennis_atp_canadian_open,2026-08-03T19:10:00Z,Giovanni Mpetshi Perricard,Botic van de Zandschulp,2.14,,1.85,the-odds-api
+tennis_atp_canadian_open,2026-08-03T19:40:00Z,Juan Manuel Cerundolo,Hamad Medjedovic,2.46,,1.65,the-odds-api
+tennis_atp_canadian_open,2026-08-03T19:40:00Z,Shintaro Mochizuki,Fabian Marozsan,2.64,,1.58,the-odds-api
+tennis_atp_canadian_open,2026-08-03T20:20:00Z,Lorenzo Sonego,Tallon Griekspoor,2.02,,1.96,the-odds-api
+tennis_atp_canadian_open,2026-08-03T22:00:00Z,Daniel Merida Aguilar,Liam Draxl,1.72,,2.36,the-odds-api
+tennis_atp_canadian_open,2026-08-03T23:00:00Z,Kamil Majchrzak,Gael Monfils,1.34,,3.75,the-odds-api
+tennis_atp_canadian_open,2026-08-03T23:10:00Z,Pablo Carreno Busta,Valentin Royer,1.52,,2.86,the-odds-api
+tennis_atp_canadian_open,2026-08-04T00:10:00Z,Martin Damm Jr.,Stefanos Tsitsipas,2.76,,1.52,the-odds-api
+tennis_atp_canadian_open,2026-08-04T15:00:00Z,Alexei Popyrin,Roman Andres Burruchaga,1.66,,2.4,the-odds-api
+tennis_atp_washington_open,2026-08-03T00:20:00Z,Taylor Fritz,Rafael Jodar,1.62,,2.7,the-odds-api
+tennis_wta_canadian_open,2026-08-02T22:16:00Z,Magdalena Frech,Leolia Jeanjean,1.79,,2.3,the-odds-api
+tennis_wta_canadian_open,2026-08-02T22:24:00Z,Lois Boisson,Antonia Ruzic,1.4,,3.6,the-odds-api
+tennis_wta_canadian_open,2026-08-02T23:02:00Z,Emerson Jones,Lanlana Tararudee,3.2,,1.45,the-odds-api
+tennis_wta_canadian_open,2026-08-03T00:12:00Z,Nikola Bartunkova,Bianca Andreescu,1.73,,2.38,the-odds-api
+tennis_wta_canadian_open,2026-08-03T00:15:00Z,Talia Gibson,Elisabetta Cocciaretto,2.4,,1.7,the-odds-api
+tennis_wta_canadian_open,2026-08-03T00:20:00Z,McCartney Kessler,Cadence Brace,1.18,,6.2,the-odds-api
+tennis_wta_canadian_open,2026-08-03T00:20:00Z,Rebecca Sramkova,Anna Blinkova,2.36,,1.75,the-odds-api
+tennis_wta_canadian_open,2026-08-03T00:30:00Z,Yulia Putintseva,Shuai Zhang,1.52,,2.84,the-odds-api
+tennis_wta_canadian_open,2026-08-03T01:30:00Z,Elena Gabriela Ruse,Peyton Stearns,2.2,,1.81,the-odds-api
+tennis_wta_canadian_open,2026-08-03T15:00:00Z,Alina Korneeva,Polina Kudermetova,1.53,,2.84,the-odds-api
 tennis_wta_canadian_open,2026-08-03T15:00:00Z,Anhelina Kalinina,Anna Bondár,1.56,,2.7,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Carol Zhao,Magda Linette,9.5,,1.11,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Janice Tjen,Liudmila Samsonova,2.56,,1.6,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Katie Boulter,Kayla Cross,1.35,,3.7,the-odds-api
+tennis_wta_canadian_open,2026-08-03T15:00:00Z,Diane Parry,Kayla Day,2.22,,1.8,the-odds-api
 tennis_wta_canadian_open,2026-08-03T15:00:00Z,Oleksandra Oliynykova,Karolina Pliskova,3.95,,1.31,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Panna Udvardy,Eva Lys,2.7,,1.55,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Rebecca Marino,Zeynep Sonmez,3.75,,1.33,the-odds-api
-tennis_wta_canadian_open,2026-08-03T15:00:00Z,Tereza Valentova,Taylor Townsend,1.5,,2.88,the-odds-api
-tennis_wta_canadian_open,2026-08-03T16:30:00Z,Xinyu Wang,Daria Kasatkina,1.96,,1.96,the-odds-api
-tennis_wta_canadian_open,2026-08-03T18:00:00Z,Renata Zarazua,Tamara Korpatsch,1.66,,2.44,the-odds-api
-tennis_wta_washington_open,2026-08-02T18:58:00Z,Jessica Pegula,Alexandra Eala,1.25,,5.3,the-odds-api
+tennis_wta_canadian_open,2026-08-03T16:10:00Z,Janice Tjen,Liudmila Samsonova,2.56,,1.6,the-odds-api
+tennis_wta_canadian_open,2026-08-03T16:10:00Z,Panna Udvardy,Eva Lys,2.7,,1.55,the-odds-api
+tennis_wta_canadian_open,2026-08-03T16:10:00Z,Victoria Jimenez Kasintseva,Alycia Parks,2.32,,1.69,the-odds-api
+tennis_wta_canadian_open,2026-08-03T16:10:00Z,Yuliia Starodubtseva,Maya Joint,1.73,,2.28,the-odds-api
+tennis_wta_canadian_open,2026-08-03T16:30:00Z,Katie Boulter,Kayla Cross,1.34,,3.8,the-odds-api
+tennis_wta_canadian_open,2026-08-03T17:20:00Z,Tatjana Maria,Caty McNally,2.4,,1.67,the-odds-api
+tennis_wta_canadian_open,2026-08-03T17:40:00Z,Carol Zhao,Magda Linette,10.0,,1.11,the-odds-api
+tennis_wta_canadian_open,2026-08-03T19:30:00Z,Renata Zarazua,Tamara Korpatsch,1.66,,2.44,the-odds-api
+tennis_wta_canadian_open,2026-08-03T21:00:00Z,Solana Sierra,Sloane Stephens,2.02,,1.9,the-odds-api
+tennis_wta_canadian_open,2026-08-03T22:10:00Z,Tereza Valentova,Taylor Townsend,1.5,,2.88,the-odds-api
+tennis_wta_canadian_open,2026-08-03T23:00:00Z,Rebecca Marino,Zeynep Sonmez,3.75,,1.33,the-odds-api
+tennis_wta_canadian_open,2026-08-04T00:10:00Z,Xinyu Wang,Daria Kasatkina,1.96,,1.96,the-odds-api
+tennis_wta_washington_open,2026-08-02T18:58:00Z,Jessica Pegula,Alexandra Eala,1.29,,5.2,the-odds-api
