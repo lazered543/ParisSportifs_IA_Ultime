@@ -1,146 +1,145 @@
 sport,commence_time,home_team,away_team,odds_home,odds_draw,odds_away,source
-soccer_argentina_primera_division,2026-08-05T22:00:00Z,Boca Juniors,Estudiantes,2.16,3.1,4.4,the-odds-api
-soccer_argentina_primera_division,2026-08-06T00:15:00Z,CA Tigre BA,Belgrano de Cordoba,2.68,2.9,3.4,the-odds-api
-soccer_argentina_primera_division,2026-08-06T22:00:00Z,Union Santa Fe,Lanus,2.38,3.1,3.55,the-odds-api
-soccer_argentina_primera_division,2026-08-07T22:30:00Z,Rosario Central,Aldosivi Mar del Plata,1.53,3.8,8.6,the-odds-api
-soccer_argentina_primera_division,2026-08-08T00:45:00Z,Independiente Rivadavia,Estudiantes de Río Cuarto,1.53,3.9,7.8,the-odds-api
+soccer_argentina_primera_division,2026-08-05T22:00:00Z,Boca Juniors,Estudiantes,1.25,6.1,23.0,the-odds-api
+soccer_argentina_primera_division,2026-08-06T00:15:00Z,CA Tigre BA,Belgrano de Cordoba,2.62,2.76,3.8,the-odds-api
+soccer_argentina_primera_division,2026-08-06T22:00:00Z,Union Santa Fe,Lanus,2.42,3.1,3.6,the-odds-api
+soccer_argentina_primera_division,2026-08-07T22:30:00Z,Rosario Central,Aldosivi Mar del Plata,1.53,3.95,8.6,the-odds-api
+soccer_argentina_primera_division,2026-08-08T00:45:00Z,Independiente Rivadavia,Estudiantes de Río Cuarto,1.53,3.95,8.4,the-odds-api
 soccer_argentina_primera_division,2026-08-08T17:45:00Z,Atlético Tucuman,Sarmiento de Junin,1.8,3.25,5.25,the-odds-api
-soccer_argentina_primera_division,2026-08-08T17:45:00Z,Deportivo Riestra,Estudiantes,3.4,2.7,2.55,the-odds-api
+soccer_argentina_primera_division,2026-08-08T17:45:00Z,Deportivo Riestra,Estudiantes,3.4,2.7,2.6,the-odds-api
 soccer_argentina_primera_division,2026-08-08T20:00:00Z,CA Tigre BA,River Plate,3.4,3.0,2.3,the-odds-api
 soccer_argentina_primera_division,2026-08-08T22:15:00Z,Boca Juniors,Velez Sarsfield BA,1.8,3.3,5.25,the-odds-api
-soccer_argentina_primera_division,2026-08-09T00:30:00Z,Independiente,Platense,1.67,3.4,6.5,the-odds-api
+soccer_argentina_primera_division,2026-08-09T00:30:00Z,Independiente,Platense,1.67,3.4,6.4,the-odds-api
 soccer_argentina_primera_division,2026-08-09T00:30:00Z,Instituto de Córdoba,Gimnasia Mendoza,1.67,3.4,6.75,the-odds-api
 soccer_argentina_primera_division,2026-08-09T18:00:00Z,San Lorenzo,Atlético Huracán,2.9,2.7,3.0,the-odds-api
 soccer_argentina_primera_division,2026-08-09T20:45:00Z,Defensa y Justicia,Newells Old Boys,2.4,3.0,3.1,the-odds-api
 soccer_argentina_primera_division,2026-08-09T20:45:00Z,Gimnasia La Plata,Barracas Central,1.75,3.3,5.5,the-odds-api
 soccer_argentina_primera_division,2026-08-09T23:15:00Z,Argentinos Juniors,Racing Club,2.37,2.9,3.6,the-odds-api
-soccer_argentina_primera_division,2026-08-10T22:00:00Z,Banfield,Belgrano de Cordoba,3.0,2.9,2.5,the-odds-api
+soccer_argentina_primera_division,2026-08-10T22:00:00Z,Banfield,Belgrano de Cordoba,3.1,2.9,2.55,the-odds-api
 soccer_argentina_primera_division,2026-08-11T00:15:00Z,Union Santa Fe,Central Córdoba,1.48,4.0,7.0,the-odds-api
-soccer_argentina_primera_division,2026-08-12T00:00:00Z,Talleres,Lanus,2.3,2.88,3.3,the-odds-api
-soccer_argentina_primera_division,2026-08-14T23:30:00Z,Racing Club,Banfield,1.6,3.3,5.5,the-odds-api
-soccer_argentina_primera_division,2026-08-15T17:30:00Z,Aldosivi Mar del Plata,CA Tigre BA,2.7,2.75,2.62,the-odds-api
-soccer_argentina_primera_division,2026-08-15T17:30:00Z,San Lorenzo,Union Santa Fe,2.62,2.8,2.7,the-odds-api
-soccer_argentina_primera_division,2026-08-15T19:45:00Z,Estudiantes,Gimnasia La Plata,2.0,2.9,3.8,the-odds-api
-soccer_argentina_primera_division,2026-08-15T22:00:00Z,Belgrano de Cordoba,Independiente Rivadavia,1.91,3.0,3.8,the-odds-api
-soccer_argentina_primera_division,2026-08-15T22:00:00Z,Newells Old Boys,Deportivo Riestra,2.0,2.88,3.8,the-odds-api
-soccer_argentina_primera_division,2026-08-16T00:15:00Z,Platense,Boca Juniors,3.0,2.8,2.3,the-odds-api
-soccer_argentina_primera_division,2026-08-16T18:00:00Z,Central Córdoba,Instituto de Córdoba,3.25,2.88,2.2,the-odds-api
-soccer_argentina_primera_division,2026-08-16T18:00:00Z,Sarmiento de Junin,Atlético Huracán,3.0,2.62,2.5,the-odds-api
-soccer_argentina_primera_division,2026-08-16T21:00:00Z,River Plate,Argentinos Juniors,2.3,2.8,3.0,the-odds-api
-soccer_argentina_primera_division,2026-08-16T23:15:00Z,Barracas Central,Rosario Central,3.25,2.9,2.2,the-odds-api
-soccer_argentina_primera_division,2026-08-17T17:45:00Z,Estudiantes de Río Cuarto,Atlético Tucuman,2.38,2.75,3.1,the-odds-api
-soccer_argentina_primera_division,2026-08-17T20:00:00Z,Lanus,Independiente,2.2,2.8,3.25,the-odds-api
+soccer_argentina_primera_division,2026-08-12T00:00:00Z,Talleres,Lanus,2.35,2.88,3.4,the-odds-api
+soccer_argentina_primera_division,2026-08-14T23:30:00Z,Racing Club,Banfield,1.6,3.65,6.0,the-odds-api
+soccer_argentina_primera_division,2026-08-15T17:30:00Z,Aldosivi Mar del Plata,CA Tigre BA,2.75,2.75,2.8,the-odds-api
+soccer_argentina_primera_division,2026-08-15T17:30:00Z,San Lorenzo,Union Santa Fe,2.62,2.88,2.75,the-odds-api
+soccer_argentina_primera_division,2026-08-15T19:45:00Z,Estudiantes,Gimnasia La Plata,2.05,3.0,3.8,the-odds-api
+soccer_argentina_primera_division,2026-08-15T22:00:00Z,Belgrano de Cordoba,Independiente Rivadavia,2.0,3.2,4.0,the-odds-api
+soccer_argentina_primera_division,2026-08-15T22:00:00Z,Newells Old Boys,Deportivo Riestra,2.05,2.9,4.0,the-odds-api
+soccer_argentina_primera_division,2026-08-16T00:15:00Z,Platense,Boca Juniors,3.2,2.9,2.3,the-odds-api
+soccer_argentina_primera_division,2026-08-16T18:00:00Z,Central Córdoba,Instituto de Córdoba,3.4,2.88,2.25,the-odds-api
+soccer_argentina_primera_division,2026-08-16T18:00:00Z,Sarmiento de Junin,Atlético Huracán,3.1,2.75,2.5,the-odds-api
+soccer_argentina_primera_division,2026-08-16T21:00:00Z,River Plate,Argentinos Juniors,2.38,2.9,3.2,the-odds-api
+soccer_argentina_primera_division,2026-08-16T23:15:00Z,Barracas Central,Rosario Central,3.25,3.0,2.2,the-odds-api
+soccer_argentina_primera_division,2026-08-17T17:45:00Z,Estudiantes de Río Cuarto,Atlético Tucuman,2.4,2.8,3.2,the-odds-api
+soccer_argentina_primera_division,2026-08-17T20:00:00Z,Lanus,Independiente,2.3,2.88,3.3,the-odds-api
 soccer_argentina_primera_division,2026-08-17T22:15:00Z,Velez Sarsfield BA,Defensa y Justicia,1.67,3.25,5.0,the-odds-api
 soccer_argentina_primera_division,2026-08-18T00:30:00Z,Gimnasia Mendoza,Talleres,2.7,2.7,2.7,the-odds-api
-soccer_belgium_first_div,2026-08-07T18:45:00Z,Club Brugge,KV Kortrijk,1.28,6.75,12.0,the-odds-api
-soccer_belgium_first_div,2026-08-08T16:15:00Z,Standard Liege,Cercle Brugge KSV,2.44,3.3,3.0,the-odds-api
-soccer_belgium_first_div,2026-08-08T18:45:00Z,Sint Truiden,Lommel SK,1.65,4.0,5.7,the-odds-api
-soccer_belgium_first_div,2026-08-08T18:45:00Z,Westerlo,Union Saint-Gilloise,5.0,3.8,1.75,the-odds-api
+soccer_belgium_first_div,2026-08-07T18:45:00Z,Club Brugge,KV Kortrijk,1.27,7.4,12.0,the-odds-api
+soccer_belgium_first_div,2026-08-08T16:15:00Z,Standard Liege,Cercle Brugge KSV,2.44,3.45,3.05,the-odds-api
+soccer_belgium_first_div,2026-08-08T18:45:00Z,Sint Truiden,Lommel SK,1.62,4.1,5.7,the-odds-api
+soccer_belgium_first_div,2026-08-08T18:45:00Z,Westerlo,Union Saint-Gilloise,4.9,3.8,1.77,the-odds-api
 soccer_belgium_first_div,2026-08-09T11:30:00Z,Gent,KV Mechelen,2.05,3.65,3.8,the-odds-api
-soccer_belgium_first_div,2026-08-09T14:00:00Z,Charleroi,Leuven,1.83,3.65,4.8,the-odds-api
-soccer_belgium_first_div,2026-08-09T14:00:00Z,SV Zulte-Waregem,Genk,3.2,3.65,2.2,the-odds-api
+soccer_belgium_first_div,2026-08-09T14:00:00Z,Charleroi,Leuven,1.83,3.65,4.9,the-odds-api
+soccer_belgium_first_div,2026-08-09T14:00:00Z,SV Zulte-Waregem,Genk,3.2,3.7,2.22,the-odds-api
 soccer_belgium_first_div,2026-08-09T16:30:00Z,Anderlecht,RAAL La Louvière,1.8,3.8,4.9,the-odds-api
-soccer_belgium_first_div,2026-08-09T17:15:00Z,Royal Antwerp,SK Beveren,1.74,3.8,5.4,the-odds-api
-soccer_brazil_campeonato,2026-08-08T19:00:00Z,Grêmio,Sao Paulo,2.42,3.25,3.0,the-odds-api
-soccer_brazil_campeonato,2026-08-08T21:30:00Z,Remo,Atletico Mineiro,3.0,3.35,2.42,the-odds-api
-soccer_brazil_campeonato,2026-08-08T23:30:00Z,Coritiba,Chapecoense,1.65,4.0,5.6,the-odds-api
-soccer_brazil_campeonato,2026-08-09T00:00:00Z,Botafogo,Fluminense,2.62,3.3,2.9,the-odds-api
-soccer_brazil_campeonato,2026-08-09T14:00:00Z,Cruzeiro,Mirassol,1.7,3.8,5.3,the-odds-api
+soccer_belgium_first_div,2026-08-09T17:15:00Z,Royal Antwerp,SK Beveren,1.74,3.9,5.4,the-odds-api
+soccer_brazil_campeonato,2026-08-08T19:00:00Z,Grêmio,Sao Paulo,2.56,3.35,3.05,the-odds-api
+soccer_brazil_campeonato,2026-08-08T21:30:00Z,Remo,Atletico Mineiro,3.1,3.35,2.48,the-odds-api
+soccer_brazil_campeonato,2026-08-08T23:30:00Z,Coritiba,Chapecoense,1.65,4.0,5.5,the-odds-api
+soccer_brazil_campeonato,2026-08-09T00:00:00Z,Botafogo,Fluminense,2.66,3.3,2.82,the-odds-api
+soccer_brazil_campeonato,2026-08-09T14:00:00Z,Cruzeiro,Mirassol,1.7,3.75,5.3,the-odds-api
 soccer_brazil_campeonato,2026-08-09T19:00:00Z,Bahia,Vasco da Gama,1.94,3.7,4.3,the-odds-api
-soccer_brazil_campeonato,2026-08-09T19:00:00Z,Palmeiras,Internacional,1.6,4.0,6.2,the-odds-api
+soccer_brazil_campeonato,2026-08-09T19:00:00Z,Palmeiras,Internacional,1.63,3.9,6.2,the-odds-api
 soccer_brazil_campeonato,2026-08-09T21:30:00Z,Bragantino-SP,Corinthians,2.12,3.3,3.7,the-odds-api
-soccer_brazil_campeonato,2026-08-09T21:30:00Z,Santos,Atletico Paranaense,2.22,3.3,3.55,the-odds-api
+soccer_brazil_campeonato,2026-08-09T21:30:00Z,Santos,Atletico Paranaense,2.2,3.3,3.6,the-odds-api
 soccer_brazil_campeonato,2026-08-09T22:30:00Z,Flamengo,Vitoria,1.25,6.4,14.5,the-odds-api
-soccer_brazil_campeonato,2026-08-15T19:30:00Z,Atletico Mineiro,Grêmio,1.75,3.5,4.5,the-odds-api
-soccer_brazil_campeonato,2026-08-15T19:30:00Z,Fluminense,Palmeiras,2.8,3.0,2.5,the-odds-api
-soccer_brazil_campeonato,2026-08-15T21:30:00Z,Atletico Paranaense,Bragantino-SP,2.05,3.25,3.5,the-odds-api
+soccer_brazil_campeonato,2026-08-15T19:30:00Z,Atletico Mineiro,Grêmio,1.75,3.7,4.6,the-odds-api
+soccer_brazil_campeonato,2026-08-15T19:30:00Z,Fluminense,Palmeiras,2.8,3.25,2.9,the-odds-api
+soccer_brazil_campeonato,2026-08-15T21:30:00Z,Atletico Paranaense,Bragantino-SP,2.05,3.3,4.0,the-odds-api
 soccer_brazil_campeonato,2026-08-16T00:00:00Z,Sao Paulo,Coritiba,1.67,3.6,5.0,the-odds-api
 soccer_brazil_campeonato,2026-08-16T14:00:00Z,Chapecoense,Bahia,3.3,3.5,2.05,the-odds-api
 soccer_brazil_campeonato,2026-08-16T19:00:00Z,Vasco da Gama,Santos,1.95,3.5,3.8,the-odds-api
 soccer_brazil_campeonato,2026-08-16T21:30:00Z,Mirassol,Flamengo,4.0,3.5,1.91,the-odds-api
-soccer_brazil_campeonato,2026-08-16T21:30:00Z,Vitoria,Botafogo,2.38,3.25,3.0,the-odds-api
+soccer_brazil_campeonato,2026-08-16T21:30:00Z,Vitoria,Botafogo,2.38,3.25,2.9,the-odds-api
 soccer_brazil_campeonato,2026-08-16T22:30:00Z,Corinthians,Cruzeiro,2.3,3.2,3.1,the-odds-api
-soccer_brazil_campeonato,2026-08-17T23:00:00Z,Internacional,Remo,1.6,3.75,5.25,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-11T22:00:00Z,Fluminense-RJ,Independiente Rivadavia,1.6,4.5,5.5,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-12T00:00:00Z,Rosario Central,Corinthians-SP,2.18,3.25,3.25,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-12T00:30:00Z,Deportes Tolima,Independiente del Valle,2.75,3.4,2.7,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-12T00:30:00Z,Estudiantes La Plata,Universidad Católica (CHI),1.71,3.75,5.5,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-12T22:00:00Z,Palmeiras-SP,Cerro Porteño,1.32,5.6,11.0,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-12T22:00:00Z,Platense,Coquimbo Unido,1.85,3.25,5.1,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-13T00:30:00Z,Cruzeiro,Flamengo-RJ,2.9,3.25,2.7,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-13T22:00:00Z,Mirassol,LDU Quito,1.75,3.5,5.0,the-odds-api
-soccer_conmebol_copa_libertadores,2026-08-14T00:30:00Z,Rosario Central,Corinthians-SP,2.1,3.1,3.75,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-11T22:00:00Z,Boca Juniors,Recoleta FC,1.36,4.5,8.0,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-12T00:30:00Z,Club Bolívar,Sao Paulo,1.85,3.75,3.75,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-12T22:00:00Z,Bragantino-SP,Clube Atlético Mineiro,2.05,3.3,3.5,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-12T22:00:00Z,CA Tigre BA,Montevideo City Torque,2.0,3.3,3.8,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-13T00:30:00Z,Independiente Santa Fe,River Plate,3.2,3.2,2.32,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-13T22:00:00Z,Santos,Macará,1.35,5.0,8.0,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-13T22:00:00Z,Vasco da Gama,Olimpia Asunción,1.7,3.75,4.8,the-odds-api
-soccer_conmebol_copa_sudamericana,2026-08-14T00:30:00Z,Club Cienciano,Botafogo,2.05,3.5,3.4,the-odds-api
+soccer_brazil_campeonato,2026-08-17T23:00:00Z,Internacional,Remo,1.6,3.75,5.5,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-11T22:00:00Z,Fluminense-RJ,Independiente Rivadavia,1.63,3.9,5.5,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-12T00:30:00Z,Deportes Tolima,Independiente del Valle,2.9,3.3,2.5,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-12T00:30:00Z,Estudiantes La Plata,Universidad Católica (CHI),1.64,3.75,5.8,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-12T22:00:00Z,Palmeiras-SP,Cerro Porteño,1.3,5.0,11.0,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-12T22:00:00Z,Platense,Coquimbo Unido,1.9,3.35,4.5,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-13T00:30:00Z,Cruzeiro,Flamengo-RJ,2.88,3.3,2.45,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-13T22:00:00Z,Mirassol,LDU Quito,1.75,3.5,5.2,the-odds-api
+soccer_conmebol_copa_libertadores,2026-08-14T00:30:00Z,Rosario Central,Corinthians-SP,2.05,3.1,4.25,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-11T22:00:00Z,Boca Juniors,Recoleta FC,1.44,4.4,9.0,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-12T00:30:00Z,Club Bolívar,Sao Paulo,2.02,3.6,3.6,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-12T22:00:00Z,Bragantino-SP,Clube Atlético Mineiro,2.07,3.3,3.6,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-12T22:00:00Z,CA Tigre BA,Montevideo City Torque,1.92,3.3,4.25,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-13T00:30:00Z,Independiente Santa Fe,River Plate,3.3,3.3,2.28,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-13T22:00:00Z,Santos,Macará,1.36,5.0,8.5,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-13T22:00:00Z,Vasco da Gama,Olimpia Asunción,1.7,3.75,4.9,the-odds-api
+soccer_conmebol_copa_sudamericana,2026-08-14T00:30:00Z,Club Cienciano,Botafogo,2.08,3.5,3.45,the-odds-api
 soccer_efl_champ,2026-08-14T19:00:00Z,Wolverhampton Wanderers,Blackburn Rovers,1.58,4.2,6.2,the-odds-api
 soccer_efl_champ,2026-08-15T11:30:00Z,Bolton Wanderers,Preston North End,2.25,3.5,3.55,the-odds-api
-soccer_efl_champ,2026-08-15T14:00:00Z,Bristol City,Millwall,2.64,3.5,2.94,the-odds-api
-soccer_efl_champ,2026-08-15T14:00:00Z,Charlton Athletic,Derby County,2.78,3.45,2.8,the-odds-api
+soccer_efl_champ,2026-08-15T14:00:00Z,Bristol City,Millwall,2.6,3.5,2.94,the-odds-api
+soccer_efl_champ,2026-08-15T14:00:00Z,Charlton Athletic,Derby County,2.74,3.45,2.8,the-odds-api
 soccer_efl_champ,2026-08-15T14:00:00Z,Middlesbrough,Lincoln City,1.35,5.5,9.8,the-odds-api
-soccer_efl_champ,2026-08-15T14:00:00Z,Norwich City,West Bromwich Albion,2.05,3.5,3.55,the-odds-api
-soccer_efl_champ,2026-08-15T14:00:00Z,Portsmouth,Queens Park Rangers,2.28,3.55,3.3,the-odds-api
+soccer_efl_champ,2026-08-15T14:00:00Z,Norwich City,West Bromwich Albion,2.1,3.5,3.55,the-odds-api
+soccer_efl_champ,2026-08-15T14:00:00Z,Portsmouth,Queens Park Rangers,2.28,3.5,3.3,the-odds-api
 soccer_efl_champ,2026-08-15T14:00:00Z,Stoke City,Swansea City,2.52,3.3,2.98,the-odds-api
 soccer_efl_champ,2026-08-15T16:30:00Z,Sheffield United,Birmingham City,2.58,3.4,2.9,the-odds-api
-soccer_efl_champ,2026-08-16T12:30:00Z,Watford,Southampton,3.6,3.6,2.12,the-odds-api
-soccer_efl_champ,2026-08-16T15:00:00Z,Burnley,West Ham United,2.9,3.6,2.4,the-odds-api
+soccer_efl_champ,2026-08-16T12:30:00Z,Watford,Southampton,3.6,3.75,2.12,the-odds-api
+soccer_efl_champ,2026-08-16T15:00:00Z,Burnley,West Ham United,2.92,3.6,2.4,the-odds-api
 soccer_efl_champ,2026-08-17T19:00:00Z,Cardiff City,Wrexham AFC,2.45,3.6,2.84,the-odds-api
-soccer_epl,2026-08-21T19:00:00Z,Arsenal,Coventry City,1.19,8.6,20.0,the-odds-api
-soccer_epl,2026-08-22T11:30:00Z,Hull City,Manchester United,8.0,4.6,1.48,the-odds-api
-soccer_epl,2026-08-22T14:00:00Z,Everton,Crystal Palace,2.26,3.5,3.45,the-odds-api
-soccer_epl,2026-08-22T14:00:00Z,Ipswich Town,Sunderland,2.88,3.4,2.66,the-odds-api
-soccer_epl,2026-08-22T14:00:00Z,Nottingham Forest,Leeds United,2.28,3.6,3.25,the-odds-api
+soccer_epl,2026-08-21T19:00:00Z,Arsenal,Coventry City,1.18,9.0,20.0,the-odds-api
+soccer_epl,2026-08-22T11:30:00Z,Hull City,Manchester United,8.0,4.8,1.48,the-odds-api
+soccer_epl,2026-08-22T14:00:00Z,Everton,Crystal Palace,2.2,3.55,3.7,the-odds-api
+soccer_epl,2026-08-22T14:00:00Z,Ipswich Town,Sunderland,2.82,3.4,2.76,the-odds-api
+soccer_epl,2026-08-22T14:00:00Z,Nottingham Forest,Leeds United,2.26,3.6,3.25,the-odds-api
 soccer_epl,2026-08-22T16:30:00Z,Brentford,Tottenham Hotspur,2.56,3.75,2.8,the-odds-api
-soccer_epl,2026-08-23T13:00:00Z,Brighton and Hove Albion,Aston Villa,2.42,3.8,2.9,the-odds-api
-soccer_epl,2026-08-23T13:00:00Z,Manchester City,Bournemouth,1.48,5.3,6.6,the-odds-api
+soccer_epl,2026-08-23T13:00:00Z,Brighton and Hove Albion,Aston Villa,2.44,3.8,2.9,the-odds-api
+soccer_epl,2026-08-23T13:00:00Z,Manchester City,Bournemouth,1.48,5.2,7.0,the-odds-api
 soccer_epl,2026-08-23T15:30:00Z,Newcastle United,Liverpool,3.5,4.0,2.15,the-odds-api
-soccer_epl,2026-08-24T19:00:00Z,Fulham,Chelsea,3.45,3.9,2.25,the-odds-api
+soccer_epl,2026-08-24T19:00:00Z,Fulham,Chelsea,3.45,3.85,2.25,the-odds-api
 soccer_france_ligue_one,2026-08-21T18:45:00Z,Marseille,Strasbourg,1.68,4.5,4.8,the-odds-api
-soccer_france_ligue_one,2026-08-22T15:15:00Z,RC Lens,Auxerre,1.61,4.33,5.2,the-odds-api
+soccer_france_ligue_one,2026-08-22T15:15:00Z,RC Lens,Auxerre,1.61,4.33,5.6,the-odds-api
 soccer_france_ligue_one,2026-08-22T18:45:00Z,Le Mans FC,Brest,2.5,3.6,2.74,the-odds-api
 soccer_france_ligue_one,2026-08-22T18:45:00Z,Nice,Lorient,2.2,3.7,3.45,the-odds-api
 soccer_france_ligue_one,2026-08-22T18:45:00Z,Toulouse,Lyon,3.65,3.8,2.06,the-odds-api
-soccer_france_ligue_one,2026-08-22T18:45:00Z,Troyes,Paris FC,2.8,3.65,2.5,the-odds-api
-soccer_france_ligue_one,2026-08-23T13:00:00Z,Angers,Lille,5.6,3.8,1.7,the-odds-api
+soccer_france_ligue_one,2026-08-22T18:45:00Z,Troyes,Paris FC,2.74,3.65,2.5,the-odds-api
+soccer_france_ligue_one,2026-08-23T13:00:00Z,Angers,Lille,5.2,3.8,1.7,the-odds-api
 soccer_france_ligue_one,2026-08-23T15:15:00Z,Le Havre,AS Monaco,3.4,3.9,2.06,the-odds-api
 soccer_france_ligue_one,2026-08-23T18:45:00Z,Paris Saint Germain,Rennes,1.4,5.5,7.0,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Boulogne,Nancy,2.5,3.3,2.8,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Clermont,Stade de Reims,3.8,3.4,1.98,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Metz,Guingamp,2.1,3.5,3.6,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Montpellier,Dijon,1.95,3.5,4.0,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Nantes,Red Star,1.93,3.5,4.25,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Boulogne,Nancy,2.58,3.3,2.9,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Clermont,Stade de Reims,3.95,3.4,1.98,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Metz,Guingamp,2.12,3.5,3.6,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Montpellier,Dijon,1.99,3.6,4.1,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Nantes,Red Star,1.93,3.5,4.4,the-odds-api
 soccer_france_ligue_two,2026-08-08T18:45:00Z,Pau FC,Annecy FC,2.65,3.5,2.6,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Rodez AF,Stade Lavallois,2.05,3.5,3.65,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,Sochaux,Saint Etienne,3.6,3.5,2.05,the-odds-api
-soccer_france_ligue_two,2026-08-08T18:45:00Z,USL Dunkerque,Grenoble,1.98,3.5,3.7,the-odds-api
-soccer_germany_bundesliga2,2026-08-07T18:30:00Z,VfL Bochum,Hertha Berlin,2.48,3.75,3.05,the-odds-api
-soccer_germany_bundesliga2,2026-08-08T11:00:00Z,1. FC Heidenheim,VfL Osnabrück,1.62,4.1,5.6,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Rodez AF,Stade Lavallois,2.06,3.5,3.7,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,Sochaux,Saint Etienne,3.7,3.5,2.1,the-odds-api
+soccer_france_ligue_two,2026-08-08T18:45:00Z,USL Dunkerque,Grenoble,2.0,3.5,3.75,the-odds-api
+soccer_germany_bundesliga2,2026-08-07T18:30:00Z,VfL Bochum,Hertha Berlin,2.34,3.85,3.0,the-odds-api
+soccer_germany_bundesliga2,2026-08-08T11:00:00Z,1. FC Heidenheim,VfL Osnabrück,1.66,4.1,5.6,the-odds-api
 soccer_germany_bundesliga2,2026-08-08T11:00:00Z,1. FC Magdeburg,Eintracht Braunschweig,1.78,3.9,4.4,the-odds-api
-soccer_germany_bundesliga2,2026-08-08T11:00:00Z,Karlsruher SC,Arminia Bielefeld,2.95,3.95,2.38,the-odds-api
-soccer_germany_bundesliga2,2026-08-08T11:00:00Z,SV Darmstadt 98,Holstein Kiel,2.18,3.8,3.15,the-odds-api
-soccer_germany_bundesliga2,2026-08-08T18:30:00Z,VfL Wolfsburg,1. FC Kaiserslautern,1.63,4.4,5.0,the-odds-api
-soccer_germany_bundesliga2,2026-08-09T11:30:00Z,1. FC Nürnberg,Dynamo Dresden,2.1,3.8,3.25,the-odds-api
-soccer_germany_bundesliga2,2026-08-09T11:30:00Z,FC Energie Cottbus,Hannover 96,3.1,3.85,2.16,the-odds-api
-soccer_germany_bundesliga2,2026-08-09T11:30:00Z,FC St. Pauli,Greuther Fürth,1.85,3.9,3.95,the-odds-api
+soccer_germany_bundesliga2,2026-08-08T11:00:00Z,Karlsruher SC,Arminia Bielefeld,2.66,3.9,2.46,the-odds-api
+soccer_germany_bundesliga2,2026-08-08T11:00:00Z,SV Darmstadt 98,Holstein Kiel,2.22,3.8,3.1,the-odds-api
+soccer_germany_bundesliga2,2026-08-08T18:30:00Z,VfL Wolfsburg,1. FC Kaiserslautern,1.63,4.4,5.1,the-odds-api
+soccer_germany_bundesliga2,2026-08-09T11:30:00Z,1. FC Nürnberg,Dynamo Dresden,2.24,3.7,3.2,the-odds-api
+soccer_germany_bundesliga2,2026-08-09T11:30:00Z,FC Energie Cottbus,Hannover 96,3.35,3.9,2.15,the-odds-api
+soccer_germany_bundesliga2,2026-08-09T11:30:00Z,FC St. Pauli,Greuther Fürth,1.88,3.9,3.9,the-odds-api
 soccer_italy_serie_a,2026-08-22T16:30:00Z,Inter Milan,Monza,1.25,7.0,17.51,the-odds-api
-soccer_italy_serie_a,2026-08-22T16:30:00Z,Udinese,Como,4.9,3.5,1.85,the-odds-api
-soccer_italy_serie_a,2026-08-22T18:45:00Z,Genoa,Napoli,4.6,3.5,1.92,the-odds-api
+soccer_italy_serie_a,2026-08-22T16:30:00Z,Udinese,Como,4.7,3.5,1.85,the-odds-api
+soccer_italy_serie_a,2026-08-22T18:45:00Z,Genoa,Napoli,4.8,3.5,1.89,the-odds-api
 soccer_italy_serie_a,2026-08-22T18:45:00Z,Parma,Cagliari,2.68,3.2,2.92,the-odds-api
 soccer_italy_serie_a,2026-08-23T16:30:00Z,Frosinone,Juventus,7.8,4.5,1.48,the-odds-api
 soccer_italy_serie_a,2026-08-23T16:30:00Z,Venezia,Lecce,2.38,3.25,3.25,the-odds-api
-soccer_italy_serie_a,2026-08-23T18:45:00Z,Atalanta BC,Sassuolo,1.53,4.5,6.25,the-odds-api
+soccer_italy_serie_a,2026-08-23T18:45:00Z,Atalanta BC,Sassuolo,1.53,4.5,6.75,the-odds-api
 soccer_italy_serie_a,2026-08-23T18:45:00Z,Torino,AC Milan,4.8,3.75,1.82,the-odds-api
 soccer_italy_serie_a,2026-08-24T16:30:00Z,Bologna,Lazio,2.18,3.3,3.65,the-odds-api
-soccer_italy_serie_a,2026-08-24T18:45:00Z,AS Roma,Fiorentina,1.56,4.2,7.0,the-odds-api
+soccer_italy_serie_a,2026-08-24T18:45:00Z,AS Roma,Fiorentina,1.55,4.2,6.6,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Avellino,Arezzo,2.2,3.3,3.3,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Benevento,Modena,2.5,3.1,2.75,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Carrarese,Mantova,2.15,3.2,3.2,the-odds-api
-soccer_italy_serie_b,2026-08-22T15:00:00Z,Cesena FC,Sampdoria,2.62,3.0,2.5,the-odds-api
+soccer_italy_serie_b,2026-08-22T15:00:00Z,Cesena FC,Sampdoria,2.63,3.0,2.5,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Empoli,Cremonese,2.88,3.0,2.5,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Hellas Verona,Ascoli,1.5,3.5,6.5,the-odds-api
 soccer_italy_serie_b,2026-08-22T15:00:00Z,Palermo,Juve Stabia,1.5,3.6,6.5,the-odds-api
@@ -151,7 +150,7 @@ soccer_italy_serie_b,2026-08-23T17:00:00Z,Hellas Verona,Ascoli,1.57,3.75,6.0,the
 soccer_italy_serie_b,2026-08-23T17:00:00Z,Pisa,Padova,1.7,3.4,5.0,the-odds-api
 soccer_italy_serie_b,2026-08-23T19:00:00Z,Cesena FC,Sampdoria,2.62,3.2,2.62,the-odds-api
 soccer_italy_serie_b,2026-08-23T19:00:00Z,Palermo,Juve Stabia,1.62,3.6,6.0,the-odds-api
-soccer_mexico_ligamx,2026-08-15T23:00:00Z,Atlante FC,Toluca,5.25,4.0,1.53,the-odds-api
+soccer_mexico_ligamx,2026-08-15T23:00:00Z,Atlante FC,Toluca,5.5,4.0,1.53,the-odds-api
 soccer_mexico_ligamx,2026-08-16T01:00:00Z,Monterrey,FC Juárez,1.53,4.2,5.0,the-odds-api
 soccer_mexico_ligamx,2026-08-16T03:00:00Z,Atlas,Tigres,3.2,3.25,2.1,the-odds-api
 soccer_mexico_ligamx,2026-08-16T18:00:00Z,Pumas,Querétaro,1.6,4.0,4.75,the-odds-api
@@ -161,56 +160,57 @@ soccer_mexico_ligamx,2026-08-17T03:00:00Z,Tijuana,Cruz Azul,3.0,3.4,2.15,the-odd
 soccer_mexico_ligamx,2026-08-18T01:00:00Z,Necaxa,León,2.15,3.5,3.0,the-odds-api
 soccer_mexico_ligamx,2026-08-18T03:00:00Z,Pachuca,Puebla,1.36,4.6,7.5,the-odds-api
 soccer_netherlands_eredivisie,2026-08-07T18:00:00Z,SC Cambuur,Excelsior,2.55,3.75,2.62,the-odds-api
-soccer_netherlands_eredivisie,2026-08-08T14:30:00Z,NEC Nijmegen,SC Telstar,1.5,5.0,7.0,the-odds-api
-soccer_netherlands_eredivisie,2026-08-08T16:45:00Z,Go Ahead Eagles,Willem II,1.68,4.2,5.0,the-odds-api
-soccer_netherlands_eredivisie,2026-08-08T18:00:00Z,PSV Eindhoven,Fortuna Sittard,1.24,8.5,13.0,the-odds-api
-soccer_netherlands_eredivisie,2026-08-08T19:00:00Z,AZ Alkmaar,ADO Den Haag,1.52,4.8,6.5,the-odds-api
+soccer_netherlands_eredivisie,2026-08-08T14:30:00Z,NEC Nijmegen,SC Telstar,1.5,5.1,7.0,the-odds-api
+soccer_netherlands_eredivisie,2026-08-08T16:45:00Z,Go Ahead Eagles,Willem II,1.68,4.2,4.9,the-odds-api
+soccer_netherlands_eredivisie,2026-08-08T18:00:00Z,PSV Eindhoven,Fortuna Sittard,1.24,8.5,14.0,the-odds-api
+soccer_netherlands_eredivisie,2026-08-08T19:00:00Z,AZ Alkmaar,ADO Den Haag,1.52,4.8,7.0,the-odds-api
 soccer_netherlands_eredivisie,2026-08-09T10:15:00Z,Sparta Rotterdam,Feyenoord,4.9,4.4,1.72,the-odds-api
-soccer_netherlands_eredivisie,2026-08-09T12:30:00Z,FC Zwolle,Ajax,6.5,4.7,1.52,the-odds-api
-soccer_netherlands_eredivisie,2026-08-09T12:30:00Z,Groningen,FC Utrecht,2.38,3.6,2.9,the-odds-api
+soccer_netherlands_eredivisie,2026-08-09T12:30:00Z,FC Zwolle,Ajax,6.5,4.7,1.53,the-odds-api
+soccer_netherlands_eredivisie,2026-08-09T12:30:00Z,Groningen,FC Utrecht,2.38,3.6,2.98,the-odds-api
 soccer_netherlands_eredivisie,2026-08-09T14:45:00Z,Heerenveen,FC Twente Enschede,3.1,4.0,2.15,the-odds-api
-soccer_portugal_primeira_liga,2026-08-07T19:15:00Z,Estoril,Famalicão,3.3,3.4,2.38,the-odds-api
-soccer_portugal_primeira_liga,2026-08-08T14:30:00Z,CS Maritimo,Casa Pia,2.5,3.45,2.86,the-odds-api
-soccer_portugal_primeira_liga,2026-08-08T17:00:00Z,Vitória SC,Arouca,1.9,3.85,4.3,the-odds-api
+soccer_portugal_primeira_liga,2026-08-07T19:15:00Z,Estoril,Famalicão,3.05,3.4,2.44,the-odds-api
+soccer_portugal_primeira_liga,2026-08-08T14:30:00Z,CS Maritimo,Casa Pia,2.5,3.4,2.92,the-odds-api
+soccer_portugal_primeira_liga,2026-08-08T17:00:00Z,Vitória SC,Arouca,1.87,3.9,4.2,the-odds-api
 soccer_portugal_primeira_liga,2026-08-08T19:30:00Z,CF Estrela,Sporting Lisbon,14.5,6.75,1.25,the-odds-api
 soccer_portugal_primeira_liga,2026-08-09T17:00:00Z,FC Porto,Alverca,1.2,7.0,17.0,the-odds-api
-soccer_portugal_primeira_liga,2026-08-09T19:30:00Z,Benfica,Académico de Viseu,1.14,10.0,29.0,the-odds-api
-soccer_portugal_primeira_liga,2026-08-09T19:30:00Z,Gil Vicente,Rio Ave FC,2.0,3.5,4.25,the-odds-api
+soccer_portugal_primeira_liga,2026-08-09T19:30:00Z,Benfica,Académico de Viseu,1.13,10.0,29.0,the-odds-api
+soccer_portugal_primeira_liga,2026-08-09T19:30:00Z,Gil Vicente,Rio Ave FC,2.0,3.5,4.2,the-odds-api
 soccer_portugal_primeira_liga,2026-08-09T19:30:00Z,Moreirense FC,Braga,5.0,3.75,1.74,the-odds-api
-soccer_portugal_primeira_liga,2026-08-10T19:15:00Z,Santa Clara,Nacional,1.96,3.4,4.0,the-odds-api
-soccer_spain_la_liga,2026-08-15T17:30:00Z,Alavés,Getafe,2.5,2.98,3.7,the-odds-api
-soccer_spain_la_liga,2026-08-15T19:30:00Z,Sevilla,Rayo Vallecano,2.26,3.3,3.45,the-odds-api
-soccer_spain_la_liga,2026-08-16T15:00:00Z,Real Racing Club de Santander,Villarreal,3.5,3.65,2.14,the-odds-api
-soccer_spain_la_liga,2026-08-16T17:00:00Z,Espanyol,Levante,2.06,3.45,4.0,the-odds-api
+soccer_portugal_primeira_liga,2026-08-10T19:15:00Z,Santa Clara,Nacional,1.95,3.4,4.4,the-odds-api
+soccer_spain_la_liga,2026-08-15T17:30:00Z,Alavés,Getafe,2.5,2.98,3.65,the-odds-api
+soccer_spain_la_liga,2026-08-15T19:30:00Z,Sevilla,Rayo Vallecano,2.25,3.3,3.45,the-odds-api
+soccer_spain_la_liga,2026-08-16T15:00:00Z,Real Racing Club de Santander,Villarreal,3.7,3.65,2.1,the-odds-api
+soccer_spain_la_liga,2026-08-16T17:00:00Z,Espanyol,Levante,2.06,3.4,4.1,the-odds-api
 soccer_spain_la_liga,2026-08-16T19:30:00Z,Celta Vigo,CA Osasuna,2.05,3.4,3.9,the-odds-api
-soccer_spain_la_liga,2026-08-17T19:00:00Z,Deportivo La Coruña,Elche CF,2.33,3.25,3.55,the-odds-api
+soccer_spain_la_liga,2026-08-17T19:00:00Z,Deportivo La Coruña,Elche CF,2.32,3.25,3.55,the-odds-api
 soccer_spain_la_liga,2026-08-19T19:00:00Z,Atlético Madrid,Málaga,1.33,5.4,12.5,the-odds-api
 soccer_spain_la_liga,2026-08-20T19:00:00Z,Rayo Vallecano,Alavés,2.1,3.2,4.2,the-odds-api
-soccer_spain_la_liga,2026-08-21T19:00:00Z,Real Betis,Real Sociedad,2.16,3.4,3.5,the-odds-api
+soccer_spain_la_liga,2026-08-21T19:00:00Z,Real Betis,Real Sociedad,2.15,3.4,3.5,the-odds-api
 soccer_spain_la_liga,2026-08-22T15:00:00Z,Athletic Bilbao,Sevilla,1.62,3.75,6.0,the-odds-api
 soccer_spain_la_liga,2026-08-22T17:30:00Z,Valencia,Celta Vigo,2.42,3.3,3.1,the-odds-api
 soccer_spain_la_liga,2026-08-22T19:30:00Z,Espanyol,Real Madrid,5.0,4.2,1.67,the-odds-api
 soccer_spain_la_liga,2026-08-23T15:00:00Z,Atlético Madrid,Villarreal,1.92,3.6,4.33,the-odds-api
-soccer_spain_la_liga,2026-08-23T17:30:00Z,Getafe,Real Racing Club de Santander,1.94,3.1,5.0,the-odds-api
+soccer_spain_la_liga,2026-08-23T17:30:00Z,Getafe,Real Racing Club de Santander,1.94,3.0,5.0,the-odds-api
 soccer_spain_la_liga,2026-08-23T19:30:00Z,Elche CF,Barcelona,8.5,5.5,1.36,the-odds-api
-soccer_spain_la_liga,2026-08-24T17:30:00Z,CA Osasuna,Levante,1.79,4.0,5.0,the-odds-api
+soccer_spain_la_liga,2026-08-24T17:30:00Z,CA Osasuna,Levante,1.79,4.0,4.75,the-odds-api
 soccer_spain_la_liga,2026-08-24T19:30:00Z,Málaga,Deportivo La Coruña,2.5,3.1,3.0,the-odds-api
-soccer_spain_la_liga,2026-08-25T19:00:00Z,Valencia,Real Betis,2.72,3.4,2.75,the-odds-api
+soccer_spain_la_liga,2026-08-25T19:00:00Z,Valencia,Real Betis,2.72,3.4,2.7,the-odds-api
+soccer_spain_la_liga,2026-08-26T19:00:00Z,Real Madrid,Real Sociedad,1.4,5.5,8.0,the-odds-api
 soccer_spain_segunda_division,2026-08-14T18:30:00Z,Real Sociedad B,CD Castellón,4.2,3.8,1.75,the-odds-api
-soccer_spain_segunda_division,2026-08-15T15:00:00Z,Andorra CF,AD Ceuta FC,1.62,3.9,4.75,the-odds-api
-soccer_spain_segunda_division,2026-08-15T17:00:00Z,Cádiz CF,Celta Vigo,2.0,3.3,3.6,the-odds-api
-soccer_spain_segunda_division,2026-08-15T17:00:00Z,Oviedo,Granada CF,1.7,3.6,4.75,the-odds-api
-soccer_spain_segunda_division,2026-08-15T19:30:00Z,Mallorca,Real Valladolid CF,1.67,3.6,4.8,the-odds-api
-soccer_spain_segunda_division,2026-08-16T15:00:00Z,SD Eibar,Tenerife,1.75,3.3,4.4,the-odds-api
+soccer_spain_segunda_division,2026-08-15T15:00:00Z,Andorra CF,AD Ceuta FC,1.6,4.0,4.8,the-odds-api
+soccer_spain_segunda_division,2026-08-15T17:00:00Z,Cádiz CF,Celta Vigo,2.0,3.4,3.6,the-odds-api
+soccer_spain_segunda_division,2026-08-15T17:00:00Z,Oviedo,Granada CF,1.7,3.6,5.0,the-odds-api
+soccer_spain_segunda_division,2026-08-15T19:30:00Z,Mallorca,Real Valladolid CF,1.7,3.6,5.0,the-odds-api
+soccer_spain_segunda_division,2026-08-16T15:00:00Z,SD Eibar,Tenerife,1.75,3.3,4.5,the-odds-api
 soccer_spain_segunda_division,2026-08-16T17:00:00Z,Burgos CF,Córdoba,2.25,3.1,3.0,the-odds-api
 soccer_spain_segunda_division,2026-08-16T17:00:00Z,Girona FC,Leganés,1.62,3.6,5.0,the-odds-api
-soccer_spain_segunda_division,2026-08-16T19:30:00Z,Las Palmas,Albacete,1.65,3.75,4.75,the-odds-api
+soccer_spain_segunda_division,2026-08-16T19:30:00Z,Las Palmas,Albacete,1.65,3.6,4.75,the-odds-api
 soccer_spain_segunda_division,2026-08-17T17:00:00Z,Sporting Gijón,Sabadell FC,1.8,3.3,4.8,the-odds-api
-soccer_spain_segunda_division,2026-08-17T19:30:00Z,Almería,CD Eldense,1.29,5.3,12.5,the-odds-api
-soccer_usa_mls,2026-08-08T20:30:00Z,New England Revolution,Houston Dynamo,2.48,3.6,2.76,the-odds-api
+soccer_spain_segunda_division,2026-08-17T19:30:00Z,Almería,CD Eldense,1.3,5.3,12.0,the-odds-api
+soccer_usa_mls,2026-08-08T20:30:00Z,New England Revolution,Houston Dynamo,2.56,3.6,2.94,the-odds-api
 soccer_usa_mls,2026-08-15T23:30:00Z,Atlanta United FC,New York Red Bulls,1.8,4.1,3.85,the-odds-api
 soccer_usa_mls,2026-08-15T23:30:00Z,CF Montreal,D.C. United,2.25,3.6,3.15,the-odds-api
-soccer_usa_mls,2026-08-15T23:30:00Z,Charlotte FC,Columbus Crew SC,2.1,3.7,3.25,the-odds-api
+soccer_usa_mls,2026-08-15T23:30:00Z,Charlotte FC,Columbus Crew SC,2.1,3.7,3.3,the-odds-api
 soccer_usa_mls,2026-08-15T23:30:00Z,Orlando City SC,FC Cincinnati,2.25,4.1,2.7,the-odds-api
 soccer_usa_mls,2026-08-15T23:30:00Z,Toronto FC,New England Revolution,2.3,3.6,3.0,the-odds-api
 soccer_usa_mls,2026-08-16T00:30:00Z,Houston Dynamo,LA Galaxy,1.7,4.1,4.5,the-odds-api
@@ -222,14 +222,14 @@ soccer_usa_mls,2026-08-16T02:30:00Z,San Jose Earthquakes,St. Louis City SC,1.78,
 soccer_usa_mls,2026-08-16T22:00:00Z,Chicago Fire,Portland Timbers,1.6,4.5,4.8,the-odds-api
 soccer_usa_mls,2026-08-16T22:00:00Z,New York City FC,Philadelphia Union,1.74,4.0,4.3,the-odds-api
 soccer_usa_mls,2026-08-17T00:30:00Z,Austin FC,FC Dallas,2.95,3.8,2.25,the-odds-api
-soccer_usa_mls,2026-08-17T02:30:00Z,Seattle Sounders FC,Vancouver Whitecaps FC,2.95,3.8,2.25,the-odds-api
+soccer_usa_mls,2026-08-17T02:30:00Z,Seattle Sounders FC,Vancouver Whitecaps FC,3.1,3.8,2.18,the-odds-api
 soccer_usa_mls,2026-08-19T23:30:00Z,Columbus Crew SC,CF Montreal,1.53,4.33,5.0,the-odds-api
 soccer_usa_mls,2026-08-19T23:30:00Z,D.C. United,New England Revolution,2.0,3.7,3.3,the-odds-api
 soccer_usa_mls,2026-08-19T23:30:00Z,FC Cincinnati,New York City FC,2.05,4.0,3.0,the-odds-api
 soccer_usa_mls,2026-08-19T23:30:00Z,New York Red Bulls,Nashville SC,2.75,3.8,2.25,the-odds-api
-soccer_usa_mls,2026-08-19T23:30:00Z,Orlando City SC,Chicago Fire,3.0,4.0,2.0,the-odds-api
+soccer_usa_mls,2026-08-19T23:30:00Z,Orlando City SC,Chicago Fire,3.0,4.0,2.02,the-odds-api
 soccer_usa_mls,2026-08-19T23:30:00Z,Philadelphia Union,Inter Miami CF,2.45,4.0,2.4,the-odds-api
-soccer_usa_mls,2026-08-19T23:30:00Z,Toronto FC,Charlotte FC,2.3,3.7,2.62,the-odds-api
+soccer_usa_mls,2026-08-19T23:30:00Z,Toronto FC,Charlotte FC,2.3,3.7,2.75,the-odds-api
 soccer_usa_mls,2026-08-20T00:00:00Z,Sporting Kansas City,St. Louis City SC,3.1,3.9,2.0,the-odds-api
 soccer_usa_mls,2026-08-20T00:30:00Z,Minnesota United FC,Atlanta United FC,1.67,4.0,4.5,the-odds-api
 soccer_usa_mls,2026-08-20T01:30:00Z,Colorado Rapids,Los Angeles FC,2.62,3.7,2.3,the-odds-api
@@ -238,52 +238,36 @@ soccer_usa_mls,2026-08-20T01:30:00Z,Seattle Sounders FC,Austin FC,1.62,4.0,4.5,t
 soccer_usa_mls,2026-08-20T02:30:00Z,LA Galaxy,San Jose Earthquakes,2.4,3.9,2.45,the-odds-api
 soccer_usa_mls,2026-08-20T02:30:00Z,Portland Timbers,San Diego FC,1.95,4.2,3.1,the-odds-api
 soccer_usa_mls,2026-08-20T02:30:00Z,Vancouver Whitecaps FC,Houston Dynamo,1.44,4.75,5.5,the-odds-api
-tennis_atp_canadian_open,2026-08-04T20:21:37Z,Juncheng Shang,Andrey Rublev,2.6,,2.4,the-odds-api
-tennis_atp_canadian_open,2026-08-04T22:14:19Z,Jiri Lehecka,Vit Kopriva,1.18,,8.4,the-odds-api
-tennis_atp_canadian_open,2026-08-04T22:39:24Z,Brandon Nakashima,Daniel Altmaier,1.17,,11.0,the-odds-api
-tennis_atp_canadian_open,2026-08-04T23:00:00Z,Frances Tiafoe,Marin Cilic,1.5,,3.25,the-odds-api
-tennis_atp_canadian_open,2026-08-04T23:10:00Z,Flavio Cobolli,Yannick Hanfmann,1.74,,2.32,the-odds-api
-tennis_atp_canadian_open,2026-08-04T23:10:00Z,James Duckworth,Alex de Minaur,8.6,,1.12,the-odds-api
-tennis_atp_canadian_open,2026-08-05T00:10:00Z,Luciano Darderi,Gabriel Diallo,2.48,,1.68,the-odds-api
-tennis_atp_canadian_open,2026-08-05T15:00:00Z,Nicolas Mejia,Lorenzo Musetti,8.0,,1.15,the-odds-api
-tennis_atp_canadian_open,2026-08-05T15:00:00Z,Nuno Borges,Tomas Martin Etcheverry,1.59,,2.58,the-odds-api
-tennis_atp_canadian_open,2026-08-05T15:00:00Z,Stefanos Tsitsipas,Joao Fonseca,2.1,,1.73,the-odds-api
-tennis_atp_canadian_open,2026-08-05T15:00:00Z,Valentin Vacherot,Mariano Navone,1.62,,2.54,the-odds-api
-tennis_atp_canadian_open,2026-08-05T15:00:00Z,Zizou Bergs,Sebastian Baez,1.58,,2.4,the-odds-api
-tennis_atp_canadian_open,2026-08-05T16:10:00Z,Casper Ruud,Juan Manuel Cerundolo,1.48,,3.3,the-odds-api
-tennis_atp_canadian_open,2026-08-05T16:10:00Z,Jenson Brooksby,Ben Shelton,4.0,,1.29,the-odds-api
-tennis_atp_canadian_open,2026-08-05T16:10:00Z,Miomir Kecmanovic,Arthur Rinderknech,1.94,,1.97,the-odds-api
-tennis_atp_canadian_open,2026-08-05T16:10:00Z,Zachary Svajda,Arthur Fils,3.75,,1.33,the-odds-api
-tennis_atp_canadian_open,2026-08-05T16:30:00Z,Ignacio Buse,Cameron Norrie,2.78,,1.52,the-odds-api
-tennis_atp_canadian_open,2026-08-05T17:20:00Z,Rafael Jodar,Corentin Moutet,1.33,,4.0,the-odds-api
-tennis_atp_canadian_open,2026-08-05T17:20:00Z,Raphael Collignon,Alexei Popyrin,1.53,,2.5,the-odds-api
-tennis_atp_canadian_open,2026-08-05T17:20:00Z,Thiago Agustin Tirante,Taylor Fritz,6.0,,1.15,the-odds-api
-tennis_atp_canadian_open,2026-08-05T17:40:00Z,Hubert Hurkacz,Alejandro Tabilo,1.61,,2.4,the-odds-api
-tennis_atp_canadian_open,2026-08-05T18:50:00Z,Alex Michelsen,Francisco Cerundolo,1.64,,2.52,the-odds-api
-tennis_atp_canadian_open,2026-08-05T20:00:00Z,Ugo Humbert,Daniel Merida Aguilar,1.36,,3.25,the-odds-api
-tennis_atp_canadian_open,2026-08-05T20:40:00Z,Jacob Fearnley,Jakub Mensik,3.6,,1.41,the-odds-api
-tennis_atp_canadian_open,2026-08-05T23:00:00Z,Titouan Droguet,Felix Auger-Aliassime,4.7,,1.23,the-odds-api
-tennis_atp_canadian_open,2026-08-05T23:10:00Z,Valentin Royer,Tommy Paul,4.5,,1.22,the-odds-api
-tennis_atp_canadian_open,2026-08-06T00:10:00Z,Learner Tien,Gael Monfils,1.38,,3.5,the-odds-api
-tennis_wta_canadian_open,2026-08-04T21:57:20Z,Kamilla Rakhimova,Katerina Siniakova,6.0,,1.22,the-odds-api
-tennis_wta_canadian_open,2026-08-04T22:01:11Z,Anna Kalinskaya,McCartney Kessler,1.06,,18.5,the-odds-api
-tennis_wta_canadian_open,2026-08-04T23:08:25Z,Aryna Sabalenka,Moyuka Uchijima,1.05,,17.0,the-odds-api
-tennis_wta_canadian_open,2026-08-05T00:30:00Z,Clara Tauson,Nikola Bartunkova,2.02,,2.0,the-odds-api
-tennis_wta_canadian_open,2026-08-05T15:00:00Z,Ann Li,Kayla Cross,1.3,,3.75,the-odds-api
-tennis_wta_canadian_open,2026-08-05T16:30:00Z,Daria Kasatkina,Elena Rybakina,7.0,,1.15,the-odds-api
-tennis_wta_canadian_open,2026-08-05T16:30:00Z,Jessica Pegula,Magdalena Frech,1.15,,7.2,the-odds-api
-tennis_wta_canadian_open,2026-08-05T16:30:00Z,Marie Bouzkova,Taylor Townsend,1.8,,2.32,the-odds-api
-tennis_wta_canadian_open,2026-08-05T16:30:00Z,Sloane Stephens,Belinda Bencic,6.5,,1.14,the-odds-api
-tennis_wta_canadian_open,2026-08-05T18:00:00Z,Alina Korneeva,Emma Navarro,2.18,,1.84,the-odds-api
-tennis_wta_canadian_open,2026-08-05T18:00:00Z,Iva Jović,Magda Linette,1.3,,4.0,the-odds-api
-tennis_wta_canadian_open,2026-08-05T18:00:00Z,Kayla Day,Coco Gauff,8.8,,1.1,the-odds-api
-tennis_wta_canadian_open,2026-08-05T18:00:00Z,Mirra Andreeva,Karolina Pliskova,1.29,,4.2,the-odds-api
-tennis_wta_canadian_open,2026-08-05T19:30:00Z,Elise Mertens,Anna Bondár,1.37,,3.5,the-odds-api
-tennis_wta_canadian_open,2026-08-05T19:30:00Z,Maria Sakkari,Zeynep Sonmez,1.59,,2.63,the-odds-api
-tennis_wta_canadian_open,2026-08-05T21:00:00Z,Liudmila Samsonova,Barbora Krejcikova,2.63,,1.6,the-odds-api
-tennis_wta_canadian_open,2026-08-05T21:00:00Z,Panna Udvardy,Naomi Osaka,9.0,,1.08,the-odds-api
-tennis_wta_canadian_open,2026-08-05T21:00:00Z,Sorana Cirstea,Maya Joint,1.29,,4.2,the-odds-api
-tennis_wta_canadian_open,2026-08-05T22:30:00Z,Linda Noskova,Caty McNally,1.33,,3.95,the-odds-api
-tennis_wta_canadian_open,2026-08-05T23:00:00Z,Renata Zarazua,Leylah Fernandez,3.1,,1.4,the-odds-api
-tennis_wta_canadian_open,2026-08-06T00:30:00Z,Alycia Parks,Alexandra Eala,6.0,,1.2,the-odds-api
-tennis_wta_canadian_open,2026-08-07T19:00:00Z,Viktorija Golubic,Iga Swiatek,9.5,,1.08,the-odds-api
+tennis_atp_canadian_open,2026-08-05T21:57:55Z,Fabian Marozsan,Matteo Arnaldi,1.68,,2.62,the-odds-api
+tennis_atp_canadian_open,2026-08-05T22:08:51Z,Jacob Fearnley,Jakub Mensik,21.0,,1.1,the-odds-api
+tennis_atp_canadian_open,2026-08-05T22:17:40Z,Karen Khachanov,Terence Atmane,3.9,,1.36,the-odds-api
+tennis_atp_canadian_open,2026-08-05T22:55:00Z,Titouan Droguet,Felix Auger-Aliassime,4.3,,1.26,the-odds-api
+tennis_atp_canadian_open,2026-08-05T22:56:09Z,Ugo Humbert,Daniel Merida Aguilar,1.84,,2.28,the-odds-api
+tennis_atp_canadian_open,2026-08-05T23:20:00Z,Valentin Royer,Tommy Paul,5.7,,1.21,the-odds-api
+tennis_atp_canadian_open,2026-08-05T23:30:00Z,Titouan Droguet,Jaime Faria,2.6,,1.62,the-odds-api
+tennis_atp_canadian_open,2026-08-06T00:10:00Z,Daniil Medvedev,Botic van de Zandschulp,1.3,,4.4,the-odds-api
+tennis_atp_canadian_open,2026-08-06T01:00:00Z,Learner Tien,Gael Monfils,1.37,,3.6,the-odds-api
+tennis_atp_canadian_open,2026-08-06T16:30:00Z,Luciano Darderi,Juncheng Shang,2.04,,1.93,the-odds-api
+tennis_atp_canadian_open,2026-08-06T16:30:00Z,Mariano Navone,Arthur Fils,3.25,,1.36,the-odds-api
+tennis_atp_canadian_open,2026-08-06T17:40:00Z,Cameron Norrie,Alex de Minaur,2.92,,1.44,the-odds-api
+tennis_atp_canadian_open,2026-08-06T17:40:00Z,Yannick Hanfmann,Nuno Borges,2.38,,1.65,the-odds-api
+tennis_atp_canadian_open,2026-08-06T22:00:00Z,Jiri Lehecka,Alexander Blockx,1.56,,2.75,the-odds-api
+tennis_atp_canadian_open,2026-08-07T16:30:00Z,Casper Ruud,Joao Fonseca,2.1,,1.91,the-odds-api
+tennis_atp_canadian_open,2026-08-07T16:30:00Z,Zizou Bergs,Ben Shelton,3.85,,1.3,the-odds-api
+tennis_wta_canadian_open,2026-08-05T20:44:34Z,Elise Mertens,Anna Bondár,1.53,,3.8,the-odds-api
+tennis_wta_canadian_open,2026-08-05T22:04:54Z,Liudmila Samsonova,Barbora Krejcikova,2.1,,2.1,the-odds-api
+tennis_wta_canadian_open,2026-08-05T22:41:45Z,Linda Noskova,Caty McNally,1.08,,14.5,the-odds-api
+tennis_wta_canadian_open,2026-08-05T23:15:00Z,Sorana Cirstea,Maya Joint,1.36,,3.75,the-odds-api
+tennis_wta_canadian_open,2026-08-05T23:16:10Z,Renata Zarazua,Leylah Fernandez,3.9,,1.36,the-odds-api
+tennis_wta_canadian_open,2026-08-06T00:30:00Z,Alycia Parks,Alexandra Eala,5.6,,1.21,the-odds-api
+tennis_wta_canadian_open,2026-08-06T15:00:00Z,Talia Gibson,Ekaterina Alexandrova,2.38,,1.7,the-odds-api
+tennis_wta_canadian_open,2026-08-06T16:30:00Z,Anna Kalinskaya,Diana Shnaider,2.24,,1.81,the-odds-api
+tennis_wta_canadian_open,2026-08-06T16:30:00Z,Viktorija Golubic,Iga Swiatek,13.0,,1.08,the-odds-api
+tennis_wta_canadian_open,2026-08-06T17:40:00Z,Jessica Pegula,Kamilla Rakhimova,1.16,,7.0,the-odds-api
+tennis_wta_canadian_open,2026-08-06T18:00:00Z,Marta Kostyuk,Madison Keys,1.8,,2.2,the-odds-api
+tennis_wta_canadian_open,2026-08-06T21:00:00Z,Nikola Bartunkova,Amanda Anisimova,2.78,,1.55,the-odds-api
+tennis_wta_canadian_open,2026-08-06T23:00:00Z,Aryna Sabalenka,Shuai Zhang,1.07,,13.5,the-odds-api
+tennis_wta_canadian_open,2026-08-07T00:30:00Z,Elina Svitolina,Anastasia Potapova,1.44,,3.25,the-odds-api
+tennis_wta_canadian_open,2026-08-07T16:00:00Z,Taylor Townsend,Belinda Bencic,3.0,,1.4,the-odds-api
+tennis_wta_canadian_open,2026-08-07T19:00:00Z,Ann Li,Elena Rybakina,5.0,,1.2,the-odds-api
+tennis_wta_canadian_open,2026-08-07T19:00:00Z,Iva Jović,Alina Korneeva,1.4,,3.1,the-odds-api
